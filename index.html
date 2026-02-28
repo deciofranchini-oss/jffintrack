@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════
    Controle Financeiro do Décio — Design System
@@ -533,7 +534,7 @@ body{font-family:var(--f);font-size:16px;line-height:1.5;background:var(--bg);co
   </nav>
   <div class="sb-spacer"></div>
   <div class="sb-foot" style="display:flex;align-items:center;justify-content:space-between">
-    <span>v5.0 FD — Local PWA</span>
+    <span id="sb-status">🔵 Supabase</span>
     <button onclick="logout()" title="Bloquear" style="
       background:var(--fill);border:none;cursor:pointer;
       padding:5px 10px;border-radius:8px;font:500 11px/1 var(--f);
@@ -747,7 +748,7 @@ body{font-family:var(--f);font-size:16px;line-height:1.5;background:var(--bg);co
   <div class="form-section">
     <div class="form-label">🏷️ Categorias</div>
     <div class="form-card" id="cat-list-wrap"></div>
-    <div style="margin-top:8px"><button class="btn secondary" style="border-radius:var(--r2)" onclick="document.getElementById('cat-sheet').classList.add('open')">+ Nova Categoria</button></div>
+    <div style="margin-top:8px"><button class="btn secondary" style="border-radius:var(--r2)" onclick="openCatSheet()">+ Nova Categoria</button></div>
   </div>
 
   <!-- Dados -->
@@ -799,9 +800,15 @@ body{font-family:var(--f);font-size:16px;line-height:1.5;background:var(--bg);co
     <div class="sheet-hdr"><div class="sheet-title">Nova Categoria</div><button class="sheet-close" onclick="closeSheet('cat-sheet')">Cancelar</button></div>
     <div style="padding:16px">
       <div class="form-card">
-        <div class="field"><span class="field-label">Chave</span><input id="nc-key" placeholder="ex: excursao"></div>
-        <div class="field"><span class="field-label">Nome</span><input id="nc-label" placeholder="ex: Excursão"></div>
+        <div class="field"><span class="field-label">Chave</span><input id="nc-key" placeholder="ex: excursao" style="text-align:right"></div>
+        <div class="field"><span class="field-label">Nome</span><input id="nc-label" placeholder="ex: Excursão" style="text-align:right"></div>
+        <div class="field"><span class="field-label">Ícone</span><input id="nc-icon" placeholder="emoji ou texto (ex: 🎓)" style="text-align:right;max-width:120px"></div>
         <div class="field"><span class="field-label">Cor</span><input id="nc-color" type="color" value="#3B5BDB" style="width:44px;height:30px;border:none;background:none;cursor:pointer;-webkit-appearance:none;padding:0;margin-left:auto"></div>
+        <div class="field"><span class="field-label">Subcategoria de</span>
+          <select id="nc-parent" style="text-align:right;max-width:180px">
+            <option value="">— Categoria raiz —</option>
+          </select>
+        </div>
       </div>
       <div style="margin-top:12px"><button class="btn primary" onclick="saveCat()">Criar Categoria</button></div>
     </div>
@@ -820,18 +827,50 @@ body{font-family:var(--f);font-size:16px;line-height:1.5;background:var(--bg);co
         <div class="field"><span class="field-label">Nome</span><input id="as-name" placeholder="ex: Nubank, Itaú…" maxlength="40"></div>
         <div class="field"><span class="field-label">Tipo</span>
           <select id="as-type">
-            <option value="checking">Conta Corrente</option>
-            <option value="savings">Poupança</option>
-            <option value="credit">Cartão de Crédito</option>
-            <option value="investment">Investimento</option>
-            <option value="cash">Dinheiro</option>
-            <option value="wallet">Carteira Digital</option>
+            <option value="credit_card">💳 Cartão de Crédito</option>
+            <option value="checking">🏦 Conta Corrente</option>
+            <option value="cash">💵 Dinheiro</option>
+            <option value="investment">📈 Investimentos</option>
           </select>
         </div>
-        <div class="field"><span class="field-label">Emoji</span>
-          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+        <div class="field"><span class="field-label">Ícone</span>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap">
             <span id="as-emoji-preview" style="font-size:22px">🏦</span>
-            <button onclick="toggleAccountEmojiPicker()" style="border:1px solid var(--sep);border-radius:var(--r);padding:5px 10px;background:var(--bg-2);font:500 12px/1 var(--f);cursor:pointer;color:var(--t-2)">Escolher</button>
+            <select id="as-icon-key" onchange="onAccountIconChange()" style="border:1px solid var(--sep);border-radius:var(--r);padding:5px 10px;background:var(--bg-2);font:500 12px/1 var(--f);color:var(--t-2);max-width:160px">
+              <option value="">— Personalizado —</option>
+              <optgroup label="🇧🇷 Brasil">
+                <option value="nubank">💜 Nubank</option>
+                <option value="itau">🟠 Itaú</option>
+                <option value="bradesco">🔴 Bradesco</option>
+                <option value="santander">🔴 Santander</option>
+                <option value="inter">🟠 Banco Inter</option>
+                <option value="bb">🟡 Banco do Brasil</option>
+                <option value="caixa">🔵 Caixa Econômica</option>
+                <option value="c6">⚫ C6 Bank</option>
+                <option value="xp">🟢 XP Investimentos</option>
+                <option value="picpay">🟢 PicPay</option>
+                <option value="neon">🔵 Neon</option>
+                <option value="sicoob">🟢 Sicoob</option>
+              </optgroup>
+              <optgroup label="🇫🇷 França">
+                <option value="bnp">🟢 BNP Paribas</option>
+                <option value="ca">🟢 Crédit Agricole</option>
+                <option value="sg">🔴 Société Générale</option>
+                <option value="lbp">🟡 La Banque Postale</option>
+                <option value="boursorama">🔵 Boursorama</option>
+                <option value="lcl">🔵 LCL</option>
+                <option value="bpce">🔵 Banque Populaire</option>
+                <option value="cic">🔴 CIC</option>
+                <option value="hsbc">🔴 HSBC</option>
+              </optgroup>
+              <optgroup label="🌍 Internacional">
+                <option value="revolut">⚫ Revolut</option>
+                <option value="wise">🔵 Wise</option>
+                <option value="paypal">🔵 PayPal</option>
+                <option value="cash">💵 Dinheiro</option>
+              </optgroup>
+            </select>
+            <button onclick="toggleAccountEmojiPicker()" id="as-custom-emoji-btn" style="border:1px solid var(--sep);border-radius:var(--r);padding:5px 10px;background:var(--bg-2);font:500 12px/1 var(--f);cursor:pointer;color:var(--t-2)">Emoji ↓</button>
           </div>
         </div>
       </div>
@@ -1028,27 +1067,226 @@ body{font-family:var(--f);font-size:16px;line-height:1.5;background:var(--bg);co
    IndexedDB v5: txs, cats, cfg, parties, accounts, ai_files
 ══════════════════════════════════════════════════════════ */
 
-/* ─── DB ─── */
-const DB_NAME = 'financeiro-decio-v1';
-let db;
+/* ─── SUPABASE CONFIG ─── */
+// ⚠️ Substitua com suas credenciais do Supabase Dashboard > Project Settings > API
+const SUPABASE_URL = 'https://SEU_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
 
-function openDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(DB_NAME, 5);
-    req.onupgradeneeded = e => {
-      const d = e.target.result;
-      ['txs','cats','cfg','parties','accounts','ai_files'].forEach(s => {
-        if (!d.objectStoreNames.contains(s)) {
-          const opts = (s === 'cats' || s === 'cfg') ? { keyPath: s==='cfg'?'k':'key' } : { keyPath:'id', autoIncrement:true };
-          d.createObjectStore(s, opts);
-        }
-      });
-    };
-    req.onsuccess = e => { db = e.target.result; res(); };
-    req.onerror   = e => rej(e.target.error);
-  });
+let _sb = null;
+function getSB(){
+  if(!_sb) _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return _sb;
 }
 
+/* ─── DB ADAPTER (IndexedDB → Supabase) ─── */
+// Mantém a mesma interface assíncrona que o código original usa
+// Mapeamento de stores → tabelas Supabase
+const TABLE_MAP = {
+  txs:      'transactions',
+  cats:     'categories',
+  parties:  'parties',
+  accounts: 'accounts',
+  ai_files: 'ai_files',
+  cfg:      'cfg'
+};
+
+// Cache local em memória para reduzir round-trips
+const _cache = { txs:null, cats:null, parties:null, accounts:null };
+let _cacheTs = {};
+
+function _tbl(store){ return TABLE_MAP[store] || store; }
+
+// Mapeia campos do app → Supabase e vice-versa
+function _toApp(store, row){
+  if(!row) return row;
+  if(store==='txs'){
+    return {
+      id: row.id,
+      amount: parseFloat(row.amount),
+      type: row.type,
+      categoryKey: row.category_key || row.categoryKey,
+      accountId: row.account_id,
+      partyId: row.party_id,
+      party: row.party_name,
+      date: row.date,
+      academicYear: row.academic_year,
+      academicMonth: row.academic_month,
+      isLate: row.is_late,
+      notes: row.notes,
+      tags: row.tags,
+      fileId: row.file_id,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    };
+  }
+  if(store==='cats'){
+    return {
+      id: row.id,
+      key: row.key,
+      label: row.label,
+      color: row.color,
+      iconKey: row.icon_key,
+      parentId: row.parent_id,
+      system: row.system,
+      sortOrder: row.sort_order
+    };
+  }
+  if(store==='accounts'){
+    return {
+      id: row.id,
+      name: row.name,
+      type: row.type,
+      iconKey: row.icon_key,
+      emoji: row.icon_emoji,
+      color: row.color,
+      sortOrder: row.sort_order,
+      active: row.active
+    };
+  }
+  if(store==='parties'){
+    return {
+      id: row.id,
+      name: row.name,
+      emoji: row.emoji,
+      type: row.type,
+      sortOrder: row.sort_order
+    };
+  }
+  if(store==='ai_files'){
+    return {
+      id: row.id,
+      name: row.name,
+      size: row.size,
+      type: row.mime_type,
+      ext: row.ext,
+      data: row.data_b64,
+      storedAt: row.created_at
+    };
+  }
+  return row;
+}
+
+function _toDb(store, obj){
+  if(!obj) return obj;
+  if(store==='txs'){
+    const d = {};
+    if(obj.id !== undefined && obj.id !== null) d.id = obj.id;
+    d.amount       = obj.amount;
+    d.type         = obj.type;
+    d.category_key = obj.categoryKey;
+    d.account_id   = obj.accountId || null;
+    d.party_id     = obj.partyId || null;
+    d.party_name   = obj.partyId ? null : (obj.party || null);
+    d.date         = obj.date;
+    d.is_late      = obj.isLate || false;
+    d.notes        = obj.notes || null;
+    d.tags         = obj.tags || null;
+    d.file_id      = obj.fileId || null;
+    // academic_year e academic_month são gerados automaticamente pelo DB
+    return d;
+  }
+  if(store==='cats'){
+    const d = { key:obj.key, label:obj.label, color:obj.color, system:obj.system||false };
+    if(obj.id) d.id = obj.id;
+    if(obj.iconKey !== undefined) d.icon_key = obj.iconKey;
+    if(obj.parentId !== undefined) d.parent_id = obj.parentId || null;
+    if(obj.sortOrder !== undefined) d.sort_order = obj.sortOrder;
+    return d;
+  }
+  if(store==='accounts'){
+    const d = { name:obj.name, type:obj.type||'checking' };
+    if(obj.id) d.id = obj.id;
+    if(obj.iconKey !== undefined) d.icon_key = obj.iconKey || null;
+    if(obj.emoji !== undefined) d.icon_emoji = obj.emoji || null;
+    if(obj.color !== undefined) d.color = obj.color || null;
+    if(obj.sortOrder !== undefined) d.sort_order = obj.sortOrder || 0;
+    return d;
+  }
+  if(store==='parties'){
+    const d = { name:obj.name, emoji:obj.emoji||'👤', type:obj.type||'beneficiary' };
+    if(obj.id) d.id = obj.id;
+    if(obj.sortOrder !== undefined) d.sort_order = obj.sortOrder || 0;
+    return d;
+  }
+  if(store==='ai_files'){
+    const d = { name:obj.name, size:obj.size, mime_type:obj.type, ext:obj.ext, data_b64:obj.data };
+    if(obj.id) d.id = obj.id;
+    return d;
+  }
+  return obj;
+}
+
+async function dbAll(store){
+  const sb = getSB();
+  const tbl = _tbl(store);
+  let query = sb.from(tbl).select('*');
+  if(store==='txs') query = query.order('date', {ascending:false}).order('id', {ascending:false});
+  else if(store==='cats') query = query.order('sort_order').order('id');
+  else if(store==='accounts') query = query.order('sort_order').order('id');
+  else if(store==='parties') query = query.order('sort_order').order('name');
+  const { data, error } = await query;
+  if(error){ console.error('dbAll error:', store, error); return []; }
+  return (data||[]).map(r => _toApp(store, r));
+}
+
+async function dbGet(store, id){
+  const sb = getSB();
+  const { data, error } = await sb.from(_tbl(store)).select('*').eq('id', id).single();
+  if(error){ console.error('dbGet error:', error); return null; }
+  return _toApp(store, data);
+}
+
+async function dbPut(store, obj){
+  const sb = getSB();
+  const row = _toDb(store, obj);
+  if(row.id){
+    // Update
+    const id = row.id; delete row.id;
+    const { data, error } = await sb.from(_tbl(store)).update(row).eq('id', id).select().single();
+    if(error) throw error;
+    return id;
+  } else {
+    // Insert
+    const { data, error } = await sb.from(_tbl(store)).insert(row).select().single();
+    if(error) throw error;
+    return data.id;
+  }
+}
+
+async function dbDel(store, id){
+  const sb = getSB();
+  const { error } = await sb.from(_tbl(store)).delete().eq('id', id);
+  if(error) throw error;
+}
+
+async function dbClear(store){
+  const sb = getSB();
+  const { error } = await sb.from(_tbl(store)).delete().neq('id', 0);
+  if(error) throw error;
+}
+
+async function openDB(){ /* no-op com Supabase */ }
+
+/* ─── INDICADOR DE CONEXÃO ─── */
+let _sbConnected = false;
+async function checkSupabaseConnection(){
+  try{
+    const { data, error } = await getSB().from('categories').select('id').limit(1);
+    _sbConnected = !error;
+    const ind = document.getElementById('sb-status');
+    if(ind){
+      ind.textContent = _sbConnected ? '🟢 Online' : '🔴 Offline';
+      ind.title = _sbConnected ? 'Conectado ao Supabase' : 'Erro de conexão';
+    }
+    if(!_sbConnected) toast('⚠️ Configure as credenciais Supabase nas configurações', 5000);
+  }catch(e){
+    _sbConnected = false;
+    toast('⚠️ Supabase não configurado. Edite as credenciais no código.', 6000);
+  }
+}
+
+let db; // mantido por compatibilidade (não usado com Supabase)
+function openDB_legacy(){ return Promise.resolve(); }
 const dbAll   = s     => new Promise((res,rej) => { const r=db.transaction(s,'readonly').objectStore(s).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
 const dbGet   = (s,k) => new Promise((res,rej) => { const r=db.transaction(s,'readonly').objectStore(s).get(k); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
 const dbPut   = (s,v) => new Promise((res,rej) => { const r=db.transaction(s,'readwrite').objectStore(s).put(v); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
@@ -1074,8 +1312,34 @@ const $      = id => document.getElementById(id);
 const isFuture = iso => iso && iso > TODAY;
 
 function toast(msg, ms=2800){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),ms); }
-function catInfo(k){ return S.cats.find(c=>c.key===k)||{key:k,label:k,color:'#8E8E93'}; }
-function catEmoji(k){ return {alimentacao:'🍔',compras:'🛍️',saude:'🏥',habitacao:'🏠',lazer:'🎭',servicos:'🔧',tarifas:'📱',impostos:'🏛️',viagens:'✈️',criancas:'👶',reembolsaveis:'↩️'}[k]||'📌'; }
+function catInfo(k){ 
+  if(!k) return {key:'',label:'—',color:'#8E8E93',iconKey:'📌'};
+  const cat = S.cats.find(c=>c.key===k);
+  if(cat) return cat;
+  // fallback padrão
+  return {key:k,label:k,color:'#8E8E93',iconKey:'📌'};
+}
+const DEFAULT_CAT_EMOJI = {alimentacao:'🍔',compras:'🛍️',saude:'🏥',habitacao:'🏠',lazer:'🎭',servicos:'🔧',tarifas:'📱',impostos:'🏛️',viagens:'✈️',criancas:'👶',reembolsaveis:'↩️'};
+function catEmoji(k){
+  const cat = S.cats.find(c=>c.key===k);
+  if(cat && cat.iconKey) return cat.iconKey;
+  return DEFAULT_CAT_EMOJI[k]||'📌';
+}
+
+function openCatSheet(){
+  // Preencher select de categorias pai
+  const sel = $('nc-parent'); if(!sel) return;
+  sel.innerHTML = '<option value="">— Categoria raiz —</option>';
+  S.cats.filter(c=>!c.parentId).forEach(c=>{
+    const o = document.createElement('option');
+    o.value = c.key; o.textContent = (c.iconKey||'') + ' ' + c.label;
+    sel.appendChild(o);
+  });
+  $('nc-key').value=''; $('nc-label').value=''; $('nc-icon').value=''; $('nc-color').value='#3B5BDB';
+  $('nc-parent').value='';
+  $('cat-sheet').classList.add('open');
+}
+
 function closeSheet(id){ $(id).classList.remove('open'); }
 
 function partyLabel(tx){
@@ -1808,6 +2072,7 @@ async function resetForm(){
     $('f-date').value=TODAY;
     await refreshPartySelect();
     await refreshAccountSelect();
+    await refreshCatSelect();
     if(S.cats.length) $('f-cat').value=S.cats[0].key;
   }
 }
@@ -1818,7 +2083,8 @@ async function editTx(id){
   const r=rows.find(r=>r.id===id); if(!r)return;
   $('f-id').value=r.id; $('f-val').value=r.amount;
   $('f-type').value=r.type; onTypeChange();
-  $('f-cat').value=r.categoryKey;
+  await refreshCatSelect();
+  $('f-cat').value=r.categoryKey||'';
   $('f-date').value=r.date;
   $('f-notes').value=r.notes||''; $('f-tags').value=r.tags||'';
   setTimeout(()=>setStatus(r.isLate?'pending':'confirmed'),0);
@@ -2281,13 +2547,20 @@ async function renderCfg(){
   S.cats=cats; S.parties=parties; S.accounts=accounts;
   const years=[...new Set(rows.map(r=>txYear(r)))].filter(Boolean).sort((a,b)=>a-b);
 
-  const acctTypeLabel={checking:'Conta Corrente',savings:'Poupança',credit:'Cartão de Crédito',investment:'Investimento',cash:'Dinheiro',wallet:'Carteira Digital'};
+  const acctTypeLabel={credit_card:'Cartão de Crédito',checking:'Conta Corrente',cash:'Dinheiro',investment:'Investimentos',savings:'Poupança',wallet:'Carteira Digital'};
   $('account-list-wrap').innerHTML=S.accounts.length
-    ? S.accounts.map(a=>`<div class="list-row">
-        <div class="list-icon" style="background:var(--accent-l);font-size:18px">${a.emoji||'🏦'}</div>
-        <div class="list-body"><div class="list-name">${a.name}</div><div class="tx-sub">${acctTypeLabel[a.type]||a.type||'Conta'}</div></div>
+    ? S.accounts.map(a=>{
+        const ic = (a.iconKey && BANK_ICONS[a.iconKey]) ? BANK_ICONS[a.iconKey] : (a.emoji||'🏦');
+        const typeLabel = acctTypeLabel[a.type]||a.type||'Conta';
+        const typeColor = {credit_card:'var(--red)',checking:'var(--accent)',cash:'var(--green)',investment:'var(--violet)'}[a.type]||'var(--t-3)';
+        return `<div class="list-row">
+        <div class="list-icon" style="background:var(--accent-l);font-size:20px">${ic}</div>
+        <div class="list-body">
+          <div class="list-name">${a.name}</div>
+          <div class="tx-sub"><span style="color:${typeColor};font-weight:500">${typeLabel}</span></div>
+        </div>
         <button onclick="openAccountSheet(${a.id})" style="border:none;background:none;color:var(--accent);font-size:17px;padding:6px 10px;cursor:pointer">✏️</button>
-      </div>`).join('')
+      </div>`;}).join('')
     : '<div style="padding:14px 16px;font-size:14px;color:var(--t-3)">Nenhuma conta cadastrada</div>';
 
   $('party-list-wrap').innerHTML=S.parties.length
@@ -2298,23 +2571,44 @@ async function renderCfg(){
       </div>`).join('')
     : '<div style="padding:14px 16px;font-size:14px;color:var(--t-3)">Nenhum beneficiário cadastrado</div>';
 
-  $('cat-list-wrap').innerHTML=cats.length
-    ? cats.map(c=>`<div class="list-row" id="cat-row-${c.key}">
+  // Renderiza categorias com suporte a hierarquia (pai > filhos)
+  const rootCats = cats.filter(c=>!c.parentId);
+  const subCats  = cats.filter(c=> c.parentId);
+  const catRows = [];
+  rootCats.forEach(c=>{
+    const icon = c.iconKey || '📌';
+    const subs = subCats.filter(s=>s.parentId===c.id);
+    catRows.push(`<div class="list-row" id="cat-row-${c.key}">
         <label title="Alterar cor" style="cursor:pointer;position:relative;flex-shrink:0">
-          <div class="list-icon" style="background:${c.color}1A;border:2px solid ${c.color};transition:transform .15s" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform=''">
-            <div style="width:14px;height:14px;border-radius:4px;background:${c.color}"></div>
-          </div>
+          <div class="list-icon" style="background:${c.color}1A;border:2px solid ${c.color};font-size:16px;transition:transform .15s" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform=''">${icon}</div>
           <input type="color" value="${c.color}" title="Alterar cor"
             style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"
             oninput="previewCatColor('${c.key}',this.value)"
             onchange="saveCatColor('${c.key}',this.value)">
         </label>
         <div class="list-body">
-          <div class="list-name">${c.label}${c.system?'<span style="font-size:10px;color:var(--t-4);background:var(--fill);border-radius:6px;padding:2px 6px;margin-left:6px;font-weight:400">sistema</span>':''}</div>
+          <div class="list-name">${c.label}${c.system?'<span style="font-size:10px;color:var(--t-4);background:var(--fill);border-radius:6px;padding:2px 6px;margin-left:6px;font-weight:400">sistema</span>':''}${subs.length?'<span style="font-size:10px;color:var(--accent);background:var(--accent-l);border-radius:6px;padding:2px 6px;margin-left:6px">'+subs.length+' sub</span>':''}</div>
           <div class="tx-sub" style="font-family:var(--mono)">${c.color}</div>
         </div>
         ${!c.system?`<button onclick="delCat('${c.key}')" style="border:none;background:none;color:var(--red);font-size:17px;padding:6px 10px;cursor:pointer">🗑</button>`:''}
-      </div>`).join('')
+      </div>`);
+    subs.forEach(s=>{
+      catRows.push(`<div class="list-row" id="cat-row-${s.key}" style="padding-left:28px;background:var(--bg-2)">
+        <label title="Alterar cor" style="cursor:pointer;position:relative;flex-shrink:0">
+          <div class="list-icon" style="background:${s.color}1A;border:1px dashed ${s.color};font-size:14px;width:28px;height:28px">${s.iconKey||'↳'}</div>
+          <input type="color" value="${s.color}" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"
+            oninput="previewCatColor('${s.key}',this.value)" onchange="saveCatColor('${s.key}',this.value)">
+        </label>
+        <div class="list-body">
+          <div class="list-name" style="font-size:13px">↳ ${s.label}</div>
+          <div class="tx-sub" style="font-family:var(--mono)">${s.color}</div>
+        </div>
+        <button onclick="delCat('${s.key}')" style="border:none;background:none;color:var(--red);font-size:15px;padding:6px 8px;cursor:pointer">🗑</button>
+      </div>`);
+    });
+  });
+  $('cat-list-wrap').innerHTML = catRows.length
+    ? catRows.join('')
     : '<div style="padding:14px 16px;font-size:14px;color:var(--t-3)">Nenhuma categoria</div>';
 
   $('stat-count').textContent=rows.length+' transações';
@@ -2329,40 +2623,183 @@ async function renderCfg(){
 
 /* ─── SEED DATA ─── */
 async function seedIfEmpty(){
-  const existing = await dbAll('txs');
-  if(existing.length) return;
+  // Com Supabase, o seed é feito pelo SQL script.
+  // Esta função só garante que as categorias padrão existam se o DB estiver vazio.
+  try {
+    const existing = await dbAll('cats');
+    if(existing.length) return;
+    const DEFAULT_CATS = [
+      {key:'alimentacao',   label:'Alimentação',   color:'#F97316', iconKey:'🍔', system:true, sortOrder:1},
+      {key:'compras',       label:'Compras',        color:'#3B82F6', iconKey:'🛍️',system:true, sortOrder:2},
+      {key:'saude',         label:'Saúde',          color:'#EF4444', iconKey:'🏥', system:true, sortOrder:3},
+      {key:'habitacao',     label:'Habitação',      color:'#8B5CF6', iconKey:'🏠', system:true, sortOrder:4},
+      {key:'lazer',         label:'Lazer',          color:'#EC4899', iconKey:'🎭', system:true, sortOrder:5},
+      {key:'servicos',      label:'Serviços',       color:'#14B8A6', iconKey:'🔧', system:true, sortOrder:6},
+      {key:'tarifas',       label:'Tarifas',        color:'#F59E0B', iconKey:'📱', system:true, sortOrder:7},
+      {key:'impostos',      label:'Impostos',       color:'#6366F1', iconKey:'🏛️',system:true, sortOrder:8},
+      {key:'viagens',       label:'Viagens',        color:'#06B6D4', iconKey:'✈️', system:true, sortOrder:9},
+      {key:'criancas',      label:'Crianças',       color:'#A855F7', iconKey:'👶', system:true, sortOrder:10},
+      {key:'reembolsaveis', label:'Reembolsáveis',  color:'#22C55E', iconKey:'↩️', system:true, sortOrder:11},
+    ];
+    for(const cat of DEFAULT_CATS) await dbPut('cats', cat).catch(()=>{});
+  } catch(e){ console.warn('seedIfEmpty:', e); }
+}
 
-  const mk = obj => ({...obj, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()});
-  const now = new Date();
-  const yr = now.getFullYear();
-  const mo = now.getMonth()+1;
 
-  // Categorias
-  const cats = [
-    {key:'alimentacao',  label:'Alimentação',   color:'#F97316', system:true},
-    {key:'compras',      label:'Compras',        color:'#3B82F6', system:true},
-    {key:'saude',        label:'Saúde',          color:'#EF4444', system:true},
-    {key:'habitacao',    label:'Habitação',      color:'#8B5CF6', system:true},
-    {key:'lazer',        label:'Lazer',          color:'#EC4899', system:true},
-    {key:'servicos',     label:'Serviços',       color:'#14B8A6', system:true},
-    {key:'tarifas',      label:'Tarifas',        color:'#F59E0B', system:true},
-    {key:'impostos',     label:'Impostos',       color:'#6366F1', system:true},
-    {key:'viagens',      label:'Viagens',        color:'#06B6D4', system:true},
-    {key:'criancas',     label:'Crianças',       color:'#A855F7', system:true},
-    {key:'reembolsaveis',label:'Reembolsáveis',  color:'#22C55E', system:true},
-  ];
-  for(const cat of cats) await dbPut('cats', cat);
+/* ─── CATS CRUD ─── */
+async function loadCats(){
+  S.cats = await dbAll('cats');
+  // Construir CAT_ORDER dinamicamente a partir do banco
+  const rootCats = S.cats.filter(c=>!c.parentId);
+  if(rootCats.length) {
+    window.CAT_ORDER = rootCats.map(c=>c.key);
+    window.CAT_PAID  = [...window.CAT_ORDER];
+  }
+}
 
-  // Contas
-  const contaId  = await dbPut('accounts', mk({name:'Nubank',      emoji:'💜', type:'checking'}));
-  const creditId = await dbPut('accounts', mk({name:'Cartão Inter', emoji:'🟠', type:'credit'}));
-  const cashId   = await dbPut('accounts', mk({name:'Carteira',     emoji:'👜', type:'cash'}));
+async function refreshCatSelect(){
+  await loadCats();
+  const sel = $('f-cat'); if(!sel) return;
+  const cur = sel.value; sel.innerHTML = '';
+  const rootCats = S.cats.filter(c=>!c.parentId);
+  rootCats.forEach(cat => {
+    const sub = S.cats.filter(c=>c.parentId === cat.id);
+    if(sub.length){
+      const grp = document.createElement('optgroup');
+      grp.label = (cat.iconKey||'') + ' ' + cat.label;
+      sub.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.key;
+        o.textContent = '  ↳ ' + s.label;
+        grp.appendChild(o);
+      });
+      // Adicionar a própria categoria raiz como opção
+      const oRoot = document.createElement('option');
+      oRoot.value = cat.key;
+      oRoot.textContent = (cat.iconKey||'') + ' ' + cat.label;
+      sel.appendChild(oRoot);
+      sel.appendChild(grp);
+    } else {
+      const o = document.createElement('option');
+      o.value = cat.key;
+      o.textContent = (cat.iconKey||'') + ' ' + cat.label;
+      sel.appendChild(o);
+    }
+  });
+  if(cur) sel.value = cur;
+}
 
-  // Beneficiários
-  await dbPut('parties', mk({name:'Supermercado', emoji:'🛒'}));
-  await dbPut('parties', mk({name:'iFood',         emoji:'🍕'}));
+async function saveCat(){
+  const key   = $('nc-key').value.trim().replace(/\s+/g,'_').toLowerCase();
+  const label = $('nc-label').value.trim();
+  const color = $('nc-color').value;
+  const icon  = $('nc-icon').value.trim();
+  const parentKey = $('nc-parent').value;
+  if(!key || !label){ toast('⚠️ Preencha chave e nome'); return; }
+  if(S.cats.find(c=>c.key===key)){ toast('⚠️ Chave já existe'); return; }
+  const parentCat = parentKey ? S.cats.find(c=>c.key===parentKey) : null;
+  await dbPut('cats', {
+    key, label, color,
+    iconKey: icon || null,
+    parentId: parentCat ? parentCat.id : null,
+    system: false,
+    sortOrder: S.cats.length + 1
+  });
+  toast('✅ Categoria criada!');
+  closeSheet('cat-sheet');
+  await loadCats(); await refreshCatSelect(); renderCfg();
+}
 
-  // Sem transações de exemplo — app começa em branco
+async function delCat(key){
+  const cat = S.cats.find(c=>c.key===key);
+  if(!cat || cat.system){ toast('⚠️ Categoria do sistema não pode ser removida'); return; }
+  const hasSub = S.cats.filter(c=>c.parentId===cat.id);
+  if(hasSub.length && !confirm(`Esta categoria tem ${hasSub.length} subcategorias. Excluir mesmo assim?`)) return;
+  if(!confirm('Excluir esta categoria?')) return;
+  await dbDel('cats', cat.id);
+  toast('🗑 Categoria removida');
+  await loadCats(); await refreshCatSelect(); renderCfg();
+}
+
+async function previewCatColor(key, color){
+  const row = $('cat-row-'+key);
+  if(row){ const icon=row.querySelector('.list-icon'); if(icon){ icon.style.background=color+'1A'; icon.style.borderColor=color; } }
+}
+
+async function saveCatColor(key, color){
+  const cat = S.cats.find(c=>c.key===key); if(!cat) return;
+  await dbPut('cats', {...cat, color});
+  S.cats = S.cats.map(c=>c.key===key?{...c,color}:c);
+  const row=$('cat-row-'+key);
+  if(row){ const code=row.querySelector('.tx-sub'); if(code) code.textContent=color; }
+  toast('✅ Cor atualizada');
+}
+
+/* ─── BACKUP / RESTORE ─── */
+async function exportJSON(){
+  try {
+    toast('⏳ Exportando dados…');
+    const [txs, cats, parties, accounts] = await Promise.all([
+      dbAll('txs'), dbAll('cats'), dbAll('parties'), dbAll('accounts')
+    ]);
+    const backup = {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      source: 'supabase',
+      txs, cats, parties, accounts
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financeiro-decio-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+    toast('✅ Backup exportado!');
+  } catch(e){ toast('❌ Erro ao exportar: '+e.message); }
+}
+
+async function importJSON(file){
+  if(!file) return;
+  const msg = $('imp-msg');
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text);
+    if(!backup.txs || !backup.cats){ throw new Error('Arquivo inválido'); }
+    if(!confirm(`Importar ${backup.txs.length} transações? Os dados serão mesclados.`)) return;
+    toast('⏳ Importando…');
+    let count = 0;
+    for(const cat of (backup.cats||[])){
+      try { await dbPut('cats', cat); } catch(e){}
+    }
+    for(const acc of (backup.accounts||[])){
+      try { await dbPut('accounts', acc); } catch(e){}
+    }
+    for(const p of (backup.parties||[])){
+      try { await dbPut('parties', p); } catch(e){}
+    }
+    for(const tx of (backup.txs||[])){
+      try { delete tx.id; await dbPut('txs', tx); count++; } catch(e){}
+    }
+    if(msg){ msg.style.display='block'; msg.style.background='var(--green-l)'; msg.style.color='var(--green)'; msg.textContent=`✅ ${count} transações importadas!`; }
+    toast(`✅ ${count} transações importadas!`);
+    await initYearFilter(); renderDash();
+  } catch(e){
+    if(msg){ msg.style.display='block'; msg.style.background='var(--red-l)'; msg.style.color='var(--red)'; msg.textContent='❌ Erro: '+e.message; }
+    toast('❌ Erro: '+e.message);
+  }
+}
+
+async function clearAll(){
+  if(!confirm('Apagar TODOS os dados? Esta ação não pode ser desfeita.')) return;
+  if(!confirm('Tem certeza? Todos os lançamentos, categorias e contas serão excluídos.')) return;
+  try {
+    toast('⏳ Apagando…');
+    await dbClear('txs');
+    toast('✅ Dados apagados!');
+    S.editId=null;
+    await initYearFilter(); renderDash();
+  } catch(e){ toast('❌ Erro: '+e.message); }
 }
 
 /* ─── ACCOUNTS CRUD ─── */
@@ -2380,10 +2817,33 @@ async function refreshAccountSelect(){
 function acctLabel(tx){
   if(!tx.accountId) return '—';
   const a=S.accounts.find(a=>Number(a.id)===Number(tx.accountId));
-  return a?(a.emoji||'🏦')+' '+a.name:'Conta #'+tx.accountId;
+  if(!a) return 'Conta #'+tx.accountId;
+  const ic = (a.iconKey && BANK_ICONS[a.iconKey]) ? BANK_ICONS[a.iconKey] : (a.emoji||'🏦');
+  return ic+' '+a.name;
 }
 
 const ACCT_EMOJI_SET=['🏦','💳','💜','🟠','🟡','🟢','🔵','🟣','💰','💵','🏧','👜','📱','🏢','⭐','🌟','🔑'];
+
+// Mapa de ícones de bancos: chave → emoji
+const BANK_ICONS = {
+  nubank:'💜', itau:'🟠', bradesco:'🔴', santander:'🔴', inter:'🟠',
+  bb:'🟡', caixa:'🔵', c6:'⚫', xp:'🟢', picpay:'🟢', neon:'🔵', sicoob:'🟢',
+  bnp:'🟢', ca:'🟢', sg:'🔴', lbp:'🟡', boursorama:'🔵', lcl:'🔵', bpce:'🔵', cic:'🔴', hsbc:'🔴',
+  revolut:'⚫', wise:'🔵', paypal:'🔵', cash:'💵'
+};
+
+function onAccountIconChange(){
+  const key = $('as-icon-key').value;
+  if(key && BANK_ICONS[key]){
+    $('as-emoji').value = BANK_ICONS[key];
+    $('as-emoji-preview').textContent = BANK_ICONS[key];
+    const custBtn = $('as-custom-emoji-btn');
+    if(custBtn) custBtn.style.display='none';
+  } else {
+    const custBtn = $('as-custom-emoji-btn');
+    if(custBtn) custBtn.style.display='';
+  }
+}
 
 function toggleAccountEmojiPicker(){
   const ep=$('account-emoji-picker');
@@ -2419,12 +2879,14 @@ async function openAccountSheet(editId){
       $('as-type').value=a.type||'checking';
       $('as-emoji').value=a.emoji||'🏦';
       $('as-emoji-preview').textContent=a.emoji||'🏦';
+      if($('as-icon-key')) $('as-icon-key').value=a.iconKey||'';
     } else { toast('⚠️ Conta não encontrada'); return; }
   } else {
     $('as-name').value='';
     $('as-type').value='checking';
     $('as-emoji').value='🏦';
     $('as-emoji-preview').textContent='🏦';
+    if($('as-icon-key')) $('as-icon-key').value='';
   }
   $('account-sheet').classList.add('open');
 }
@@ -2434,9 +2896,10 @@ async function saveAccount(){
   if(!name){ toast('⚠️ Informe o nome da conta'); return; }
   const emoji=$('as-emoji').value||'🏦';
   const type=$('as-type').value;
+  const iconKey=$('as-icon-key')?$('as-icon-key').value||null:null;
   const rawId=$('as-id').value;
   const editId=rawId?Number(rawId):null;
-  const rec={name,emoji,type,updatedAt:new Date().toISOString()};
+  const rec={name,emoji,type,iconKey,updatedAt:new Date().toISOString()};
   if(editId) rec.id=editId;
   else rec.createdAt=new Date().toISOString();
   await dbPut('accounts',rec);
@@ -2511,11 +2974,13 @@ if('serviceWorker'in navigator) navigator.serviceWorker.register('./sw.js').catc
 
 /* ─── BOOT ─── */
 async function boot(){
-  // Auth gate — show lock screen if not authenticated this session
+  // Auth gate
   if(sessionStorage.getItem('fd-auth')==='1'){
     $('lock-screen').style.display='none';
   }
-  // App init (runs behind lock screen, ready when unlocked)
+  // Verificar conexão Supabase
+  await checkSupabaseConnection();
+  // App init
   await openDB();
   await seedIfEmpty();
   await loadCats();
