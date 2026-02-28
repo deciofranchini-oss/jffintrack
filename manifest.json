@@ -1,0 +1,49 @@
+{
+  "name": "Controle Financeiro do Décio",
+  "short_name": "Fin. Décio",
+  "description": "Gerenciamento de pagamentos pessoais do Décio e da Bruna",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAFAF9",
+  "theme_color": "#3B5BDB",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Nova Transação",
+      "short_name": "Nova",
+      "description": "Adicionar novo lançamento",
+      "url": "./index.html#add",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Início",
+      "description": "Ver o dashboard",
+      "url": "./index.html#dash",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
+    }
+  ]
+}
