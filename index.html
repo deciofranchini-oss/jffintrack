@@ -519,6 +519,102 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
   font-size: .78rem; cursor: pointer; transition: box-shadow .15s;
 }
 .payee-summary-chip:hover { box-shadow: var(--shadow); }
+
+/* ─── SCHEDULED TRANSACTIONS ─── */
+.sc-recurrence-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px; margin-top: 6px;
+}
+.sc-freq-opt {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer; font-size: .82rem;
+  transition: all .14s; user-select: none;
+}
+.sc-freq-opt:has(input:checked) {
+  border-color: var(--accent); background: var(--accent-lt); color: var(--accent); font-weight: 600;
+}
+.sc-freq-opt input[type=radio] { display: none; }
+
+.sc-end-grid {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;
+}
+.sc-end-opt {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer; font-size: .82rem;
+  transition: all .14s; user-select: none;
+}
+.sc-end-opt:has(input:checked) {
+  border-color: var(--accent); background: var(--accent-lt); color: var(--accent); font-weight: 600;
+}
+.sc-end-opt input[type=radio] { display: none; }
+
+.sc-preview {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 10px 14px;
+  font-size: .8rem; color: var(--muted); min-height: 36px;
+  line-height: 1.6;
+}
+.sc-preview strong { color: var(--accent); }
+.sc-preview .sc-dates { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.sc-preview .sc-date-chip {
+  background: var(--accent-lt); color: var(--accent);
+  border-radius: 100px; padding: 2px 8px; font-size: .72rem; font-weight: 500;
+}
+
+/* Scheduled list cards */
+.sc-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); margin-bottom: 10px;
+  box-shadow: var(--shadow-sm); overflow: hidden;
+  transition: box-shadow .15s;
+}
+.sc-card:hover { box-shadow: var(--shadow); }
+.sc-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; cursor: pointer;
+}
+.sc-card-type {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.sc-card-info { flex: 1; min-width: 0; }
+.sc-card-title { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-card-sub { font-size: .75rem; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sc-card-amount { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; flex-shrink: 0; }
+.sc-card-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
+.sc-card-body { display: none; border-top: 1px solid var(--border); }
+.sc-card-body.open { display: block; }
+.sc-occurrences { padding: 12px 16px; }
+.sc-occ-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: .83rem;
+}
+.sc-occ-row:last-child { border-bottom: none; }
+.sc-occ-date { color: var(--muted); min-width: 80px; flex-shrink: 0; }
+.sc-occ-label { flex: 1; color: var(--text2); }
+.sc-occ-status { flex-shrink: 0; }
+.sc-status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 100px;
+  font-size: .7rem; font-weight: 600; white-space: nowrap;
+}
+.sc-status-active   { background: var(--green-lt); color: var(--green); border: 1px solid rgba(42,122,74,.2); }
+.sc-status-paused   { background: var(--amber-lt); color: var(--amber); border: 1px solid rgba(180,83,9,.2); }
+.sc-status-finished { background: var(--bg2); color: var(--muted); border: 1px solid var(--border); }
+.sc-status-overdue  { background: var(--red-lt); color: var(--red); border: 1px solid rgba(192,57,43,.2); }
+
+.sc-next-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 100px;
+  font-size: .7rem; font-weight: 600;
+  background: var(--amber-lt); color: var(--amber);
+  border: 1px solid rgba(180,83,9,.2);
+}
+.sc-upcoming-row-overdue td { background: var(--red-lt)!important; }
 </style>
 </head>
 <body>
@@ -558,6 +654,10 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
       <div class="nav-label">Análise</div>
       <button class="nav-item" onclick="navigate('reports')"><span class="ni-icon">📈</span>Relatórios</button>
       <button class="nav-item" onclick="navigate('budgets')"><span class="ni-icon">🎯</span>Orçamentos</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Planejamento</div>
+      <button class="nav-item" onclick="navigate('scheduled')"><span class="ni-icon">📅</span>Programados</button>
     </div>
     <div class="nav-section">
       <div class="nav-label">Cadastros</div>
@@ -707,6 +807,185 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
       <div id="payeeGroups"></div>
     </div>
 
+    <!-- SCHEDULED TRANSACTIONS -->
+    <div class="page" id="page-scheduled">
+      <div class="section-header mb-6">
+        <span class="section-title">Transações Programadas</span>
+        <button class="btn btn-primary" onclick="openScheduledModal()">+ Programar</button>
+      </div>
+
+      <!-- Status summary bar -->
+      <div id="scheduledSummaryBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+      <!-- Filter bar -->
+      <div class="filters mb-6" style="flex-wrap:wrap">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="scSearch" placeholder="Buscar..." oninput="filterScheduled()">
+        </div>
+        <select id="scStatusFilter" onchange="filterScheduled()" style="max-width:160px">
+          <option value="">Todos os status</option>
+          <option value="active">Ativos</option>
+          <option value="paused">Pausados</option>
+          <option value="finished">Concluídos</option>
+        </select>
+        <select id="scTypeFilter" onchange="filterScheduled()" style="max-width:140px">
+          <option value="">Todos os tipos</option>
+          <option value="expense">Despesas</option>
+          <option value="income">Receitas</option>
+        </select>
+      </div>
+
+      <!-- Upcoming next 30 days alert -->
+      <div id="scheduledUpcomingCard" style="display:none" class="card mb-6">
+        <div class="card-header">
+          <span class="card-title">⏰ Próximos 30 dias</span>
+          <span id="scheduledUpcomingTotal" class="badge badge-amber"></span>
+        </div>
+        <div class="table-wrap" style="margin:0 -20px -20px">
+          <table>
+            <thead><tr><th>Data</th><th>Descrição</th><th>Conta</th><th>Valor</th><th>Ação</th></tr></thead>
+            <tbody id="scheduledUpcomingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Main list -->
+      <div id="scheduledList"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SCHEDULED TRANSACTION MODAL -->
+<div class="modal-overlay" id="scheduledModal">
+  <div class="modal" style="max-width:580px"><div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="scheduledModalTitle">Programar Transação</span>
+      <button class="modal-close" onclick="closeModal('scheduledModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="scId">
+      <div class="tab-bar mb-4">
+        <button class="tab active" onclick="setScType('expense')">Despesa</button>
+        <button class="tab" onclick="setScType('income')">Receita</button>
+      </div>
+      <input type="hidden" id="scTypeField" value="expense">
+
+      <div class="form-grid">
+        <!-- Basic info -->
+        <div class="form-group full"><label>Descrição *</label><input type="text" id="scDesc" placeholder="Ex: Aluguel, Salário..."></div>
+        <div class="form-group"><label>Valor *</label><input type="number" id="scAmount" step="0.01" min="0" placeholder="0,00" inputmode="decimal"></div>
+        <div class="form-group"><label>Conta *</label><select id="scAccountId"></select></div>
+        <div class="form-group" id="scPayeeGroup" style="position:relative">
+          <label>Beneficiário / Fonte</label>
+          <input type="hidden" id="scPayeeId">
+          <div class="payee-input-wrap">
+            <input type="text" id="scPayeeName" placeholder="Buscar ou criar..." autocomplete="off"
+              oninput="onPayeeInput(this.value,'sc')" onblur="onPayeeBlur('sc')" onkeydown="onPayeeKey(event,'sc')">
+            <span id="scPayeeStatus" class="payee-status"></span>
+          </div>
+          <div id="scPayeeDropdown" class="payee-dropdown" style="display:none"></div>
+        </div>
+        <div class="form-group"><label>Categoria</label><select id="scCategoryId"><option value="">— Sem categoria —</option></select></div>
+        <div class="form-group"><label>Tags</label><input type="text" id="scTags" placeholder="IR, Décio, ..."></div>
+
+        <!-- Divider -->
+        <div class="full" style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">
+          <span style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Agendamento</span>
+        </div>
+
+        <!-- Scheduling -->
+        <div class="form-group"><label>Primeira data *</label><input type="date" id="scStartDate"></div>
+        <div class="form-group"><label>Status</label>
+          <select id="scStatus">
+            <option value="active">Ativo</option>
+            <option value="paused">Pausado</option>
+          </select>
+        </div>
+
+        <!-- Recurrence -->
+        <div class="form-group full">
+          <label>Recorrência</label>
+          <div class="sc-recurrence-grid">
+            <label class="sc-freq-opt" data-freq="once"><input type="radio" name="scFreq" value="once" checked> <span>Uma vez</span></label>
+            <label class="sc-freq-opt" data-freq="weekly"><input type="radio" name="scFreq" value="weekly"> <span>Semanal</span></label>
+            <label class="sc-freq-opt" data-freq="biweekly"><input type="radio" name="scFreq" value="biweekly"> <span>Quinzenal</span></label>
+            <label class="sc-freq-opt" data-freq="monthly"><input type="radio" name="scFreq" value="monthly"> <span>Mensal</span></label>
+            <label class="sc-freq-opt" data-freq="bimonthly"><input type="radio" name="scFreq" value="bimonthly"> <span>Bimestral</span></label>
+            <label class="sc-freq-opt" data-freq="quarterly"><input type="radio" name="scFreq" value="quarterly"> <span>Trimestral</span></label>
+            <label class="sc-freq-opt" data-freq="semiannual"><input type="radio" name="scFreq" value="semiannual"> <span>Semestral</span></label>
+            <label class="sc-freq-opt" data-freq="annual"><input type="radio" name="scFreq" value="annual"> <span>Anual</span></label>
+            <label class="sc-freq-opt" data-freq="custom"><input type="radio" name="scFreq" value="custom"> <span>Personalizado</span></label>
+          </div>
+        </div>
+
+        <!-- Custom interval (shown only for custom) -->
+        <div class="form-group" id="scCustomIntervalGroup" style="display:none">
+          <label>A cada</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="number" id="scCustomInterval" min="1" value="1" style="width:70px" inputmode="numeric">
+            <select id="scCustomUnit" style="flex:1">
+              <option value="days">dias</option>
+              <option value="weeks">semanas</option>
+              <option value="months" selected>meses</option>
+              <option value="years">anos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- End condition (hidden for "once") -->
+        <div class="form-group full" id="scEndGroup" style="display:none">
+          <label>Término</label>
+          <div class="sc-end-grid">
+            <label class="sc-end-opt"><input type="radio" name="scEnd" value="forever" checked> Indefinido</label>
+            <label class="sc-end-opt"><input type="radio" name="scEnd" value="count"> Nº de vezes</label>
+            <label class="sc-end-opt"><input type="radio" name="scEnd" value="date"> Até a data</label>
+          </div>
+          <div id="scEndCountGroup" style="display:none;margin-top:8px">
+            <input type="number" id="scEndCount" min="1" placeholder="Ex: 12 (parcelas)" inputmode="numeric" style="max-width:160px">
+            <span style="font-size:.78rem;color:var(--muted);margin-left:8px">repetições</span>
+          </div>
+          <div id="scEndDateGroup" style="display:none;margin-top:8px">
+            <input type="date" id="scEndDate">
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="full">
+          <div id="scPreview" class="sc-preview"></div>
+        </div>
+
+        <div class="form-group full"><label>Memo / Observação</label><textarea id="scMemo" rows="2" placeholder="Notas..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('scheduledModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveScheduled()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER OCCURRENCE MODAL -->
+<div class="modal-overlay" id="registerOccModal">
+  <div class="modal" style="max-width:440px"><div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Registrar Ocorrência</span>
+      <button class="modal-close" onclick="closeModal('registerOccModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="registerOccDesc" style="margin-bottom:14px;color:var(--muted);font-size:.875rem"></p>
+      <div class="form-grid">
+        <div class="form-group"><label>Data real *</label><input type="date" id="occDate"></div>
+        <div class="form-group"><label>Valor real *</label><input type="number" id="occAmount" step="0.01" inputmode="decimal"></div>
+        <div class="form-group full"><label>Memo</label><input type="text" id="occMemo" placeholder="Observação desta ocorrência"></div>
+      </div>
+      <input type="hidden" id="occScId">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('registerOccModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmRegisterOccurrence()">Registrar Transação</button>
+    </div>
   </div>
 </div>
 
@@ -716,7 +995,7 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
     <button class="bn-item active" onclick="navigate('dashboard')" data-page="dashboard"><span class="bn-icon">📊</span>Início</button>
     <button class="bn-item" onclick="navigate('transactions')" data-page="transactions"><span class="bn-icon">↕</span>Lançamentos</button>
     <button class="bn-item" onclick="navigate('accounts')" data-page="accounts"><span class="bn-icon">🏦</span>Contas</button>
-    <button class="bn-item" onclick="navigate('reports')" data-page="reports"><span class="bn-icon">📈</span>Relatórios</button>
+    <button class="bn-item" onclick="navigate('scheduled')" data-page="scheduled"><span class="bn-icon">📅</span>Programados</button>
     <button class="bn-item" onclick="openSidebar()" data-page="more"><span class="bn-icon">☰</span>Mais</button>
   </div>
 </nav>
@@ -974,7 +1253,7 @@ async function bootApp(){
   state.txFilter.month=ym;
 }
 
-const pageTitles={dashboard:'Dashboard',transactions:'Transações',accounts:'Contas',reports:'Relatórios',budgets:'Orçamentos',categories:'Categorias',payees:'Beneficiários'};
+const pageTitles={dashboard:'Dashboard',transactions:'Transações',accounts:'Contas',reports:'Relatórios',budgets:'Orçamentos',categories:'Categorias',payees:'Beneficiários',scheduled:'Programados'};
 function navigate(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
@@ -991,6 +1270,7 @@ function navigate(page){
   else if(page==='budgets')loadBudgets();
   else if(page==='categories')renderCategories();
   else if(page==='payees')renderPayees();
+  else if(page==='scheduled')loadScheduled();
 }
 
 async function loadAccounts(){const{data,error}=await sb.from('accounts').select('*').eq('active',true).order('name');if(error){toast(error.message,'error');return;}state.accounts=data||[];}
@@ -1358,10 +1638,10 @@ function toggleTxGroup(k) {
 
 function changePage(dir){state.txPage+=dir;loadTransactions();}
 function openTransactionModal(id=''){resetTxModal();document.getElementById('txDate').value=new Date().toISOString().slice(0,10);document.getElementById('txModalTitle').textContent='Nova Transação';if(id)editTransaction(id);else openModal('txModal');}
-function resetTxModal(){['txId','txDesc','txMemo','txTags','txCheck'].forEach(f=>document.getElementById(f).value='');document.getElementById('txAmount').value='';document.getElementById('txTypeField').value='expense';setTxType('expense');clearPayeeField();hideCatSuggestion();setCatPickerValue(null);}
+function resetTxModal(){['txId','txDesc','txMemo','txTags','txCheck'].forEach(f=>document.getElementById(f).value='');document.getElementById('txAmount').value='';document.getElementById('txTypeField').value='expense';setTxType('expense');clearPayeeField('tx');hideCatSuggestion();setCatPickerValue(null);}
 async function editTransaction(id){
   const{data,error}=await sb.from('transactions').select('*').eq('id',id).single();if(error){toast(error.message,'error');return;}
-  document.getElementById('txId').value=data.id;document.getElementById('txDate').value=data.date;document.getElementById('txAmount').value=Math.abs(data.amount);document.getElementById('txDesc').value=data.description||'';document.getElementById('txAccountId').value=data.account_id||'';setCatPickerValue(data.category_id||null);document.getElementById('txMemo').value=data.memo||'';document.getElementById('txTags').value=(data.tags||[]).join(', ');document.getElementById('txCheck').value=data.check_number||'';setPayeeField(data.payee_id||null);
+  document.getElementById('txId').value=data.id;document.getElementById('txDate').value=data.date;document.getElementById('txAmount').value=Math.abs(data.amount);document.getElementById('txDesc').value=data.description||'';document.getElementById('txAccountId').value=data.account_id||'';setCatPickerValue(data.category_id||null);document.getElementById('txMemo').value=data.memo||'';document.getElementById('txTags').value=(data.tags||[]).join(', ');document.getElementById('txCheck').value=data.check_number||'';setPayeeField(data.payee_id||null,'tx');
   const type=data.is_transfer?'transfer':data.amount>=0?'income':'expense';setTxType(type);if(type==='transfer')document.getElementById('txTransferTo').value=data.transfer_to_account_id||'';
   document.getElementById('txModalTitle').textContent='Editar Transação';openModal('txModal');
 }
@@ -1477,38 +1757,41 @@ const payeeAC = {
   selectedName: null
 };
 
-function clearPayeeField() {
-  document.getElementById('txPayeeId').value = '';
-  document.getElementById('txPayeeName').value = '';
-  document.getElementById('txPayeeStatus').textContent = '';
-  hidePayeeDropdown();
+function clearPayeeField(ctx) {
+  const c = payeeCtx(ctx);
+  if(c.idEl) c.idEl.value = '';
+  if(c.nameEl) c.nameEl.value = '';
+  if(c.statusEl) c.statusEl.textContent = '';
+  hidePayeeDropdown(ctx);
   hidePayeeSimilar();
   payeeAC.selectedId = null;
   payeeAC.selectedName = null;
 }
 
-function setPayeeField(id) {
-  if (!id) { clearPayeeField(); return; }
-  const p = state.payees.find(x => x.id === id);
+function setPayeeField(payeeId, ctx) {
+  if (!payeeId) { clearPayeeField(ctx); return; }
+  const p = state.payees.find(x => x.id === payeeId);
+  const c = payeeCtx(ctx);
   if (p) {
-    document.getElementById('txPayeeId').value = p.id;
-    document.getElementById('txPayeeName').value = p.name;
-    document.getElementById('txPayeeStatus').textContent = '✓';
+    if(c.idEl) c.idEl.value = p.id;
+    if(c.nameEl) c.nameEl.value = p.name;
+    if(c.statusEl) c.statusEl.textContent = '✓';
     payeeAC.selectedId = p.id;
     payeeAC.selectedName = p.name;
-  }
+  } else clearPayeeField(ctx);
 }
 
-function selectPayee(id, name) {
-  document.getElementById('txPayeeId').value = id;
-  document.getElementById('txPayeeName').value = name;
-  document.getElementById('txPayeeStatus').textContent = '✓';
+function selectPayee(id, name, ctx) {
+  const c = payeeCtx(ctx);
+  if(c.idEl) c.idEl.value = id;
+  if(c.nameEl) c.nameEl.value = name;
+  if(c.statusEl) c.statusEl.textContent = '✓';
   payeeAC.selectedId = id;
   payeeAC.selectedName = name;
-  hidePayeeDropdown();
+  hidePayeeDropdown(ctx);
   hidePayeeSimilar();
-  // Suggest last-used category for this payee
-  suggestCategoryForPayee(id);
+  // Category suggestion only for tx modal
+  if(ctx !== 'sc') suggestCategoryForPayee(id);
 }
 
 async function suggestCategoryForPayee(payeeId) {
@@ -1551,49 +1834,60 @@ function applyCatSuggestion() {
   hideCatSuggestion();
 }
 
-function onPayeeInput(val) {
-  // clear selection if user edits
+// ── payee AC context helpers ─────────────────────────────────────────────────
+// ctx = 'tx' (transaction modal) | 'sc' (scheduled modal)
+function payeeCtx(ctx) {
+  const p = ctx === 'sc' ? 'sc' : 'tx';
+  return {
+    idEl:     document.getElementById(p + 'PayeeId'),
+    nameEl:   document.getElementById(p + 'PayeeName'),
+    statusEl: document.getElementById(p + 'PayeeStatus'),
+    ddEl:     document.getElementById(p + 'PayeeDropdown'),
+    bannerEl: ctx === 'sc' ? null : document.getElementById('txPayeeSimilarBanner'),
+    typeEl:   document.getElementById(ctx === 'sc' ? 'scTypeField' : 'txTypeField'),
+    ctx: p,
+  };
+}
+
+function onPayeeInput(val, ctx) {
+  const c = payeeCtx(ctx);
   if (val !== payeeAC.selectedName) {
-    document.getElementById('txPayeeId').value = '';
-    document.getElementById('txPayeeStatus').textContent = '';
+    if(c.idEl) c.idEl.value = '';
+    if(c.statusEl) c.statusEl.textContent = '';
     payeeAC.selectedId = null;
     payeeAC.selectedName = null;
   }
-  hidePayeeSimilar();
-
-  if (val.length < 3) { hidePayeeDropdown(); return; }
-
+  if(c.bannerEl) c.bannerEl.style.display = 'none';
+  if (val.length < 3) { if(c.ddEl) c.ddEl.style.display='none'; return; }
   const q = val.toLowerCase();
   const matches = state.payees.filter(p => p.name.toLowerCase().includes(q));
-  showPayeeDropdown(matches, val);
+  showPayeeDropdown(matches, val, ctx);
 }
 
-function showPayeeDropdown(matches, typed) {
-  const dd = document.getElementById('txPayeeDropdown');
+function showPayeeDropdown(matches, typed, ctx) {
+  const c = payeeCtx(ctx);
+  const dd = c.ddEl;
+  if(!dd) return;
   payeeAC.focusIdx = -1;
   let html = '';
-
-  matches.slice(0, 8).forEach((p, i) => {
+  matches.slice(0, 8).forEach((p) => {
     const badge = { beneficiario: 'Beneficiário', fonte_pagadora: 'Fonte Pagadora', ambos: 'Ambos' }[p.type] || p.type;
-    html += `<div class="payee-opt" data-id="${p.id}" data-name="${esc(p.name)}" onmousedown="event.preventDefault()" onclick="selectPayee('${p.id}','${esc(p.name)}')">
+    html += `<div class="payee-opt" onmousedown="event.preventDefault()" onclick="selectPayee('${p.id}','${esc(p.name)}','${ctx}')">
       <span class="payee-opt-icon">👤</span>
       <div><div class="payee-opt-name">${highlightMatch(esc(p.name), typed)}</div><div class="payee-opt-sub">${badge}</div></div>
     </div>`;
   });
-
-  // Always offer "create new" at bottom
-  html += `<div class="payee-opt payee-opt-create" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+  html += `<div class="payee-opt payee-opt-create" onmousedown="event.preventDefault()" onclick="createPayeeFromInput('${ctx}')">
     <span class="payee-opt-icon">＋</span>
-    <div><div class="payee-opt-name">Criar "<strong>${esc(typed)}</strong>"</div><div class="payee-opt-sub">Novo beneficiário / fonte pagadora</div></div>
+    <div><div class="payee-opt-name">Criar "<strong>${esc(typed)}</strong>"</div><div class="payee-opt-sub">Novo beneficiário</div></div>
   </div>`;
-
   dd.innerHTML = html;
   dd.style.display = 'block';
 }
 
-function hidePayeeDropdown() {
-  const dd = document.getElementById('txPayeeDropdown');
-  if (dd) dd.style.display = 'none';
+function hidePayeeDropdown(ctx) {
+  const c = payeeCtx(ctx);
+  if(c.ddEl) c.ddEl.style.display = 'none';
   payeeAC.focusIdx = -1;
 }
 
@@ -1602,25 +1896,24 @@ function hidePayeeSimilar() {
   if (b) b.style.display = 'none';
 }
 
-function onPayeeBlur() {
-  // Small delay so onclick on dropdown options fires first
+function onPayeeBlur(ctx) {
   payeeAC.blurTimer = setTimeout(() => {
-    const typed = document.getElementById('txPayeeName').value.trim();
-    hidePayeeDropdown();
-
-    // If nothing selected and something typed, check for similar
-    if (!payeeAC.selectedId && typed.length >= 2) {
+    const c = payeeCtx(ctx);
+    const typed = c.nameEl?.value.trim() || '';
+    hidePayeeDropdown(ctx);
+    // Only show similar banner for tx modal (not sc)
+    if (ctx !== 'sc' && !payeeAC.selectedId && typed.length >= 2) {
       checkSimilarPayee(typed);
     }
   }, 200);
 }
 
-function onPayeeKey(e) {
-  const dd = document.getElementById('txPayeeDropdown');
-  if (dd.style.display === 'none') return;
+function onPayeeKey(e, ctx) {
+  const c = payeeCtx(ctx);
+  const dd = c.ddEl;
+  if(!dd || dd.style.display === 'none') return;
   const opts = dd.querySelectorAll('.payee-opt');
   if (!opts.length) return;
-
   if (e.key === 'ArrowDown') {
     e.preventDefault();
     payeeAC.focusIdx = Math.min(payeeAC.focusIdx + 1, opts.length - 1);
@@ -1635,7 +1928,7 @@ function onPayeeKey(e) {
     e.preventDefault();
     opts[payeeAC.focusIdx]?.click();
   } else if (e.key === 'Escape') {
-    hidePayeeDropdown();
+    hidePayeeDropdown(ctx);
   }
 }
 
@@ -1684,7 +1977,7 @@ function checkSimilarPayee(typed) {
       <button class="btn btn-primary btn-sm" onmousedown="event.preventDefault()" onclick="confirmSimilarPayee('${best.p.id}','${esc(best.p.name)}')">
         Sim, usar "${esc(best.p.name)}"
       </button>
-      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput('tx')">
         Não, criar novo
       </button>
     </div>`;
@@ -1697,10 +1990,10 @@ function showCreateNewBanner(typed) {
     <strong style="color:var(--accent)">➕ Novo beneficiário</strong>
     Criar "<em>${esc(typed)}</em>" como novo registro?
     <div class="payee-similar-actions">
-      <button class="btn btn-primary btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+      <button class="btn btn-primary btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput('tx')">
         Criar agora
       </button>
-      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="clearPayeeField()">
+      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="clearPayeeField('tx')">
         Cancelar
       </button>
     </div>`;
@@ -1708,30 +2001,21 @@ function showCreateNewBanner(typed) {
 }
 
 function confirmSimilarPayee(id, name) {
-  selectPayee(id, name);
+  selectPayee(id, name, 'tx');
   hidePayeeSimilar();
 }
 
-async function createPayeeFromInput() {
-  const typed = document.getElementById('txPayeeName').value.trim();
+async function createPayeeFromInput(ctx) {
+  const c = payeeCtx(ctx);
+  const typed = c.nameEl?.value.trim() || '';
   if (!typed) return;
-
-  // Detect type based on current tx type
-  const txType = document.getElementById('txTypeField').value;
+  const txType = c.typeEl?.value || 'expense';
   const payeeType = txType === 'income' ? 'fonte_pagadora' : 'beneficiario';
-
-  const { data, error } = await sb.from('payees').insert({
-    name: typed,
-    type: payeeType
-  }).select().single();
-
+  const { data, error } = await sb.from('payees').insert({ name: typed, type: payeeType }).select().single();
   if (error) { toast('Erro ao criar beneficiário: ' + error.message, 'error'); return; }
-
-  // Add to local state
   state.payees.push(data);
   state.payees.sort((a, b) => a.name.localeCompare(b.name));
-
-  selectPayee(data.id, data.name);
+  selectPayee(data.id, data.name, ctx);
   hidePayeeSimilar();
   toast(`"${typed}" criado como ${payeeType === 'fonte_pagadora' ? 'Fonte Pagadora' : 'Beneficiário'}`, 'success');
 }
@@ -1998,6 +2282,561 @@ function setCatPickerValue(catId) {
 
   closeCatPicker();
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   SCHEDULED TRANSACTIONS
+═══════════════════════════════════════════════════════ */
+
+// ── State ──────────────────────────────────────────────
+state.scheduled = [];
+
+// ── Frequency helpers ──────────────────────────────────
+const FREQ_LABELS = {
+  once: 'Uma vez', weekly: 'Semanal', biweekly: 'Quinzenal',
+  monthly: 'Mensal', bimonthly: 'Bimestral', quarterly: 'Trimestral',
+  semiannual: 'Semestral', annual: 'Anual', custom: 'Personalizado'
+};
+
+function nextDate(from, freq, customInterval, customUnit) {
+  const d = new Date(from + 'T12:00:00');
+  switch(freq) {
+    case 'weekly':     d.setDate(d.getDate() + 7); break;
+    case 'biweekly':   d.setDate(d.getDate() + 14); break;
+    case 'monthly':    d.setMonth(d.getMonth() + 1); break;
+    case 'bimonthly':  d.setMonth(d.getMonth() + 2); break;
+    case 'quarterly':  d.setMonth(d.getMonth() + 3); break;
+    case 'semiannual': d.setMonth(d.getMonth() + 6); break;
+    case 'annual':     d.setFullYear(d.getFullYear() + 1); break;
+    case 'custom':
+      const n = parseInt(customInterval) || 1;
+      if(customUnit === 'days')   d.setDate(d.getDate() + n);
+      else if(customUnit === 'weeks')  d.setDate(d.getDate() + n*7);
+      else if(customUnit === 'months') d.setMonth(d.getMonth() + n);
+      else if(customUnit === 'years')  d.setFullYear(d.getFullYear() + n);
+      break;
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+function generateOccurrences(sc, limit = 12) {
+  const dates = [];
+  if(sc.frequency === 'once') {
+    dates.push(sc.start_date);
+    return dates;
+  }
+  let cur = sc.start_date;
+  const today = new Date().toISOString().slice(0, 10);
+  let count = 0;
+  const maxCount = sc.end_count || 999;
+  const endDate = sc.end_date || '2099-12-31';
+  while(count < maxCount && cur <= endDate && dates.length < limit) {
+    dates.push(cur);
+    count++;
+    if(count >= maxCount || cur >= endDate) break;
+    cur = nextDate(cur, sc.frequency, sc.custom_interval, sc.custom_unit);
+  }
+  return dates;
+}
+
+function getNextOccurrence(sc) {
+  const today = new Date().toISOString().slice(0, 10);
+  const registered = (sc.occurrences || []).map(o => o.scheduled_date);
+  if(sc.frequency === 'once') {
+    return registered.includes(sc.start_date) ? null : sc.start_date;
+  }
+  let cur = sc.start_date;
+  const maxCount = sc.end_count || 999;
+  const endDate = sc.end_date || '2099-12-31';
+  let count = 0;
+  while(count < maxCount && cur <= endDate) {
+    if(!registered.includes(cur)) return cur;
+    count++;
+    cur = nextDate(cur, sc.frequency, sc.custom_interval, sc.custom_unit);
+  }
+  return null;
+}
+
+function scFreqLabel(sc) {
+  if(sc.frequency === 'custom') {
+    return `A cada ${sc.custom_interval} ${({days:'dia(s)',weeks:'semana(s)',months:'mês/meses',years:'ano(s)'})[sc.custom_unit]||sc.custom_unit}`;
+  }
+  return FREQ_LABELS[sc.frequency] || sc.frequency;
+}
+
+function scStatusLabel(sc) {
+  if(sc.status === 'paused') return {cls:'sc-status-paused', label:'⏸ Pausado'};
+  if(sc.status === 'finished') return {cls:'sc-status-finished', label:'✓ Concluído'};
+  const next = getNextOccurrence(sc);
+  const today = new Date().toISOString().slice(0,10);
+  if(next && next < today) return {cls:'sc-status-overdue', label:'⚠ Atrasado'};
+  if(!next) return {cls:'sc-status-finished', label:'✓ Concluído'};
+  return {cls:'sc-status-active', label:'● Ativo'};
+}
+
+// ── Load & Render ──────────────────────────────────────
+async function loadScheduled() {
+  try {
+    const { data, error } = await sb
+      .from('scheduled_transactions')
+      .select('*, accounts!scheduled_transactions_account_id_fkey(name,currency), payees(name), categories(name,color), occurrences:scheduled_occurrences(id,scheduled_date,actual_date,amount,memo,transaction_id)')
+      .order('start_date');
+    if(error) throw error;
+    state.scheduled = data || [];
+  } catch(e) {
+    // Table might not exist yet
+    if(e.message?.includes('does not exist') || e.code === '42P01') {
+      document.getElementById('scheduledList').innerHTML = `
+        <div class="card" style="text-align:center;padding:40px">
+          <div style="font-size:2rem;margin-bottom:12px">📅</div>
+          <div style="font-weight:600;margin-bottom:8px">Tabela ainda não criada</div>
+          <p style="color:var(--muted);font-size:.875rem;max-width:400px;margin:0 auto 16px">
+            Execute o SQL abaixo no Supabase para habilitar esta funcionalidade:
+          </p>
+          <pre style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;text-align:left;font-size:.72rem;overflow-x:auto;white-space:pre-wrap">${esc(SCHEDULED_SQL)}</pre>
+        </div>`;
+      return;
+    }
+    toast(e.message, 'error');
+    return;
+  }
+  filterScheduled();
+}
+
+function filterScheduled() {
+  const search = (document.getElementById('scSearch')?.value||'').toLowerCase();
+  const statusF = document.getElementById('scStatusFilter')?.value||'';
+  const typeF = document.getElementById('scTypeFilter')?.value||'';
+
+  let list = state.scheduled;
+  if(search) list = list.filter(s => s.description?.toLowerCase().includes(search) || s.payees?.name?.toLowerCase().includes(search));
+  if(typeF) list = list.filter(s => s.type === typeF);
+  if(statusF) {
+    list = list.filter(s => {
+      const st = scStatusLabel(s);
+      if(statusF === 'active') return st.label.includes('Ativo') || st.label.includes('Atrasado');
+      if(statusF === 'paused') return s.status === 'paused';
+      if(statusF === 'finished') return !st.label.includes('Ativo') && !st.label.includes('Atrasado') && s.status !== 'paused';
+    });
+  }
+  renderScheduled(list);
+  renderUpcoming();
+}
+
+function renderScheduled(list) {
+  const container = document.getElementById('scheduledList');
+
+  // Summary bar
+  const bar = document.getElementById('scheduledSummaryBar');
+  if(bar) {
+    const all = state.scheduled;
+    const today = new Date().toISOString().slice(0,10);
+    const active = all.filter(s => { const st=scStatusLabel(s); return st.label.includes('Ativo'); }).length;
+    const overdue = all.filter(s => scStatusLabel(s).label.includes('Atrasado')).length;
+    const paused = all.filter(s => s.status==='paused').length;
+    const finished = all.filter(s => { const st=scStatusLabel(s); return st.label.includes('Concluído'); }).length;
+    bar.innerHTML = [
+      active   ? `<span class="badge sc-status-active" style="font-size:.8rem;padding:4px 12px">● ${active} ativo${active>1?'s':''}</span>` : '',
+      overdue  ? `<span class="badge sc-status-overdue" style="font-size:.8rem;padding:4px 12px">⚠ ${overdue} atrasado${overdue>1?'s':''}</span>` : '',
+      paused   ? `<span class="badge sc-status-paused" style="font-size:.8rem;padding:4px 12px">⏸ ${paused} pausado${paused>1?'s':''}</span>` : '',
+      finished ? `<span class="badge sc-status-finished" style="font-size:.8rem;padding:4px 12px">✓ ${finished} concluído${finished>1?'s':''}</span>` : '',
+    ].join('');
+  }
+
+  if(!list.length) {
+    container.innerHTML = `<div class="card" style="text-align:center;padding:48px;color:var(--muted)">
+      <div style="font-size:2.5rem;margin-bottom:12px;opacity:.4">📅</div>
+      <div style="font-weight:600;margin-bottom:6px">Nenhuma transação programada</div>
+      <p style="font-size:.875rem">Clique em "+ Programar" para agendar pagamentos ou recebimentos.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(sc => {
+    const st = scStatusLabel(sc);
+    const next = getNextOccurrence(sc);
+    const today = new Date().toISOString().slice(0,10);
+    const isExpense = sc.type === 'expense';
+    const acct = state.accounts.find(a => a.id === sc.account_id);
+    const regCount = (sc.occurrences||[]).length;
+    const totalCount = sc.end_count ? `${regCount}/${sc.end_count}` : `${regCount} reg.`;
+    const occList = generateOccurrences(sc, 8);
+    const registered = (sc.occurrences||[]).reduce((m,o)=>{m[o.scheduled_date]=o;return m;},{});
+
+    return `<div class="sc-card" id="scCard-${sc.id}">
+      <div class="sc-card-header" onclick="toggleScCard('${sc.id}')">
+        <div class="sc-card-type" style="background:${isExpense?'var(--red-lt)':'var(--green-lt)'}">
+          ${isExpense ? '💸' : '💰'}
+        </div>
+        <div class="sc-card-info">
+          <div class="sc-card-title">${esc(sc.description)}</div>
+          <div class="sc-card-sub">
+            <span>${scFreqLabel(sc)}</span>
+            ${sc.payees ? `<span>· ${esc(sc.payees.name)}</span>` : ''}
+            ${sc.categories ? `<span class="badge" style="background:${sc.categories.color}18;color:${sc.categories.color};border:1px solid ${sc.categories.color}30;font-size:.65rem">${esc(sc.categories.name)}</span>` : ''}
+            <span class="sc-status-badge ${st.cls}">${st.label}</span>
+            ${next ? `<span class="sc-next-badge">próx: ${fmtDate(next)}</span>` : ''}
+          </div>
+        </div>
+        <div class="sc-card-amount ${isExpense?'amount-neg':'amount-pos'}">
+          ${isExpense?'-':'+'} ${fmt(Math.abs(sc.amount))}
+        </div>
+        <div class="sc-card-actions" onclick="event.stopPropagation()">
+          ${next ? `<button class="btn btn-primary btn-sm" onclick="openRegisterOcc('${sc.id}','${next}')" title="Registrar próxima ocorrência">✓ Registrar</button>` : ''}
+          <button class="btn-icon" onclick="openScheduledModal('${sc.id}')" title="Editar">✏️</button>
+          <button class="btn-icon" onclick="deleteScheduled('${sc.id}')" title="Excluir">🗑️</button>
+        </div>
+      </div>
+      <div class="sc-card-body" id="scBody-${sc.id}">
+        <div class="sc-occurrences">
+          <div style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">
+            Ocorrências · ${totalCount} registradas
+            ${sc.end_date ? ` · até ${fmtDate(sc.end_date)}` : ''}
+          </div>
+          ${occList.map(date => {
+            const occ = registered[date];
+            const isPast = date < today;
+            const isToday = date === today;
+            return `<div class="sc-occ-row">
+              <span class="sc-occ-date ${isToday?'text-accent':''}">${fmtDate(date)}${isToday?' ·hoje':''}</span>
+              <span class="sc-occ-label">${occ ? esc(occ.memo||sc.description) : '<span style="color:var(--muted2)">—</span>'}</span>
+              <span class="sc-occ-status">
+                ${occ
+                  ? `<span class="sc-status-badge sc-status-finished">✓ ${fmt(occ.amount||sc.amount)}</span>`
+                  : isPast
+                    ? `<span class="sc-status-badge sc-status-overdue">Pendente</span>`
+                    : `<span class="sc-status-badge" style="background:var(--bg2);color:var(--muted);border:1px solid var(--border)">Agendado</span>`
+                }
+              </span>
+              ${!occ ? `<button class="btn-icon" style="font-size:.72rem;padding:3px 7px" onclick="openRegisterOcc('${sc.id}','${date}')">✓</button>` : ''}
+            </div>`;
+          }).join('')}
+          ${sc.frequency !== 'once' && occList.length >= 8 ? `<div style="font-size:.75rem;color:var(--muted);text-align:center;padding:6px">... e mais ocorrências futuras</div>` : ''}
+        </div>
+        <div style="padding:8px 16px 12px;display:flex;gap:8px;border-top:1px solid var(--border);flex-wrap:wrap">
+          <span style="font-size:.75rem;color:var(--muted)">Conta: <strong>${esc(acct?.name||'—')}</strong></span>
+          ${sc.memo ? `<span style="font-size:.75rem;color:var(--muted)">· ${esc(sc.memo)}</span>` : ''}
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toggleScStatus('${sc.id}')">
+            ${sc.status==='active'?'⏸ Pausar':'▶ Reativar'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderUpcoming() {
+  const today = new Date().toISOString().slice(0, 10);
+  const limit = new Date(); limit.setDate(limit.getDate() + 30);
+  const limitStr = limit.toISOString().slice(0, 10);
+
+  const upcoming = [];
+  state.scheduled.forEach(sc => {
+    if(sc.status === 'paused') return;
+    const registered = new Set((sc.occurrences||[]).map(o => o.scheduled_date));
+    const occ = generateOccurrences(sc, 60);
+    occ.forEach(date => {
+      if(date >= today && date <= limitStr && !registered.has(date)) {
+        upcoming.push({ sc, date });
+      }
+    });
+  });
+  upcoming.sort((a, b) => a.date.localeCompare(b.date));
+
+  const card = document.getElementById('scheduledUpcomingCard');
+  const body = document.getElementById('scheduledUpcomingBody');
+  const totalEl = document.getElementById('scheduledUpcomingTotal');
+  if(!upcoming.length) { if(card) card.style.display='none'; return; }
+
+  if(card) card.style.display='';
+  if(totalEl) {
+    const total = upcoming.reduce((s,u) => s + (u.sc.type==='expense'?-1:1)*Math.abs(u.sc.amount), 0);
+    totalEl.textContent = (total>=0?'+':'') + fmt(total);
+    totalEl.className = 'badge ' + (total>=0?'badge-green':'badge-red');
+  }
+  if(body) body.innerHTML = upcoming.slice(0, 20).map(({sc, date}) => {
+    const isOverdue = date < today;
+    const isExpense = sc.type === 'expense';
+    return `<tr class="${isOverdue?'sc-upcoming-row-overdue':''}">
+      <td class="${isOverdue?'amount-neg':'text-muted'}" style="white-space:nowrap">${fmtDate(date)}${isOverdue?' ⚠':''}</td>
+      <td>${esc(sc.description)}${sc.payees?`<span style="color:var(--muted);font-size:.78rem"> · ${esc(sc.payees.name)}</span>`:''}</td>
+      <td><span class="badge badge-muted">${esc(sc.accounts?.name||'—')}</span></td>
+      <td class="${isExpense?'amount-neg':'amount-pos'}" style="white-space:nowrap">${isExpense?'-':'+'} ${fmt(Math.abs(sc.amount))}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="openRegisterOcc('${sc.id}','${date}')">✓ Registrar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleScCard(id) {
+  const body = document.getElementById('scBody-'+id);
+  if(body) body.classList.toggle('open');
+}
+
+// ── Modal open/save/delete ─────────────────────────────
+function openScheduledModal(id='') {
+  const sc = id ? state.scheduled.find(s=>s.id===id) : null;
+  document.getElementById('scId').value = id;
+  document.getElementById('scDesc').value = sc?.description||'';
+  document.getElementById('scAmount').value = sc ? Math.abs(sc.amount) : '';
+  document.getElementById('scMemo').value = sc?.memo||'';
+  document.getElementById('scTags').value = (sc?.tags||[]).join(', ');
+  document.getElementById('scStatus').value = sc?.status||'active';
+
+  // Populate account select
+  const aEl = document.getElementById('scAccountId');
+  aEl.innerHTML = state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.currency})</option>`).join('');
+  if(sc?.account_id) aEl.value = sc.account_id;
+
+  // Populate category select
+  const cEl = document.getElementById('scCategoryId');
+  cEl.innerHTML = '<option value="">— Sem categoria —</option>' + state.categories.map(c=>`<option value="${c.id}">${c.icon||''} ${esc(c.name)}</option>`).join('');
+  if(sc?.category_id) cEl.value = sc.category_id;
+
+  // Payee
+  setPayeeField(sc?.payee_id||null, 'sc');
+
+  // Type
+  setScType(sc?.type||'expense');
+
+  // Dates
+  document.getElementById('scStartDate').value = sc?.start_date || new Date().toISOString().slice(0,10);
+
+  // Frequency
+  const freq = sc?.frequency||'once';
+  document.querySelectorAll('input[name=scFreq]').forEach(r => r.checked = r.value===freq);
+  document.getElementById('scCustomIntervalGroup').style.display = freq==='custom' ? '' : 'none';
+  document.getElementById('scEndGroup').style.display = freq==='once' ? 'none' : '';
+  document.getElementById('scCustomInterval').value = sc?.custom_interval||1;
+  document.getElementById('scCustomUnit').value = sc?.custom_unit||'months';
+
+  // End condition
+  const endType = sc?.end_count ? 'count' : sc?.end_date ? 'date' : 'forever';
+  document.querySelectorAll('input[name=scEnd]').forEach(r => r.checked = r.value===endType);
+  document.getElementById('scEndCountGroup').style.display = endType==='count' ? '' : 'none';
+  document.getElementById('scEndDateGroup').style.display = endType==='date' ? '' : 'none';
+  document.getElementById('scEndCount').value = sc?.end_count||'';
+  document.getElementById('scEndDate').value = sc?.end_date||'';
+
+  // Attach event listeners for dynamic preview (replace to avoid dupes)
+  document.querySelectorAll('input[name=scFreq]').forEach(r => { r.onchange = onScFreqChange; });
+  document.querySelectorAll('input[name=scEnd]').forEach(r => { r.onchange = onScEndChange; });
+  ['scStartDate','scEndCount','scEndDate','scCustomInterval','scCustomUnit'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.oninput = updateScPreview;
+  });
+
+  document.getElementById('scheduledModalTitle').textContent = id ? 'Editar Programação' : 'Programar Transação';
+  updateScPreview();
+  openModal('scheduledModal');
+}
+
+function setScType(type) {
+  document.getElementById('scTypeField').value = type;
+  document.querySelectorAll('#scheduledModal .tab').forEach((t,i)=>t.classList.toggle('active',['expense','income'][i]===type));
+}
+
+function onScFreqChange() {
+  const freq = document.querySelector('input[name=scFreq]:checked')?.value || 'once';
+  document.getElementById('scCustomIntervalGroup').style.display = freq==='custom' ? '' : 'none';
+  document.getElementById('scEndGroup').style.display = freq==='once' ? 'none' : '';
+  updateScPreview();
+}
+
+function onScEndChange() {
+  const end = document.querySelector('input[name=scEnd]:checked')?.value || 'forever';
+  document.getElementById('scEndCountGroup').style.display = end==='count' ? '' : 'none';
+  document.getElementById('scEndDateGroup').style.display = end==='date' ? '' : 'none';
+  updateScPreview();
+}
+
+function updateScPreview() {
+  const preview = document.getElementById('scPreview');
+  if(!preview) return;
+  const freq = document.querySelector('input[name=scFreq]:checked')?.value || 'once';
+  const start = document.getElementById('scStartDate').value;
+  const end = document.querySelector('input[name=scEnd]:checked')?.value || 'forever';
+  const count = parseInt(document.getElementById('scEndCount').value) || null;
+  const endDate = document.getElementById('scEndDate').value;
+  const interval = parseInt(document.getElementById('scCustomInterval').value) || 1;
+  const unit = document.getElementById('scCustomUnit').value;
+
+  if(!start) { preview.innerHTML = '<span style="color:var(--muted2)">Defina a data de início para ver o resumo.</span>'; return; }
+
+  const sc = { frequency: freq, start_date: start, end_count: end==='count'?count:null, end_date: end==='date'?endDate:null, custom_interval: interval, custom_unit: unit, occurrences: [] };
+  const dates = generateOccurrences(sc, 6);
+
+  let html = `<strong>${FREQ_LABELS[freq]||freq}</strong>`;
+  if(freq==='custom') html += ` — a cada ${interval} ${({days:'dia(s)',weeks:'semana(s)',months:'mês/meses',years:'ano(s)'})[unit]}`;
+  if(end==='count' && count) html += ` · <strong>${count}x</strong> parcelas`;
+  if(end==='date' && endDate) html += ` · até <strong>${fmtDate(endDate)}</strong>`;
+  if(freq !== 'once' && end==='forever') html += ' · indefinido';
+
+  if(dates.length) {
+    html += `<div class="sc-dates">${dates.map((d,i)=>`<span class="sc-date-chip">${i===0?'1ª: ':''}${fmtDate(d)}</span>`).join('')}${end!=='count'||!count||count>6?'<span class="sc-date-chip" style="opacity:.5">…</span>':''}</div>`;
+  }
+  preview.innerHTML = html;
+}
+
+async function saveScheduled() {
+  const id = document.getElementById('scId').value;
+  const freq = document.querySelector('input[name=scFreq]:checked')?.value || 'once';
+  const endType = document.querySelector('input[name=scEnd]:checked')?.value || 'forever';
+  const type = document.getElementById('scTypeField').value;
+  const amount = parseFloat(document.getElementById('scAmount').value) || 0;
+  const tags = document.getElementById('scTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+
+  const data = {
+    description: document.getElementById('scDesc').value.trim(),
+    type,
+    amount: type==='expense' ? -Math.abs(amount) : Math.abs(amount),
+    account_id: document.getElementById('scAccountId').value || null,
+    payee_id: document.getElementById('scPayeeId').value || null,
+    category_id: document.getElementById('scCategoryId').value || null,
+    memo: document.getElementById('scMemo').value,
+    tags: tags.length ? tags : null,
+    status: document.getElementById('scStatus').value,
+    start_date: document.getElementById('scStartDate').value,
+    frequency: freq,
+    custom_interval: freq==='custom' ? parseInt(document.getElementById('scCustomInterval').value)||1 : null,
+    custom_unit: freq==='custom' ? document.getElementById('scCustomUnit').value : null,
+    end_count: endType==='count' ? parseInt(document.getElementById('scEndCount').value)||null : null,
+    end_date: endType==='date' ? document.getElementById('scEndDate').value||null : null,
+    updated_at: new Date().toISOString(),
+  };
+
+  if(!data.description) { toast('Informe a descrição', 'error'); return; }
+  if(!data.account_id) { toast('Selecione a conta', 'error'); return; }
+  if(!data.start_date) { toast('Informe a data de início', 'error'); return; }
+
+  let err;
+  if(id) { ({error:err} = await sb.from('scheduled_transactions').update(data).eq('id',id)); }
+  else    { ({error:err} = await sb.from('scheduled_transactions').insert(data)); }
+  if(err) { toast(err.message,'error'); return; }
+  toast(id?'Programação atualizada!':'Transação programada!','success');
+  closeModal('scheduledModal');
+  loadScheduled();
+}
+
+async function deleteScheduled(id) {
+  if(!confirm('Excluir esta programação e todas as ocorrências?')) return;
+  await sb.from('scheduled_occurrences').delete().eq('scheduled_id', id);
+  const {error} = await sb.from('scheduled_transactions').delete().eq('id', id);
+  if(error) { toast(error.message,'error'); return; }
+  toast('Removido','success');
+  loadScheduled();
+}
+
+async function toggleScStatus(id) {
+  const sc = state.scheduled.find(s=>s.id===id);
+  if(!sc) return;
+  const newStatus = sc.status==='active'?'paused':'active';
+  const {error} = await sb.from('scheduled_transactions').update({status:newStatus}).eq('id',id);
+  if(error) { toast(error.message,'error'); return; }
+  sc.status = newStatus;
+  filterScheduled();
+}
+
+// ── Register Occurrence ────────────────────────────────
+let _registerOccScId = null;
+let _registerOccDate = null;
+
+function openRegisterOcc(scId, date) {
+  _registerOccScId = scId;
+  _registerOccDate = date;
+  const sc = state.scheduled.find(s=>s.id===scId);
+  if(!sc) return;
+  document.getElementById('occScId').value = scId;
+  document.getElementById('occDate').value = date;
+  document.getElementById('occAmount').value = Math.abs(sc.amount);
+  document.getElementById('occMemo').value = '';
+  document.getElementById('registerOccDesc').textContent = `Registrar "${sc.description}" em ${fmtDate(date)} — isso criará uma transação real na conta ${sc.accounts?.name||''}.`;
+  openModal('registerOccModal');
+}
+
+async function confirmRegisterOccurrence() {
+  const scId = _registerOccScId;
+  const schedDate = _registerOccDate;
+  const sc = state.scheduled.find(s=>s.id===scId);
+  if(!sc) return;
+
+  const actualDate = document.getElementById('occDate').value;
+  const amount = parseFloat(document.getElementById('occAmount').value) || Math.abs(sc.amount);
+  const memo = document.getElementById('occMemo').value;
+  const finalAmount = sc.type==='expense' ? -Math.abs(amount) : Math.abs(amount);
+
+  // 1. Create real transaction
+  const { data: txData, error: txErr } = await sb.from('transactions').insert({
+    date: actualDate,
+    description: sc.description,
+    amount: finalAmount,
+    account_id: sc.account_id,
+    payee_id: sc.payee_id,
+    category_id: sc.category_id,
+    memo: memo || sc.memo,
+    tags: sc.tags,
+    is_transfer: false,
+    updated_at: new Date().toISOString(),
+  }).select().single();
+  if(txErr) { toast(txErr.message,'error'); return; }
+
+  // 2. Register occurrence
+  const { error: occErr } = await sb.from('scheduled_occurrences').insert({
+    scheduled_id: scId,
+    scheduled_date: schedDate,
+    actual_date: actualDate,
+    amount: finalAmount,
+    memo,
+    transaction_id: txData.id,
+  });
+  if(occErr) { toast(occErr.message,'error'); return; }
+
+  toast('Transação registrada!','success');
+  closeModal('registerOccModal');
+  loadScheduled();
+}
+
+// Payee autocomplete for SC modal uses shared onPayeeInput/selectPayee with ctx='sc'
+
+// ── SQL for table creation ─────────────────────────────
+const SCHEDULED_SQL = `-- Run this in your Supabase SQL Editor
+CREATE TABLE IF NOT EXISTS scheduled_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  description TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('expense','income')),
+  amount NUMERIC NOT NULL,
+  account_id UUID REFERENCES accounts(id),
+  payee_id UUID REFERENCES payees(id),
+  category_id UUID REFERENCES categories(id),
+  memo TEXT,
+  tags TEXT[],
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','paused','finished')),
+  start_date DATE NOT NULL,
+  frequency TEXT NOT NULL DEFAULT 'once'
+    CHECK (frequency IN ('once','weekly','biweekly','monthly','bimonthly','quarterly','semiannual','annual','custom')),
+  custom_interval INTEGER,
+  custom_unit TEXT CHECK (custom_unit IN ('days','weeks','months','years')),
+  end_count INTEGER,
+  end_date DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS scheduled_occurrences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scheduled_id UUID NOT NULL REFERENCES scheduled_transactions(id) ON DELETE CASCADE,
+  scheduled_date DATE NOT NULL,
+  actual_date DATE,
+  amount NUMERIC,
+  memo TEXT,
+  transaction_id UUID REFERENCES transactions(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE scheduled_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scheduled_occurrences ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON scheduled_transactions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON scheduled_occurrences FOR ALL USING (true) WITH CHECK (true);`;
 
 tryAutoConnect();
 </script>
