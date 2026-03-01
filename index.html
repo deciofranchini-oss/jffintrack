@@ -914,6 +914,39 @@ canvas { cursor: default; }
   #printArea .no-print { display:none !important; }
 }
 #printArea { display:none; }
+
+/* ─── EMAILJS CONFIG MODAL ─── */
+.ej-status-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  display: inline-block; margin-right: 6px;
+}
+.ej-status-ok   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.ej-status-warn { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.ej-help-box {
+  background: var(--accent-lt); border: 1px solid rgba(42,96,73,.18);
+  border-radius: var(--r-sm); padding: 12px 14px; font-size: .78rem;
+  color: var(--text2); line-height: 1.65;
+}
+.ej-help-box strong { color: var(--accent); }
+.ej-help-box code {
+  background: rgba(42,96,73,.1); border-radius: 4px;
+  padding: 1px 5px; font-family: monospace; font-size: .8rem;
+  color: var(--accent);
+}
+.ej-field-row { display: flex; align-items: center; gap: 8px; }
+.ej-field-row input { flex: 1; }
+.ej-copy-btn {
+  flex-shrink: 0; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 6px 10px; font-size: .75rem;
+  cursor: pointer; color: var(--muted); transition: all .15s;
+}
+.ej-copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ej-test-result {
+  font-size: .78rem; padding: 8px 12px; border-radius: var(--r-sm);
+  margin-top: 6px; display: none;
+}
+.ej-test-ok  { background: var(--green-lt); color: var(--green); border: 1px solid rgba(42,122,74,.2); display:block; }
+.ej-test-err { background: var(--red-lt);   color: var(--red);   border: 1px solid rgba(192,57,43,.2); display:block; }
 </style>
 </head>
 <body>
@@ -1472,7 +1505,7 @@ canvas { cursor: default; }
             <div class="settings-row-icon" style="background:var(--green-lt)">📧</div>
             <div class="settings-row-info">
               <div class="settings-row-label">EmailJS</div>
-              <div class="settings-row-sub">Para envio de relatórios por e-mail</div>
+              <div class="settings-row-sub" id="ejSettingsSub">Para envio de relatórios por e-mail</div>
             </div>
             <div class="settings-row-action">
               <button class="btn btn-ghost btn-sm" onclick="showEmailConfig()">Configurar</button>
@@ -1495,6 +1528,78 @@ canvas { cursor: default; }
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- EMAILJS CONFIG MODAL -->
+<div class="modal-overlay" id="emailjsModal">
+  <div class="modal" style="max-width:520px"><div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">📧 Configurar EmailJS</span>
+      <button class="modal-close" onclick="closeModal('emailjsModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-bottom:8px">
+
+      <!-- Status indicator -->
+      <div id="ejStatusBar" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:16px;font-size:.82rem">
+        <span class="ej-status-dot ej-status-warn" id="ejStatusDot"></span>
+        <span id="ejStatusText" style="color:var(--muted)">Não configurado</span>
+        <button class="btn btn-ghost btn-sm" onclick="testEmailJSConnection()" id="ejTestBtn" style="margin-left:auto;font-size:.75rem">Testar conexão</button>
+      </div>
+
+      <!-- Credentials -->
+      <div class="form-group">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          Service ID
+          <a href="https://dashboard.emailjs.com/admin" target="_blank" style="font-size:.72rem;color:var(--accent)">Abrir dashboard ↗</a>
+        </label>
+        <div class="ej-field-row">
+          <input type="text" id="ejServiceId" placeholder="service_xxxxxxx" autocomplete="off" oninput="ejCheckStatus()">
+          <button class="ej-copy-btn" onclick="copyEjField('ejServiceId')" title="Copiar">📋</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Em Email Services → clique no serviço → Service ID</div>
+      </div>
+
+      <div class="form-group">
+        <label>Template ID</label>
+        <div class="ej-field-row">
+          <input type="text" id="ejTemplateId" placeholder="template_xxxxxxx" autocomplete="off" oninput="ejCheckStatus()">
+          <button class="ej-copy-btn" onclick="copyEjField('ejTemplateId')" title="Copiar">📋</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Em Email Templates → clique no template → Template ID</div>
+      </div>
+
+      <div class="form-group">
+        <label>Public Key</label>
+        <div class="ej-field-row">
+          <input type="password" id="ejPublicKey" placeholder="xxxxxxxxxxxxxxxxxxxx" autocomplete="off" oninput="ejCheckStatus()">
+          <button class="ej-copy-btn" onclick="toggleEjKey()" id="ejKeyToggle" title="Mostrar/ocultar">👁</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Em Account → General → Public Key</div>
+      </div>
+
+      <div id="ejTestResult" class="ej-test-result"></div>
+
+      <!-- Help box -->
+      <div class="ej-help-box" style="margin-top:14px">
+        <strong>📋 Variáveis necessárias no template:</strong><br>
+        <code>{{to_email}}</code> destinatário &nbsp;·&nbsp;
+        <code>{{subject}}</code> assunto &nbsp;·&nbsp;
+        <code>{{message}}</code> corpo do e-mail<br>
+        <code>{{report_period}}</code> período &nbsp;·&nbsp;
+        <code>{{report_income}}</code> total receitas &nbsp;·&nbsp;
+        <code>{{report_expense}}</code> total despesas<br>
+        <code>{{report_balance}}</code> saldo &nbsp;·&nbsp;
+        <code>{{report_count}}</code> qtd transações &nbsp;·&nbsp;
+        <code>{{from_name}}</code> remetente<br><br>
+        <strong>📎 Para envio de PDF como anexo:</strong> ative <em>File Attachments</em> no template e use a variável <code>{{pdf_content}}</code> (base64).
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('emailjsModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEmailJSConfig()">💾 Salvar configuração</button>
+    </div>
   </div>
 </div>
 
@@ -2008,6 +2113,7 @@ async function bootApp(){
   state.txFilter.month=ym;
   // Navegar para dashboard
   navigate('dashboard');
+  initEmailJSStatus();
 }
 
 const pageTitles={dashboard:'Dashboard',transactions:'Transações',accounts:'Contas',reports:'Relatórios',budgets:'Orçamentos',categories:'Categorias',payees:'Beneficiários',scheduled:'Programados',settings:'Configurações'};
@@ -3166,8 +3272,21 @@ async function sendReportByEmail() {
     emailjs.init(EMAILJS_CONFIG.publicKey);
     const subject=document.getElementById('emailSubject').value;
     const msg=document.getElementById('emailMsg').value||`Relatório de ${fmtDate(from)} a ${fmtDate(toDate)} — ${txs.length} transações.`;
+    const {from:f2,to:t2}=getRptDateRange();
+    const totE2=txs.filter(t=>t.amount<0).reduce((s,t)=>s+Math.abs(t.amount),0);
+    const totI2=txs.filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
     await emailjs.send(EMAILJS_CONFIG.serviceId,EMAILJS_CONFIG.templateId,{
-      to_email:to, subject, message:msg, pdf_content:pdfB64, from_name:"Décio's FinTrack"
+      to_email:       to,
+      subject:        subject,
+      message:        msg,
+      pdf_content:    pdfB64,
+      from_name:      "Décio's FinTrack",
+      report_period:  `${fmtDate(f2)} a ${fmtDate(t2)}`,
+      report_income:  fmt(totI2),
+      report_expense: fmt(totE2),
+      report_balance: fmt(totI2-totE2),
+      report_count:   String(txs.length),
+      report_view:    rptState.view==='regular'?'Análise':rptState.view==='transactions'?'Transações':'Previsão',
     });
     status.textContent='✓ Enviado!'; status.style.color='var(--green)';
     toast('E-mail enviado com sucesso!','success');
@@ -4744,27 +4863,118 @@ function toggleForecastSection(id) {
    EMAIL REPORT via EmailJS
 ═══════════════════════════════════════════════════════════════ */
 // User needs to configure their EmailJS credentials
+/* ═══════════════════════════════════════════════════════════════
+   EMAILJS CONFIGURATION
+═══════════════════════════════════════════════════════════════ */
 const EMAILJS_CONFIG = {
-  // Fill these with your EmailJS credentials:
-  serviceId: localStorage.getItem('ej_service') || '',
+  serviceId:  localStorage.getItem('ej_service')  || '',
   templateId: localStorage.getItem('ej_template') || '',
-  publicKey: localStorage.getItem('ej_key') || '',
+  publicKey:  localStorage.getItem('ej_key')      || '',
 };
 
 function showEmailConfig() {
-  const svc = prompt('EmailJS Service ID:', EMAILJS_CONFIG.serviceId);
-  if(svc===null) return;
-  const tpl = prompt('EmailJS Template ID:', EMAILJS_CONFIG.templateId);
-  if(tpl===null) return;
-  const key = prompt('EmailJS Public Key:', EMAILJS_CONFIG.publicKey);
-  if(key===null) return;
-  EMAILJS_CONFIG.serviceId = svc;
+  // Populate fields with saved values
+  document.getElementById('ejServiceId').value  = EMAILJS_CONFIG.serviceId;
+  document.getElementById('ejTemplateId').value = EMAILJS_CONFIG.templateId;
+  document.getElementById('ejPublicKey').value  = EMAILJS_CONFIG.publicKey;
+  ejCheckStatus();
+  openModal('emailjsModal');
+}
+
+function ejCheckStatus() {
+  const svc = document.getElementById('ejServiceId').value.trim();
+  const tpl = document.getElementById('ejTemplateId').value.trim();
+  const key = document.getElementById('ejPublicKey').value.trim();
+  const ok  = svc && tpl && key;
+  const dot = document.getElementById('ejStatusDot');
+  const txt = document.getElementById('ejStatusText');
+  const sub = document.getElementById('ejSettingsSub');
+  if(ok) {
+    dot.className = 'ej-status-dot ej-status-ok';
+    txt.textContent = '✓ Configurado — pronto para enviar';
+    txt.style.color = 'var(--green)';
+    if(sub) sub.textContent = `Configurado · ${svc}`;
+  } else {
+    dot.className = 'ej-status-dot ej-status-warn';
+    txt.textContent = 'Preencha os três campos abaixo';
+    txt.style.color = 'var(--muted)';
+    if(sub) sub.textContent = 'Não configurado — clique para configurar';
+  }
+  const res = document.getElementById('ejTestResult');
+  if(res) { res.className = 'ej-test-result'; res.textContent = ''; }
+}
+
+function saveEmailJSConfig() {
+  const svc = document.getElementById('ejServiceId').value.trim();
+  const tpl = document.getElementById('ejTemplateId').value.trim();
+  const key = document.getElementById('ejPublicKey').value.trim();
+  if(!svc || !tpl || !key) {
+    toast('Preencha todos os campos', 'error'); return;
+  }
+  EMAILJS_CONFIG.serviceId  = svc;
   EMAILJS_CONFIG.templateId = tpl;
-  EMAILJS_CONFIG.publicKey = key;
-  localStorage.setItem('ej_service', svc);
+  EMAILJS_CONFIG.publicKey  = key;
+  localStorage.setItem('ej_service',  svc);
   localStorage.setItem('ej_template', tpl);
-  localStorage.setItem('ej_key', key);
-  toast('Credenciais EmailJS salvas!', 'success');
+  localStorage.setItem('ej_key',      key);
+  ejCheckStatus();
+  closeModal('emailjsModal');
+  toast('✓ EmailJS configurado com sucesso!', 'success');
+}
+
+function toggleEjKey() {
+  const inp = document.getElementById('ejPublicKey');
+  const btn = document.getElementById('ejKeyToggle');
+  if(inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
+  else                        { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function copyEjField(id) {
+  const val = document.getElementById(id)?.value;
+  if(!val) return;
+  navigator.clipboard.writeText(val).then(()=>toast('Copiado!','success'));
+}
+
+async function testEmailJSConnection() {
+  const svc = document.getElementById('ejServiceId').value.trim();
+  const tpl = document.getElementById('ejTemplateId').value.trim();
+  const key = document.getElementById('ejPublicKey').value.trim();
+  if(!svc || !tpl || !key) { toast('Preencha todos os campos primeiro','error'); return; }
+  const btn = document.getElementById('ejTestBtn');
+  const res = document.getElementById('ejTestResult');
+  btn.disabled = true; btn.textContent = '⏳ Testando...';
+  res.className = 'ej-test-result'; res.textContent = '';
+  try {
+    emailjs.init(key);
+    // Send a real test email to verify credentials (uses template with minimal params)
+    await emailjs.send(svc, tpl, {
+      to_email:       svc.includes('@') ? svc : 'teste@fintrack.app',
+      subject:        'FinTrack — Teste de conexão',
+      message:        'Este é um e-mail de teste enviado pelo FinTrack para verificar a configuração do EmailJS.',
+      report_period:  'Teste',
+      report_income:  'R$ 0,00',
+      report_expense: 'R$ 0,00',
+      report_balance: 'R$ 0,00',
+      report_count:   '0',
+      from_name:      "Décio's FinTrack",
+    });
+    res.textContent = '✅ Conexão bem-sucedida! Verifique sua caixa de entrada.';
+    res.className   = 'ej-test-result ej-test-ok';
+    toast('Teste enviado com sucesso!', 'success');
+  } catch(e) {
+    res.textContent = '❌ Erro: ' + (e.text || e.message || JSON.stringify(e));
+    res.className   = 'ej-test-result ej-test-err';
+    toast('Falha no teste: ' + (e.text || e.message), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Testar conexão';
+  }
+}
+
+// Init status indicator on load
+function initEmailJSStatus() {
+  if(!EMAILJS_CONFIG.serviceId) return;
+  const sub = document.getElementById('ejSettingsSub');
+  if(sub) sub.textContent = `Configurado · ${EMAILJS_CONFIG.serviceId}`;
 }
 
 async function sendReportByEmail() {
