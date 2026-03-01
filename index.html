@@ -1914,8 +1914,8 @@ canvas { cursor: default; }
         <!-- Source preset chips -->
         <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">Formato do arquivo</div>
         <div class="source-chips" id="sourceChips">
-          <div class="source-chip active" onclick="selectSourcePreset('moneywiz')" id="chip-moneywiz">MoneyWiz</div>
-          <div class="source-chip" onclick="selectSourcePreset('generic')" id="chip-generic">CSV Genérico</div>
+          <div class="source-chip" onclick="selectSourcePreset('moneywiz')" id="chip-moneywiz">MoneyWiz</div>
+          <div class="source-chip active" onclick="selectSourcePreset('generic')" id="chip-generic">CSV Genérico</div>
           <div class="source-chip" onclick="selectSourcePreset('ofx')" id="chip-ofx">Extrato Bancário (OFX/CSV)</div>
           <div class="source-chip" onclick="selectSourcePreset('nubank')" id="chip-nubank">Nubank</div>
           <div class="source-chip" onclick="selectSourcePreset('inter')" id="chip-inter">Banco Inter</div>
@@ -6393,7 +6393,7 @@ function loadSettings() {
 /* ─── State ─── */
 let importState = {
   section: 'all',
-  sourcePreset: 'moneywiz',
+  sourcePreset: 'generic',
   rawRows: [],        // all rows from file (array of arrays)
   headers: [],        // detected header row
   headerRowIdx: 0,    // which row index is the header
@@ -7874,7 +7874,6 @@ function applyPermissions() {
 
 // ── Logout ──
 async function doLogout() {
-  if (!confirm('Deseja realmente sair?')) return;
   const token = localStorage.getItem('ft_session_token');
   if (token) {
     await sb.from('app_sessions').delete().eq('token', token).catch(()=>{});
@@ -7894,7 +7893,8 @@ async function doLogout() {
   const passEl = document.getElementById('loginPassword');
   if (emailEl) emailEl.value = '';
   if (passEl) passEl.value = '';
-  showLoginScreen();
+  // Reload the page for a completely clean state
+  window.location.reload();
 }
 
 // ── Session restore on load ──
