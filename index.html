@@ -7526,51 +7526,84 @@ async function executeClearDatabase() {
   const btn = document.querySelector('[onclick="confirmClearDatabase()"]');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Limpando...'; }
 
-  // Supabase/PostgREST doesn't allow DELETE without a filter.
-  // Also, not all tables have `created_at`, so we use a safe "neq(id, dummy)" filter.
-  const DUMMY_UUID = '00000000-0000-0000-0000-000000000000';
-
   try {
     if (!sb || typeof sb.from !== 'function') {
       throw new Error('Supabase não está conectado. Vá em Configurações e conecte novamente.');
     }
 
-    // Delete in dependency order (children -> parents) to avoid FK constraint errors.
+    // Delete in strict dependency order (children first → parents last) to avoid FK constraint errors.
+    // .not('id','is',null) is the most reliable way to match ALL rows in PostgREST/Supabase
+    // (more reliable than .neq('id', dummyUUID) which can silently fail with RLS).
     const tablesInOrder = [
-      'scheduled_occurrences',
-      'scheduled_transactions',
-      'transactions',
-      'budgets',
-      'payees',
-      'categories',
-      'accounts'
+      'scheduled_occurrences',   // references scheduled_transactions
+      'scheduled_transactions',  // references accounts, payees, categories
+      'transactions',            // references accounts, payees, categories
+      'budgets',                 // references categories
+      'payees',                  // references categories
+      'categories',              // self-referencing via parent_id — handled specially below
+      'accounts'                 // parent of transactions
     ];
 
     const cleared = [];
+    const skipped = [];
+    const failed  = [];
+
     for (const t of tablesInOrder) {
-      const { error } = await sb.from(t).delete().neq('id', DUMMY_UUID);
-      if (error) {
-        // If the table doesn't exist in this project, skip it gracefully.
-        const msg = (error.message || '').toLowerCase();
-        if (msg.includes('does not exist') || msg.includes('relation') && msg.includes('does not exist')) {
+      try {
+        // Categories are self-referencing (parent_id), so we must null parent_id first
+        if (t === 'categories') {
+          await sb.from('categories').update({ parent_id: null }).not('id', 'is', null).catch(() => {});
+        }
+
+        const { error } = await sb.from(t).delete().not('id', 'is', null);
+
+        if (error) {
+          const msg = (error.message || '').toLowerCase();
+          // Table doesn't exist in this project yet — skip gracefully
+          if (msg.includes('does not exist') || (msg.includes('relation') && msg.includes('does not exist'))) {
+            skipped.push(t);
+            continue;
+          }
+          failed.push(t + ': ' + error.message);
           continue;
         }
-        throw new Error(`Falha ao apagar "${t}": ${error.message}`);
+        cleared.push(t);
+      } catch (tableErr) {
+        failed.push(t + ': ' + (tableErr.message || tableErr));
       }
-      cleared.push(t);
     }
 
-    // Reset in-memory state
+    // Clear this user's sessions (will require re-login), but preserve app_users (login credentials)
+    const token = localStorage.getItem('ft_session_token');
+    if (token) {
+      await sb.from('app_sessions').delete().not('id', 'is', null).catch(() => {});
+      localStorage.removeItem('ft_session_token');
+      localStorage.removeItem('ft_user_id');
+    }
+
+    // Reset all in-memory state
     state.accounts = []; state.categories = []; state.payees = [];
     state.transactions = []; state.budgets = [];
     if (state.scheduled) state.scheduled = [];
+    state.txTotal = 0; state.txPage = 0;
 
     populateSelects();
-    toast('✓ Base de dados limpa!' + (cleared.length ? ` (${cleared.length} tabelas)` : ''), 'success');
-    navigate('dashboard');
+
+    if (failed.length > 0) {
+      alert('⚠️ Limpeza parcial — erros encontrados:\n\n• ' + failed.join('\n• '));
+      toast('Limpeza parcial — veja detalhes', 'error');
+    } else {
+      toast('✓ Base de dados limpa! (' + cleared.length + ' tabelas apagadas)', 'success');
+    }
+
+    // Re-login required since sessions were cleared
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+
   } catch(e) {
     toast('Erro ao limpar dados: ' + (e?.message || e), 'error');
-    console.error(e);
+    console.error('executeClearDatabase error:', e);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '⚠️ Limpar Tudo'; }
   }
