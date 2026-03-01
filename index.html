@@ -1743,7 +1743,7 @@ canvas { cursor: default; }
           <textarea id="emailMsg" rows="2" placeholder="Segue o relatório..."></textarea>
         </div>
         <div style="font-size:.75rem;color:var(--muted);margin-top:4px">
-          O PDF do relatório atual será anexado ao e-mail.<br>
+          O PDF será salvo no Supabase Storage e o link de download enviado por e-mail.<br>
           Requer configuração do EmailJS (botão ⚙️ na barra).
         </div>
         <div class="email-popup-row">
@@ -2568,17 +2568,23 @@ canvas { cursor: default; }
 
       <!-- Help box -->
       <div class="ej-help-box" style="margin-top:14px">
-        <strong>📋 Variáveis necessárias no template:</strong><br>
+        <strong>📋 Variáveis disponíveis no template EmailJS:</strong><br><br>
+        <span style="font-weight:700;color:var(--text2)">Roteamento</span><br>
         <code>{{to_email}}</code> destinatário &nbsp;·&nbsp;
-        <code>{{subject}}</code> assunto &nbsp;·&nbsp;
-        <code>{{message}}</code> corpo do e-mail<br>
+        <code>{{from_name}}</code> remetente &nbsp;·&nbsp;
+        <code>{{subject}}</code> assunto<br><br>
+        <span style="font-weight:700;color:var(--text2)">Corpo do e-mail</span><br>
+        <code>{{message}}</code> mensagem do usuário &nbsp;·&nbsp;
         <code>{{report_period}}</code> período &nbsp;·&nbsp;
-        <code>{{report_income}}</code> total receitas &nbsp;·&nbsp;
-        <code>{{report_expense}}</code> total despesas<br>
+        <code>{{report_view}}</code> tipo de relatório<br>
+        <code>{{report_income}}</code> receitas &nbsp;·&nbsp;
+        <code>{{report_expense}}</code> despesas &nbsp;·&nbsp;
         <code>{{report_balance}}</code> saldo &nbsp;·&nbsp;
-        <code>{{report_count}}</code> qtd transações &nbsp;·&nbsp;
-        <code>{{from_name}}</code> remetente<br><br>
-        <strong>📎 Para envio de PDF como anexo:</strong> ative <em>File Attachments</em> no template e use a variável <code>{{pdf_content}}</code> (base64).
+        <code>{{report_count}}</code> nº de transações<br><br>
+        <span style="font-weight:700;color:var(--text2)">📎 Link do PDF (Supabase Storage)</span><br>
+        <code>{{pdf_url}}</code> URL pública de download do relatório<br>
+        <code>{{pdf_name}}</code> nome do arquivo PDF gerado<br>
+        <span style="font-size:.7rem;color:var(--muted)">O PDF é salvo automaticamente no bucket <em>fintrack-attachments/reports/</em> com visibilidade pública.</span>
       </div>
 
     </div>
@@ -4361,58 +4367,174 @@ function closeEmailPopup() {
 }
 
 async function sendReportByEmail() {
-  const to=document.getElementById('emailTo').value.trim();
-  if(!to){toast('Informe o destinatário','error');return;}
-  if(!EMAILJS_CONFIG.serviceId||!EMAILJS_CONFIG.templateId||!EMAILJS_CONFIG.publicKey){
-    toast('Configure o EmailJS primeiro (botão ⚙️)','error');showEmailConfig();return;
+  const toAddr = document.getElementById('emailTo').value.trim();
+  if (!toAddr) { toast('Informe o destinatário', 'error'); return; }
+  if (!EMAILJS_CONFIG.serviceId || !EMAILJS_CONFIG.templateId || !EMAILJS_CONFIG.publicKey) {
+    toast('Configure o EmailJS primeiro (botão ⚙️)', 'error'); showEmailConfig(); return;
   }
-  const btn=document.getElementById('emailSendBtn');
-  const status=document.getElementById('emailStatus');
-  btn.disabled=true; btn.textContent='⏳ Gerando PDF...'; status.textContent='';
+  if (!sb) { toast('Supabase não conectado', 'error'); return; }
+
+  const btn    = document.getElementById('emailSendBtn');
+  const status = document.getElementById('emailStatus');
+  btn.disabled = true; btn.textContent = '⏳ Gerando PDF...'; status.textContent = '';
+
   try {
-    const {jsPDF}=window.jspdf;
-    const {from,to:toDate}=getRptDateRange();
-    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const W=doc.internal.pageSize.getWidth();
-    const ACCENT=[42,96,73];
-    doc.setFillColor(42,96,73); doc.rect(0,0,W,30,'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
-    doc.text("J.F. Family FinTrack — Relatório",14,12);
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text('Período: ' + fmtDate(from) + ' a ' + fmtDate(toDate),14,21);
-    doc.setTextColor(30,30,30); doc.setFillColor(255,255,255);
-    const txs=rptState.txData;
-    const rows=txs.map(t=>[fmtDate(t.date),t.description||'',t.accounts?.name||'',t.categories?.name||'',t.payees?.name||'',fmt(t.amount)]);
-    doc.autoTable({startY:36,head:[['Data','Descrição','Conta','Categoria','Beneficiário','Valor']],body:rows,
-      styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[42,96,73],textColor:[255,255,255]},margin:{left:14,right:14}});
-    const pdfB64=doc.output('datauristring').split(',')[1];
-    btn.textContent='⏳ Enviando...';
-    emailjs.init(EMAILJS_CONFIG.publicKey);
-    const subject=document.getElementById('emailSubject').value;
-    const msg=document.getElementById('emailMsg').value||`Relatório de ${fmtDate(from)} a ${fmtDate(toDate)} — ${txs.length} transações.`;
-    const {from:f2,to:t2}=getRptDateRange();
-    const totE2=txs.filter(t=>t.amount<0).reduce((s,t)=>s+Math.abs(t.amount),0);
-    const totI2=txs.filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
-    await emailjs.send(EMAILJS_CONFIG.serviceId,EMAILJS_CONFIG.templateId,{
-      to_email:       to,
-      subject:        subject,
-      message:        msg,
-      pdf_content:    pdfB64,
-      from_name:      "JF Family FinTrack",
-      report_period:  `${fmtDate(f2)} a ${fmtDate(t2)}`,
-      report_income:  fmt(totI2),
-      report_expense: fmt(totE2),
-      report_balance: fmt(totI2-totE2),
-      report_count:   String(txs.length),
-      report_view:    rptState.view==='regular'?'Análise':rptState.view==='transactions'?'Transações':'Previsão',
+    // ── Step 1: Generate PDF (same as exportReportPDF) ─────────────────
+    const { jsPDF } = window.jspdf;
+    const { from, to } = getRptDateRange();
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W   = doc.internal.pageSize.getWidth();
+
+    // Header banner
+    doc.setFillColor(42, 96, 73); doc.rect(0, 0, W, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold');
+    doc.text('J.F. Family FinTrack — Relatório', 14, 12);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('Período: ' + fmtDate(from) + ' a ' + fmtDate(to), 14, 21);
+    doc.text('Gerado: ' + new Date().toLocaleString('pt-BR'), W - 14, 21, { align: 'right' });
+    doc.setTextColor(30, 30, 30);
+
+    let y = 38;
+    const txs    = rptState.txData;
+    const totExp = txs.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const totInc = txs.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const bal    = totInc - totExp;
+
+    // KPI tiles
+    const kpis = [
+      ['Receitas',   fmt(totInc), [42, 122, 74]],
+      ['Despesas',   fmt(totExp), [192, 57, 43]],
+      ['Saldo',      fmt(bal),    bal >= 0 ? [42, 122, 74] : [192, 57, 43]],
+      ['Transações', String(txs.length), [42, 96, 73]],
+    ];
+    const kw = (W - 28) / kpis.length;
+    kpis.forEach(([label, val, col], i) => {
+      const x = 14 + i * kw;
+      doc.setFillColor(240, 248, 244); doc.roundedRect(x, y, kw - 3, 18, 2, 2, 'F');
+      doc.setDrawColor(...col);        doc.roundedRect(x, y, kw - 3, 18, 2, 2, 'S');
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+      doc.text(label, x + 4, y + 6);
+      doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(...col);
+      doc.text(val, x + 4, y + 14);
     });
-    status.textContent='✓ Enviado!'; status.style.color='var(--green)';
-    toast('E-mail enviado com sucesso!','success');
-    setTimeout(closeEmailPopup,1500);
-  } catch(e){
-    status.textContent='✗ '+e.message; status.style.color='var(--red)';
-    toast('Erro: '+e.message,'error');
-  } finally{ btn.disabled=false; btn.textContent='Enviar PDF'; }
+    y += 26; doc.setTextColor(30, 30, 30);
+
+    // Data table
+    if (rptState.view === 'regular' || rptState.view === 'transactions') {
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+      doc.text(rptState.view === 'transactions' ? 'Transações' : 'Detalhamento por Categoria', 14, y);
+      y += 4;
+      if (rptState.view === 'transactions') {
+        const rows = txs.map(t => [fmtDate(t.date), t.description || '', t.accounts?.name || '',
+          t.categories?.name || '', t.payees?.name || '', fmt(t.amount)]);
+        doc.autoTable({
+          startY: y,
+          head: [['Data', 'Descrição', 'Conta', 'Categoria', 'Beneficiário', 'Valor']],
+          body: rows,
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [42, 96, 73], textColor: [255, 255, 255] },
+          columnStyles: { 5: { halign: 'right' } },
+          margin: { left: 14, right: 14 },
+          didParseCell(data) {
+            if (data.column.index === 5 && data.section === 'body') {
+              const v = txs[data.row.index]?.amount;
+              data.cell.styles.textColor = v < 0 ? [192, 57, 43] : [42, 122, 74];
+            }
+          }
+        });
+      } else {
+        const allMap = {};
+        txs.forEach(t => {
+          const n = t.categories?.name || 'Sem categoria';
+          const tp = t.amount < 0 ? 'Despesa' : 'Receita';
+          const k  = n + '|' + tp;
+          if (!allMap[k]) allMap[k] = { name: n, type: tp, total: 0, count: 0 };
+          allMap[k].total += Math.abs(t.amount); allMap[k].count++;
+        });
+        const allE  = Object.values(allMap).sort((a, b) => b.total - a.total);
+        const grand = allE.reduce((s, e) => s + e.total, 0);
+        const rows  = allE.map(v => [v.name, v.type, String(v.count), fmt(v.total),
+          grand > 0 ? (v.total / grand * 100).toFixed(1) + '%' : '0%']);
+        doc.autoTable({
+          startY: y,
+          head: [['Categoria', 'Tipo', 'Qtd', 'Total', '%']],
+          body: rows,
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [42, 96, 73], textColor: [255, 255, 255] },
+          columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } },
+          margin: { left: 14, right: 14 }
+        });
+      }
+    }
+
+    // Page footer
+    const pages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= pages; p++) {
+      doc.setPage(p); doc.setFontSize(8); doc.setTextColor(150);
+      doc.text(`JF Family FinTrack  ·  Página ${p}/${pages}`,
+        W / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
+    }
+
+    // ── Step 2: Upload PDF to Supabase Storage ─────────────────────────
+    btn.textContent = '⏳ Salvando PDF...';
+    const pdfBytes   = doc.output('arraybuffer');
+    const pdfBlob    = new Blob([pdfBytes], { type: 'application/pdf' });
+    const fileName   = `FinTrack_${from}_${to}_${Date.now()}.pdf`;
+    const storagePath = `reports/${fileName}`;
+
+    const { error: upErr } = await sb.storage
+      .from('fintrack-attachments')
+      .upload(storagePath, pdfBlob, { upsert: true, contentType: 'application/pdf' });
+
+    if (upErr) throw new Error('Erro no upload: ' + upErr.message);
+
+    // Get the public URL for the uploaded file
+    const { data: urlData } = sb.storage
+      .from('fintrack-attachments')
+      .getPublicUrl(storagePath);
+
+    const pdfUrl = urlData.publicUrl;
+
+    // ── Step 3: Send email via EmailJS with the download link ──────────
+    btn.textContent = '⏳ Enviando e-mail...';
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+
+    const subject     = document.getElementById('emailSubject').value;
+    const userMessage = document.getElementById('emailMsg').value.trim() ||
+      `Segue o relatório financeiro do período de ${fmtDate(from)} a ${fmtDate(to)}.`;
+
+    const viewLabel = rptState.view === 'regular'       ? 'Análise por Categoria'
+                    : rptState.view === 'transactions'  ? 'Lista de Transações'
+                    : 'Previsão';
+
+    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+      to_email:       toAddr,
+      from_name:      'J.F. Family FinTrack',
+      subject:        subject,
+      message:        userMessage,
+      report_period:  `${fmtDate(from)} a ${fmtDate(to)}`,
+      report_view:    viewLabel,
+      report_income:  fmt(totInc),
+      report_expense: fmt(totExp),
+      report_balance: fmt(bal),
+      report_count:   String(txs.length),
+      pdf_url:        pdfUrl,
+      pdf_name:       fileName,
+    });
+
+    status.textContent = '✓ Enviado!'; status.style.color = 'var(--green)';
+    toast('E-mail enviado com sucesso!', 'success');
+    setTimeout(closeEmailPopup, 1800);
+
+  } catch(e) {
+    console.error('[Email]', e);
+    status.textContent = '✗ ' + (e.text || e.message || 'Erro desconhecido');
+    status.style.color = 'var(--red)';
+    toast('Erro ao enviar: ' + (e.text || e.message), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar PDF';
+  }
 }
 
 function renderChart(id, type, labels, datasets, extraOptions={}) {
@@ -6101,16 +6223,21 @@ async function testEmailJSConnection() {
   try {
     emailjs.init(key);
     // Send a real test email to verify credentials (uses template with minimal params)
+    const testEmail = document.getElementById('ejServiceId').value.includes('@')
+      ? svc : (currentUser?.email || 'teste@fintrack.app');
     await emailjs.send(svc, tpl, {
-      to_email:       svc.includes('@') ? svc : 'teste@fintrack.app',
-      subject:        'FinTrack — Teste de conexão',
-      message:        'Este é um e-mail de teste enviado pelo FinTrack para verificar a configuração do EmailJS.',
-      report_period:  'Teste',
-      report_income:  'R$ 0,00',
-      report_expense: 'R$ 0,00',
-      report_balance: 'R$ 0,00',
-      report_count:   '0',
-      from_name:      "JF Family FinTrack",
+      to_email:       testEmail,
+      from_name:      'J.F. Family FinTrack',
+      subject:        'FinTrack — Teste de conexão ✅',
+      message:        'Este é um e-mail de teste enviado pelo JF Family FinTrack para confirmar que a configuração do EmailJS está correta. Se recebeu este e-mail, está tudo funcionando!',
+      report_period:  'Teste — ' + new Date().toLocaleDateString('pt-BR'),
+      report_view:    'Teste de conexão',
+      report_income:  'R$ 1.000,00',
+      report_expense: 'R$ 800,00',
+      report_balance: 'R$ 200,00',
+      report_count:   '5',
+      pdf_url:        'https://exemplo.com/relatorio-teste.pdf',
+      pdf_name:       'FinTrack_Relatorio_Teste.pdf',
     });
     res.textContent = '✅ Conexão bem-sucedida! Verifique sua caixa de entrada.';
     res.className   = 'ej-test-result ej-test-ok';
