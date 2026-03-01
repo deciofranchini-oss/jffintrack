@@ -857,12 +857,12 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
 <!-- SETUP -->
 <!-- PIN LOCK SCREEN -->
 <div class="pin-screen" id="pinScreen">
-  <div class="pin-logo-wrap">
-    <img src="https://raw.githubusercontent.com/deciofranchini-oss/fintrack/d513028c2243e6b25208022820900bd7c0b412bd/Logo.png" class="pin-logo-img" alt="Décio's FinTrack" id="pinLogoImg">
-  </div>
   <div class="pin-card">
-    <div class="pin-title">Bem-vindo de volta</div>
-    <div class="pin-subtitle">Digite o Masterpin para acessar</div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2.2rem;margin-bottom:6px">🔐</div>
+      <div class="pin-title">Décio's FinTrack</div>
+      <div class="pin-subtitle">Digite o Masterpin para acessar</div>
+    </div>
     <div class="pin-dots" id="pinDots">
       <div class="pin-dot" id="pd0"></div>
       <div class="pin-dot" id="pd1"></div>
@@ -908,7 +908,7 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
 <!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-logo" style="padding:0;background:#0d1f17">
-    <img id="sidebarLogoImg" src="" alt="Décio's FinTrack" style="width:100%;max-width:200px;height:auto;display:block;margin:0 auto;object-fit:contain;padding:12px 16px">
+    <img id="sidebarLogoImg" src="https://raw.githubusercontent.com/deciofranchini-oss/fintrack/d513028c2243e6b25208022820900bd7c0b412bd/Logo.png" alt="Décio's FinTrack" style="width:100%;max-width:200px;height:auto;display:block;margin:0 auto;object-fit:contain;padding:12px 16px">
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">
@@ -1204,7 +1204,7 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
       <div class="settings-section">
         <div class="settings-card">
           <div class="settings-row" style="justify-content:center;padding:0;flex-direction:column;gap:0;background:#0d1f17;border-radius:var(--r) var(--r) 0 0">
-            <img id="settingsLogoImg" src="" alt="Décio's FinTrack" style="height:160px;object-fit:contain;padding:20px">
+            <img id="settingsLogoImg" src="https://raw.githubusercontent.com/deciofranchini-oss/fintrack/d513028c2243e6b25208022820900bd7c0b412bd/Logo.png" alt="Décio's FinTrack" style="height:160px;object-fit:contain;padding:20px">
             <div style="text-align:center">
               <div style="font-weight:700;font-size:1.15rem;font-family:var(--font-serif);color:var(--text)">Décio's FinTrack</div>
               <div style="font-size:.75rem;color:var(--muted);margin-top:3px">Gestão Financeira Pessoal · v2.0</div>
@@ -1777,24 +1777,23 @@ async function initSupabase(){
   }catch(e){toast('Erro: '+e.message,'error');}
 }
 function tryAutoConnect(){
-  // Always show PIN first (initPinScreen handles flow)
-  initPinScreen();
   const url=localStorage.getItem('sb_url'),key=localStorage.getItem('sb_key');
   if(url&&key){
+    // Pre-connect Supabase client silently
     document.getElementById('supabaseUrl').value=url;
     document.getElementById('supabaseKey').value=key;
     sb=supabase.createClient(url,key);
-    bootApp();
   }
+  // Always show PIN screen first — bootApp called after unlock
+  initPinScreen();
 }
 
 let state={accounts:[],categories:[],payees:[],transactions:[],budgets:[],txPage:0,txPageSize:50,txTotal:0,txSortField:'date',txSortAsc:false,txFilter:{search:'',month:'',account:'',type:''},txView:'flat',currentPage:'dashboard',chartInstances:{}};
 
 async function bootApp(){
   // Set logo everywhere
-  const logo = typeof LOGO_B64 !== 'undefined' ? LOGO_B64 : '';
   ['sidebarLogoImg','settingsLogoImg','topbarLogoImg'].forEach(id=>{
-    const el=document.getElementById(id);if(el&&logo)el.src=logo;
+    const el=document.getElementById(id);if(el)el.src=LOGO_URL;
   });
   await Promise.all([loadAccounts(),loadCategories(),loadPayees()]);
   populateSelects();loadDashboard();
@@ -3996,6 +3995,7 @@ async function sendReportByEmail() {
 ═══════════════════════════════════════════════════════════════ */
 
 const DEFAULT_PIN = '191291';
+const LOGO_URL = 'https://raw.githubusercontent.com/deciofranchini-oss/fintrack/d513028c2243e6b25208022820900bd7c0b412bd/Logo.png';
 let _pinBuffer = '';
 let _pinUnlocked = false;
 let _autoLockTimer = null;
@@ -4007,15 +4007,11 @@ function getMasterPin() {
 }
 
 function initPinScreen() {
-  // Set logo on all logo elements
-  const logo = LOGO_B64;
-  ['pinLogoImg','sidebarLogoImg','settingsLogoImg'].forEach(id => {
+  // Set logo on sidebar and settings (NOT pin screen - logo removed from there)
+  ['sidebarLogoImg','settingsLogoImg','topbarLogoImg'].forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.src = logo;
+    if(el) el.src = LOGO_URL;
   });
-  // Topbar logo on mobile shows on dashboard
-  const tl = document.getElementById('topbarLogoImg');
-  if(tl) tl.src = logo;
 
   // Check if credentials already saved → show PIN, else show setup
   const url = localStorage.getItem('sb_url');
@@ -4109,6 +4105,10 @@ function unlockApp() {
   pinScreen.style.opacity = '0';
   pinScreen.style.transition = 'opacity .35s ease';
   setTimeout(() => { pinScreen.style.display = 'none'; pinScreen.style.opacity = ''; }, 350);
+  // Load app data if not yet loaded
+  if(sb && !state.accounts.length) {
+    bootApp();
+  }
   // Start auto-lock timer
   resetAutoLockTimer();
   document.addEventListener('click', resetAutoLockTimer, { passive: true });
