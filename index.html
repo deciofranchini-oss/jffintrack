@@ -251,6 +251,91 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
   .modal{border-radius:var(--r-lg);width:min(560px,96vw);max-height:90vh;}
   .modal-handle{display:none;}
 }
+
+/* ─── PAYEE AUTOCOMPLETE ─── */
+.payee-input-wrap{position:relative;}
+.payee-input-wrap input{padding-right:32px;}
+.payee-status{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none;}
+
+.payee-dropdown{
+  position:absolute;left:0;right:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);box-shadow:var(--shadow);
+  z-index:500;max-height:220px;overflow-y:auto;
+  margin-top:2px;
+}
+.payee-opt{
+  padding:10px 14px;cursor:pointer;font-size:.875rem;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);transition:background .1s;
+}
+.payee-opt:last-child{border-bottom:none;}
+.payee-opt:hover,.payee-opt.focused{background:var(--accent-lt);}
+.payee-opt-icon{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--muted);flex-shrink:0;}
+.payee-opt-name{font-weight:500;color:var(--text);}
+.payee-opt-sub{font-size:.72rem;color:var(--muted);}
+.payee-opt-create{color:var(--accent);font-weight:500;}
+.payee-opt-create .payee-opt-icon{background:var(--accent-lt);border-color:rgba(42,96,73,.2);color:var(--accent);}
+
+.payee-similar-banner{
+  margin-top:6px;padding:10px 12px;
+  background:var(--amber-lt);border:1px solid rgba(180,83,9,.2);
+  border-radius:var(--r-sm);font-size:.82rem;
+}
+.payee-similar-banner strong{color:var(--amber);display:block;margin-bottom:6px;}
+.payee-similar-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+
+.payee-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--accent-lt);border:1px solid rgba(42,96,73,.2);
+  border-radius:100px;padding:4px 10px 4px 8px;
+  font-size:.78rem;font-weight:500;color:var(--accent);
+  margin-top:4px;
+}
+.payee-chip-clear{cursor:pointer;font-size:.9rem;line-height:1;color:var(--accent);opacity:.6;}
+.payee-chip-clear:hover{opacity:1;}
+
+/* ─── ICON PICKER ─── */
+.icon-picker{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface2);}
+.icon-picker-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+.icon-tab{flex:1;padding:8px 4px;font-size:.72rem;font-weight:600;color:var(--muted);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:var(--font-sans);}
+.icon-tab:hover{color:var(--text2);}
+.icon-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface);}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px;padding:10px;}
+.icon-option{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:var(--r-sm);cursor:pointer;border:2px solid transparent;transition:all .15s;text-align:center;}
+.icon-option:hover{background:var(--bg2);border-color:var(--border2);}
+.icon-option.selected{border-color:var(--accent);background:var(--accent-lt);}
+.icon-label{font-size:.6rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;}
+.icon-option.selected .icon-label{color:var(--accent);}
+
+/* ─── BANK LOGOS (CSS-rendered) ─── */
+.bank-logo{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:.7rem;font-family:var(--font-sans);flex-shrink:0;letter-spacing:-.02em;}
+.itau-logo{background:linear-gradient(135deg,#FF6600,#FF8C00);color:#fff;border-radius:8px;}
+.inter-logo{background:#FF7A00;color:#fff;border-radius:8px;}
+.bradesco-logo{background:#CC092F;color:#fff;border-radius:8px;}
+.nubank-logo{background:#820AD1;color:#fff;border-radius:50%;}
+.bb-logo{background:linear-gradient(135deg,#F5A623,#003087);color:#fff;border-radius:8px;}
+.caixa-logo{background:#005CA9;color:#fff;border-radius:4px;}
+.santander-logo{background:#EC0000;color:#fff;border-radius:50%;}
+.xp-logo{background:#000;color:#fff;border-radius:6px;font-size:.75rem;}
+.c6-logo{background:#242424;color:#fff;border-radius:6px;}
+.boursobank-logo{background:linear-gradient(135deg,#1A2E5A,#2E4A8A);color:#fff;border-radius:6px;font-size:.65rem;}
+
+/* ─── CARD LOGOS ─── */
+.card-visa{background:#1A1F71;color:#fff;border-radius:4px;font-style:italic;font-size:.65rem;font-weight:900;letter-spacing:-.03em;font-family:serif;}
+.card-mc{background:transparent;position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+.mc-left{width:22px;height:22px;border-radius:50%;background:#EB001B;position:absolute;left:0;}
+.mc-right{width:22px;height:22px;border-radius:50%;background:#F79E1B;position:absolute;right:0;opacity:.9;}
+.card-amex{background:#2E77BC;color:#fff;border-radius:4px;font-size:.55rem;font-weight:700;letter-spacing:.04em;}
+.card-elo{background:#000;color:#F5BC00;border-radius:4px;font-size:.75rem;font-weight:900;font-style:italic;}
+
+/* ─── CATEGORY TREE (enhanced) ─── */
+.category-tree li{position:relative;}
+.category-tree .cat-indent{display:flex;align-items:center;gap:8px;flex:1;}
+.cat-parent-badge{font-size:.62rem;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:1px 6px;margin-left:4px;}
+.add-sub-btn{font-size:.7rem;color:var(--accent);border:1px solid rgba(42,96,73,.25);background:var(--accent-lt);border-radius:100px;padding:2px 8px;cursor:pointer;opacity:0;transition:opacity .15s;white-space:nowrap;font-family:var(--font-sans);}
+.category-tree li:hover .add-sub-btn{opacity:1;}
+.cat-sub-count{font-size:.65rem;color:var(--muted);background:var(--bg2);border-radius:100px;padding:1px 7px;border:1px solid var(--border);}
 </style>
 </head>
 <body>
@@ -461,7 +546,16 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
         <div class="form-group full"><label>Descrição *</label><input type="text" id="txDesc" placeholder="Ex: Almoço no restaurante"></div>
         <div class="form-group"><label>Conta *</label><select id="txAccountId"></select></div>
         <div class="form-group" id="txTransferToGroup" style="display:none"><label>Conta Destino *</label><select id="txTransferTo"></select></div>
-        <div class="form-group" id="txPayeeGroup"><label>Beneficiário / Fonte</label><select id="txPayeeId"><option value="">— Nenhum —</option></select></div>
+        <div class="form-group" id="txPayeeGroup" style="position:relative">
+          <label>Beneficiário / Fonte</label>
+          <input type="hidden" id="txPayeeId">
+          <div class="payee-input-wrap">
+            <input type="text" id="txPayeeName" placeholder="Digite para buscar ou criar..." autocomplete="off" oninput="onPayeeInput(this.value)" onblur="onPayeeBlur()" onkeydown="onPayeeKey(event)">
+            <span id="txPayeeStatus" class="payee-status"></span>
+          </div>
+          <div id="txPayeeDropdown" class="payee-dropdown" style="display:none"></div>
+          <div id="txPayeeSimilarBanner" class="payee-similar-banner" style="display:none"></div>
+        </div>
         <div class="form-group" id="txCategoryGroup"><label>Categoria</label><select id="txCategoryId"><option value="">— Sem categoria —</option></select></div>
         <div class="form-group full"><label>Observação</label><textarea id="txMemo" rows="2" placeholder="Memo, notas..."></textarea></div>
         <div class="form-group"><label>Tags (vírgula)</label><input type="text" id="txTags" placeholder="IR, Décio, ..."></div>
@@ -482,8 +576,76 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
         <div class="form-group"><label>Tipo *</label><select id="accountType"><option value="corrente">Conta Corrente</option><option value="poupanca">Poupança</option><option value="cartao_credito">Cartão de Crédito</option><option value="investimento">Investimentos</option><option value="dinheiro">Dinheiro</option><option value="outros">Outros</option></select></div>
         <div class="form-group"><label>Moeda</label><select id="accountCurrency"><option value="BRL">BRL — Real</option><option value="USD">USD — Dólar</option><option value="EUR">EUR — Euro</option><option value="AED">AED — Dirham</option></select></div>
         <div class="form-group"><label>Saldo Inicial</label><input type="number" id="accountBalance" step="0.01" placeholder="0.00" inputmode="decimal"></div>
-        <div class="form-group"><label>Ícone</label><input type="text" id="accountIcon" placeholder="🏦" maxlength="4"></div>
-        <div class="form-group"><label>Cor</label><input type="color" id="accountColor" value="#2a6049"></div>
+        <div class="form-group full">
+          <label>Ícone</label>
+          <div class="icon-picker" id="accountIconPicker">
+            <div class="icon-picker-tabs">
+              <button class="icon-tab active" onclick="showIconGroup(event,'banks-br')">🇧🇷 Bancos BR</button>
+              <button class="icon-tab" onclick="showIconGroup(event,'banks-fr')">🇫🇷 Bancos FR</button>
+              <button class="icon-tab" onclick="showIconGroup(event,'cards')">💳 Cartões</button>
+              <button class="icon-tab" onclick="showIconGroup(event,'generic')">⭐ Outros</button>
+            </div>
+            <div class="icon-grid" id="iconGroup-banks-br">
+              <div class="icon-option" data-icon="itau" data-color="#FF6600" onclick="selectAccountIcon(this)" title="Itaú"><span class="bank-logo itau-logo">I</span><span class="icon-label">Itaú</span></div>
+              <div class="icon-option" data-icon="inter" data-color="#FF7A00" onclick="selectAccountIcon(this)" title="Banco Inter"><span class="bank-logo inter-logo">IN</span><span class="icon-label">Inter</span></div>
+              <div class="icon-option" data-icon="bradesco" data-color="#CC092F" onclick="selectAccountIcon(this)" title="Bradesco"><span class="bank-logo bradesco-logo">B</span><span class="icon-label">Bradesco</span></div>
+              <div class="icon-option" data-icon="nubank" data-color="#820AD1" onclick="selectAccountIcon(this)" title="Nubank"><span class="bank-logo nubank-logo">N</span><span class="icon-label">Nubank</span></div>
+              <div class="icon-option" data-icon="bb" data-color="#F5A623" onclick="selectAccountIcon(this)" title="Banco do Brasil"><span class="bank-logo bb-logo">BB</span><span class="icon-label">BB</span></div>
+              <div class="icon-option" data-icon="caixa" data-color="#005CA9" onclick="selectAccountIcon(this)" title="Caixa"><span class="bank-logo caixa-logo">CE</span><span class="icon-label">Caixa</span></div>
+              <div class="icon-option" data-icon="santander" data-color="#EC0000" onclick="selectAccountIcon(this)" title="Santander"><span class="bank-logo santander-logo">S</span><span class="icon-label">Santander</span></div>
+              <div class="icon-option" data-icon="xp" data-color="#000000" onclick="selectAccountIcon(this)" title="XP Investimentos"><span class="bank-logo xp-logo">XP</span><span class="icon-label">XP</span></div>
+              <div class="icon-option" data-icon="c6" data-color="#242424" onclick="selectAccountIcon(this)" title="C6 Bank"><span class="bank-logo c6-logo">C6</span><span class="icon-label">C6</span></div>
+              <div class="icon-option" data-icon="neon" data-color="#00D4FF" onclick="selectAccountIcon(this)" title="Neon"><span class="bank-logo neon-logo" style="background:#00D4FF">Ne</span><span class="icon-label">Neon</span></div>
+              <div class="icon-option" data-icon="next" data-color="#00AF3F" onclick="selectAccountIcon(this)" title="Next"><span class="bank-logo next-logo" style="background:#00AF3F">Nx</span><span class="icon-label">Next</span></div>
+              <div class="icon-option" data-icon="picpay" data-color="#21C25E" onclick="selectAccountIcon(this)" title="PicPay"><span class="bank-logo picpay-logo" style="background:#21C25E">PP</span><span class="icon-label">PicPay</span></div>
+              <div class="icon-option" data-icon="mercadopago" data-color="#009EE3" onclick="selectAccountIcon(this)" title="Mercado Pago"><span class="bank-logo mercadopago-logo" style="background:#009EE3">MP</span><span class="icon-label">Mercado Pago</span></div>
+              <div class="icon-option" data-icon="sicoob" data-color="#006837" onclick="selectAccountIcon(this)" title="Sicoob"><span class="bank-logo" style="background:#006837;color:#fff;border-radius:50%;font-weight:700;font-size:.65rem">SC</span><span class="icon-label">Sicoob</span></div>
+              <div class="icon-option" data-icon="rico" data-color="#00A86B" onclick="selectAccountIcon(this)" title="Rico"><span class="bank-logo" style="background:#00A86B;color:#fff;border-radius:4px;font-weight:700;font-size:.65rem">Rc</span><span class="icon-label">Rico</span></div>
+              <div class="icon-option" data-icon="will" data-color="#7B2D8B" onclick="selectAccountIcon(this)" title="Will Bank"><span class="bank-logo" style="background:#7B2D8B;color:#fff;border-radius:50%;font-weight:700;font-size:.65rem">W</span><span class="icon-label">Will</span></div>
+            </div>
+            <div class="icon-grid" id="iconGroup-banks-fr" style="display:none">
+              <div class="icon-option" data-icon="boursobank" data-color="#1A2E5A" onclick="selectAccountIcon(this)" title="Boursobank"><span class="bank-logo boursobank-logo">Bb</span><span class="icon-label">Boursobank</span></div>
+              <div class="icon-option" data-icon="bnp" data-color="#009B55" onclick="selectAccountIcon(this)" title="BNP Paribas"><span class="bank-logo" style="background:#009B55;color:#fff;border-radius:4px;font-weight:700;font-size:.65rem">BNP</span><span class="icon-label">BNP Paribas</span></div>
+              <div class="icon-option" data-icon="sg" data-color="#E30613" onclick="selectAccountIcon(this)" title="Société Générale"><span class="bank-logo" style="background:#E30613;color:#fff;border-radius:4px;font-weight:700;font-size:.6rem">SG</span><span class="icon-label">Soc. Gén.</span></div>
+              <div class="icon-option" data-icon="ca" data-color="#009A44" onclick="selectAccountIcon(this)" title="Crédit Agricole"><span class="bank-logo" style="background:#009A44;color:#fff;border-radius:4px;font-weight:700;font-size:.6rem">CA</span><span class="icon-label">Crédit Ag.</span></div>
+              <div class="icon-option" data-icon="lcl" data-color="#005BAB" onclick="selectAccountIcon(this)" title="LCL"><span class="bank-logo" style="background:#005BAB;color:#fff;border-radius:4px;font-weight:700;font-size:.7rem">LCL</span><span class="icon-label">LCL</span></div>
+              <div class="icon-option" data-icon="laposte" data-color="#FDD000" onclick="selectAccountIcon(this)" title="La Banque Postale"><span class="bank-logo" style="background:#FDD000;color:#333;border-radius:4px;font-weight:700;font-size:.6rem">LP</span><span class="icon-label">La Poste</span></div>
+              <div class="icon-option" data-icon="cic" data-color="#003087" onclick="selectAccountIcon(this)" title="CIC"><span class="bank-logo" style="background:#003087;color:#fff;border-radius:4px;font-weight:700;font-size:.7rem">CIC</span><span class="icon-label">CIC</span></div>
+              <div class="icon-option" data-icon="bred" data-color="#C8102E" onclick="selectAccountIcon(this)" title="BRED"><span class="bank-logo" style="background:#C8102E;color:#fff;border-radius:4px;font-weight:700;font-size:.65rem">BRED</span><span class="icon-label">BRED</span></div>
+              <div class="icon-option" data-icon="revolut" data-color="#0075EB" onclick="selectAccountIcon(this)" title="Revolut"><span class="bank-logo" style="background:#0075EB;color:#fff;border-radius:6px;font-weight:700;font-size:.65rem">Rv</span><span class="icon-label">Revolut</span></div>
+              <div class="icon-option" data-icon="n26" data-color="#3B82F6" onclick="selectAccountIcon(this)" title="N26"><span class="bank-logo" style="background:#3B82F6;color:#fff;border-radius:6px;font-weight:700;font-size:.7rem">N26</span><span class="icon-label">N26</span></div>
+              <div class="icon-option" data-icon="wise" data-color="#9FE870" onclick="selectAccountIcon(this)" title="Wise"><span class="bank-logo" style="background:#9FE870;color:#163300;border-radius:6px;font-weight:700;font-size:.65rem">W</span><span class="icon-label">Wise</span></div>
+              <div class="icon-option" data-icon="paypal" data-color="#003087" onclick="selectAccountIcon(this)" title="PayPal"><span class="bank-logo" style="background:#003087;color:#fff;border-radius:6px;font-weight:700;font-size:.65rem">PP</span><span class="icon-label">PayPal</span></div>
+            </div>
+            <div class="icon-grid" id="iconGroup-cards" style="display:none">
+              <div class="icon-option" data-icon="visa" data-color="#1A1F71" onclick="selectAccountIcon(this)" title="Visa"><span class="bank-logo card-visa"><em>VISA</em></span><span class="icon-label">Visa</span></div>
+              <div class="icon-option" data-icon="mastercard" data-color="#EB001B" onclick="selectAccountIcon(this)" title="Mastercard"><span class="bank-logo card-mc"><span class="mc-left"></span><span class="mc-right"></span></span><span class="icon-label">Mastercard</span></div>
+              <div class="icon-option" data-icon="amex" data-color="#2E77BC" onclick="selectAccountIcon(this)" title="American Express"><span class="bank-logo card-amex">AMEX</span><span class="icon-label">Amex</span></div>
+              <div class="icon-option" data-icon="elo" data-color="#000000" onclick="selectAccountIcon(this)" title="Elo"><span class="bank-logo card-elo">elo</span><span class="icon-label">Elo</span></div>
+              <div class="icon-option" data-icon="hipercard" data-color="#B40019" onclick="selectAccountIcon(this)" title="Hipercard"><span class="bank-logo" style="background:#B40019;color:#fff;border-radius:4px;font-weight:700;font-size:.6rem">HC</span><span class="icon-label">Hipercard</span></div>
+              <div class="icon-option" data-icon="dinersclub" data-color="#004B87" onclick="selectAccountIcon(this)" title="Diners Club"><span class="bank-logo" style="background:#004B87;color:#fff;border-radius:50%;font-weight:700;font-size:.6rem">DC</span><span class="icon-label">Diners</span></div>
+              <div class="icon-option" data-icon="sams" data-color="#0067A0" onclick="selectAccountIcon(this)" title="Sam's Club"><span class="bank-logo" style="background:#0067A0;color:#fff;border-radius:4px;font-weight:700;font-size:.6rem">S</span><span class="icon-label">Sam's</span></div>
+              <div class="icon-option" data-icon="porto" data-color="#005B8E" onclick="selectAccountIcon(this)" title="Porto Seguro"><span class="bank-logo" style="background:#005B8E;color:#fff;border-radius:4px;font-weight:700;font-size:.6rem">PS</span><span class="icon-label">Porto</span></div>
+            </div>
+            <div class="icon-grid" id="iconGroup-generic" style="display:none">
+              <div class="icon-option" data-icon="emoji-🏦" data-color="#2a6049" onclick="selectAccountIcon(this)" title="Banco"><span style="font-size:1.5rem">🏦</span><span class="icon-label">Banco</span></div>
+              <div class="icon-option" data-icon="emoji-💳" data-color="#1A1F71" onclick="selectAccountIcon(this)" title="Cartão"><span style="font-size:1.5rem">💳</span><span class="icon-label">Cartão</span></div>
+              <div class="icon-option" data-icon="emoji-💰" data-color="#F5A623" onclick="selectAccountIcon(this)" title="Dinheiro"><span style="font-size:1.5rem">💰</span><span class="icon-label">Dinheiro</span></div>
+              <div class="icon-option" data-icon="emoji-💵" data-color="#2a7a4a" onclick="selectAccountIcon(this)" title="Notas"><span style="font-size:1.5rem">💵</span><span class="icon-label">Notas</span></div>
+              <div class="icon-option" data-icon="emoji-📈" data-color="#1e5ba8" onclick="selectAccountIcon(this)" title="Investimentos"><span style="font-size:1.5rem">📈</span><span class="icon-label">Invest.</span></div>
+              <div class="icon-option" data-icon="emoji-🐷" data-color="#F4A0C0" onclick="selectAccountIcon(this)" title="Poupança"><span style="font-size:1.5rem">🐷</span><span class="icon-label">Poupança</span></div>
+              <div class="icon-option" data-icon="emoji-🌍" data-color="#1e5ba8" onclick="selectAccountIcon(this)" title="Internacional"><span style="font-size:1.5rem">🌍</span><span class="icon-label">Intern.</span></div>
+              <div class="icon-option" data-icon="emoji-💱" data-color="#b45309" onclick="selectAccountIcon(this)" title="Câmbio"><span style="font-size:1.5rem">💱</span><span class="icon-label">Câmbio</span></div>
+            </div>
+            <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;gap:8px">
+              <span style="font-size:.75rem;color:var(--muted)">Selecionado:</span>
+              <span id="accountIconPreview" style="font-size:1.2rem;min-width:28px"></span>
+              <input type="hidden" id="accountIcon">
+              <input type="color" id="accountColor" value="#2a6049" style="width:36px;height:28px;padding:2px;border-radius:6px;cursor:pointer;border:1px solid var(--border)">
+              <span style="font-size:.72rem;color:var(--muted)">Ajustar cor</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('accountModal')">Cancelar</button><button class="btn btn-primary" onclick="saveAccount()">Salvar</button></div>
@@ -496,6 +658,7 @@ input[type="color"]{padding:4px;height:38px;cursor:pointer;}
     <div class="modal-body">
       <input type="hidden" id="categoryId">
       <div class="form-grid">
+        <div id="catParentHint" style="display:none;grid-column:1/-1;background:var(--accent-lt);color:var(--accent);font-size:.78rem;font-weight:500;padding:7px 10px;border-radius:var(--r-sm);border:1px solid rgba(42,96,73,.2)"></div>
         <div class="form-group full"><label>Nome *</label><input type="text" id="categoryName" placeholder="Ex: Alimentação"></div>
         <div class="form-group"><label>Tipo *</label><select id="categoryType"><option value="despesa">Despesa</option><option value="receita">Receita</option><option value="transferencia">Transferência</option></select></div>
         <div class="form-group"><label>Categoria Pai</label><select id="categoryParent"><option value="">— Nenhuma —</option></select></div>
@@ -610,7 +773,7 @@ function renderAccounts(ft=''){
   grid.innerHTML=accs.map(a=>`<div class="account-card" onclick="openAccountModal('${a.id}')">
     <div class="account-card-stripe" style="background:${a.color||'var(--accent)'}"></div>
     <div class="account-actions"><button class="btn-icon" onclick="event.stopPropagation();openAccountModal('${a.id}')">✏️</button><button class="btn-icon" onclick="event.stopPropagation();deleteAccount('${a.id}')">🗑️</button></div>
-    <div class="account-icon">${a.icon||'🏦'}</div>
+    <div class="account-icon" style="font-size:1.6rem;margin-bottom:8px">${renderIconEl(a.icon,a.color,36)}</div>
     <div class="account-name">${esc(a.name)}</div>
     <div class="account-type">${accountTypeLabel(a.type)}</div>
     <div class="account-balance ${a.balance<0?'text-red':'text-accent'}">${fmt(a.balance,a.currency)}</div>
@@ -620,13 +783,23 @@ function renderAccounts(ft=''){
 function filterAccounts(type){document.querySelectorAll('#page-accounts .tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');renderAccounts(type);}
 function accountTypeLabel(t){return{corrente:'Conta Corrente',poupanca:'Poupança',cartao_credito:'Cartão de Crédito',investimento:'Investimentos',dinheiro:'Dinheiro',outros:'Outros'}[t]||t;}
 function openAccountModal(id=''){
-  const form={id:'',name:'',type:'corrente',currency:'BRL',balance:'',icon:'🏦',color:'#2a6049'};
+  const form={id:'',name:'',type:'corrente',currency:'BRL',balance:'',icon:'',color:'#2a6049'};
   if(id){const a=state.accounts.find(x=>x.id===id);if(a)Object.assign(form,a);}
-  document.getElementById('accountId').value=form.id;document.getElementById('accountName').value=form.name;document.getElementById('accountType').value=form.type;document.getElementById('accountCurrency').value=form.currency;document.getElementById('accountBalance').value=form.balance;document.getElementById('accountIcon').value=form.icon||'';document.getElementById('accountColor').value=form.color||'#2a6049';document.getElementById('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';openModal('accountModal');
+  document.getElementById('accountId').value=form.id;
+  document.getElementById('accountName').value=form.name;
+  document.getElementById('accountType').value=form.type;
+  document.getElementById('accountCurrency').value=form.currency;
+  document.getElementById('accountBalance').value=form.balance;
+  document.getElementById('accountIcon').value=form.icon||'';
+  document.getElementById('accountColor').value=form.color||'#2a6049';
+  document.getElementById('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
+  // Sync icon picker visual state
+  setTimeout(()=>syncIconPickerToValue(form.icon||'', form.color||'#2a6049'), 50);
+  openModal('accountModal');
 }
 async function saveAccount(){
   const id=document.getElementById('accountId').value;
-  const data={name:document.getElementById('accountName').value.trim(),type:document.getElementById('accountType').value,currency:document.getElementById('accountCurrency').value,balance:parseFloat(document.getElementById('accountBalance').value)||0,icon:document.getElementById('accountIcon').value||'🏦',color:document.getElementById('accountColor').value,updated_at:new Date().toISOString()};
+  const data={name:document.getElementById('accountName').value.trim(),type:document.getElementById('accountType').value,currency:document.getElementById('accountCurrency').value,balance:parseFloat(document.getElementById('accountBalance').value)||0,icon:document.getElementById('accountIcon').value||'',color:document.getElementById('accountColor').value,updated_at:new Date().toISOString()};
   if(!data.name){toast('Informe o nome da conta','error');return;}
   let err;if(id){({error:err}=await sb.from('accounts').update(data).eq('id',id));}else{({error:err}=await sb.from('accounts').insert(data));}
   if(err){toast(err.message,'error');return;}
@@ -638,19 +811,61 @@ async function loadCategories(){const{data,error}=await sb.from('categories').se
 function renderCategories(){
   ['expense','income'].forEach(type=>{
     const dbType=type==='expense'?'despesa':'receita';
-    const parents=state.categories.filter(c=>c.type===dbType&&!c.parent_id);
+    const parents=state.categories.filter(c=>c.type===dbType&&!c.parent_id).sort((a,b)=>a.name.localeCompare(b.name));
     const children=state.categories.filter(c=>c.type===dbType&&c.parent_id);
-    document.getElementById(`catTree${type==='expense'?'Expense':'Income'}`).innerHTML=parents.map(p=>`
-      <li><span style="width:20px;text-align:center">${p.icon||'📦'}</span><strong>${esc(p.name)}</strong><div class="cat-actions"><button class="btn-icon" onclick="openCategoryModal('${p.id}')">✏️</button><button class="btn-icon" onclick="deleteCategory('${p.id}')">🗑️</button></div></li>
-      ${children.filter(c=>c.parent_id===p.id).map(c=>`<li class="child"><span style="width:20px;text-align:center">${c.icon||'▸'}</span>${esc(c.name)}<div class="cat-actions"><button class="btn-icon" onclick="openCategoryModal('${c.id}')">✏️</button><button class="btn-icon" onclick="deleteCategory('${c.id}')">🗑️</button></div></li>`).join('')}
-    `).join('');
+    const ul=document.getElementById(`catTree${type==='expense'?'Expense':'Income'}`);
+    if(!parents.length){ul.innerHTML=`<li style="text-align:center;padding:24px;color:var(--muted);font-size:.83rem">Nenhuma categoria</li>`;return;}
+    ul.innerHTML=parents.map(p=>{
+      const subs=children.filter(c=>c.parent_id===p.id).sort((a,b)=>a.name.localeCompare(b.name));
+      const subCount=subs.length?`<span class="cat-sub-count">${subs.length}</span>`:'';
+      return `
+      <li>
+        <div class="cat-indent">
+          <span style="width:22px;height:22px;border-radius:50%;background:${p.color||'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">${p.icon||'📦'}</span>
+          <strong style="font-size:.9rem">${esc(p.name)}</strong>
+          ${subCount}
+          <button class="add-sub-btn" onclick="openCategoryModal('','${p.id}','${dbType}')">+ Sub</button>
+        </div>
+        <div class="cat-actions">
+          <button class="btn-icon" onclick="openCategoryModal('${p.id}')">✏️</button>
+          <button class="btn-icon" onclick="deleteCategory('${p.id}')">🗑️</button>
+        </div>
+      </li>
+      ${subs.map(c=>`
+      <li class="child">
+        <div class="cat-indent">
+          <span style="width:6px;border-left:2px solid var(--border);height:24px;flex-shrink:0;margin-left:8px"></span>
+          <span style="width:18px;height:18px;border-radius:50%;background:${c.color||'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0">${c.icon||'▸'}</span>
+          <span style="font-size:.85rem">${esc(c.name)}</span>
+        </div>
+        <div class="cat-actions">
+          <button class="btn-icon" onclick="openCategoryModal('${c.id}')">✏️</button>
+          <button class="btn-icon" onclick="deleteCategory('${c.id}')">🗑️</button>
+        </div>
+      </li>`).join('')}`;
+    }).join('');
   });
 }
-function openCategoryModal(id=''){
-  const form={id:'',name:'',type:'despesa',parent_id:'',icon:'📦',color:'#2a6049'};
+function openCategoryModal(id='', preParentId='', preType=''){
+  const form={id:'',name:'',type:preType||'despesa',parent_id:preParentId||'',icon:'📦',color:'#2a6049'};
   if(id){const c=state.categories.find(x=>x.id===id);if(c)Object.assign(form,c);}
-  document.getElementById('categoryId').value=form.id;document.getElementById('categoryName').value=form.name;document.getElementById('categoryType').value=form.type;document.getElementById('categoryIcon').value=form.icon||'';document.getElementById('categoryColor').value=form.color||'#2a6049';document.getElementById('categoryModalTitle').textContent=id?'Editar Categoria':'Nova Categoria';
-  const sel=document.getElementById('categoryParent');sel.innerHTML='<option value="">— Nenhuma —</option>'+state.categories.filter(c=>!c.parent_id&&c.id!==id).map(c=>`<option value="${c.id}">${c.icon||''} ${esc(c.name)}</option>`).join('');sel.value=form.parent_id||'';openModal('categoryModal');
+  document.getElementById('categoryId').value=form.id;
+  document.getElementById('categoryName').value=form.name;
+  document.getElementById('categoryType').value=form.type;
+  document.getElementById('categoryIcon').value=form.icon||'';
+  document.getElementById('categoryColor').value=form.color||'#2a6049';
+  document.getElementById('categoryModalTitle').textContent=id?'Editar Categoria':(preParentId?'Nova Subcategoria':'Nova Categoria');
+  const sel=document.getElementById('categoryParent');
+  sel.innerHTML='<option value="">— Nenhuma (categoria pai) —</option>'+state.categories.filter(c=>!c.parent_id&&c.id!==id).map(c=>`<option value="${c.id}">${c.icon||''} ${esc(c.name)}</option>`).join('');
+  sel.value=form.parent_id||'';
+  const hint=document.getElementById('catParentHint');
+  if(preParentId&&!id){
+    const parent=state.categories.find(x=>x.id===preParentId);
+    if(hint&&parent){hint.textContent=`Subcategoria de: ${parent.icon||''} ${parent.name}`;hint.style.display='block';}
+  } else {
+    if(hint)hint.style.display='none';
+  }
+  openModal('categoryModal');
 }
 async function saveCategory(){
   const id=document.getElementById('categoryId').value;
@@ -689,7 +904,7 @@ async function deletePayee(id){if(!confirm('Excluir?'))return;const{error}=await
 
 async function loadTransactions(){
   const f=state.txFilter;
-  let q=sb.from('transactions').select('*, accounts(name,currency), payees(name), categories(name,color)',{count:'exact'}).order(state.txSortField,{ascending:state.txSortAsc}).range(state.txPage*state.txPageSize,(state.txPage+1)*state.txPageSize-1);
+  let q=sb.from('transactions').select('*, accounts!account_id(name,currency), payees(name), categories(name,color)',{count:'exact'}).order(state.txSortField,{ascending:state.txSortAsc}).range(state.txPage*state.txPageSize,(state.txPage+1)*state.txPageSize-1);
   if(f.month){const[y,m]=f.month.split('-');q=q.gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);}
   if(f.account)q=q.eq('account_id',f.account);if(f.search)q=q.ilike('description','%'+f.search+'%');
   if(f.type==='income')q=q.gt('amount',0);else if(f.type==='expense')q=q.lt('amount',0);else if(f.type==='transfer')q=q.eq('is_transfer',true);
@@ -718,10 +933,10 @@ function renderTransactions(){
 }
 function changePage(dir){state.txPage+=dir;loadTransactions();}
 function openTransactionModal(id=''){resetTxModal();document.getElementById('txDate').value=new Date().toISOString().slice(0,10);document.getElementById('txModalTitle').textContent='Nova Transação';if(id)editTransaction(id);else openModal('txModal');}
-function resetTxModal(){['txId','txDesc','txMemo','txTags','txCheck'].forEach(f=>document.getElementById(f).value='');document.getElementById('txAmount').value='';document.getElementById('txTypeField').value='expense';setTxType('expense');}
+function resetTxModal(){['txId','txDesc','txMemo','txTags','txCheck'].forEach(f=>document.getElementById(f).value='');document.getElementById('txAmount').value='';document.getElementById('txTypeField').value='expense';setTxType('expense');clearPayeeField();}
 async function editTransaction(id){
   const{data,error}=await sb.from('transactions').select('*').eq('id',id).single();if(error){toast(error.message,'error');return;}
-  document.getElementById('txId').value=data.id;document.getElementById('txDate').value=data.date;document.getElementById('txAmount').value=Math.abs(data.amount);document.getElementById('txDesc').value=data.description||'';document.getElementById('txAccountId').value=data.account_id||'';document.getElementById('txPayeeId').value=data.payee_id||'';document.getElementById('txCategoryId').value=data.category_id||'';document.getElementById('txMemo').value=data.memo||'';document.getElementById('txTags').value=(data.tags||[]).join(', ');document.getElementById('txCheck').value=data.check_number||'';
+  document.getElementById('txId').value=data.id;document.getElementById('txDate').value=data.date;document.getElementById('txAmount').value=Math.abs(data.amount);document.getElementById('txDesc').value=data.description||'';document.getElementById('txAccountId').value=data.account_id||'';document.getElementById('txCategoryId').value=data.category_id||'';document.getElementById('txMemo').value=data.memo||'';document.getElementById('txTags').value=(data.tags||[]).join(', ');document.getElementById('txCheck').value=data.check_number||'';setPayeeField(data.payee_id||null);
   const type=data.is_transfer?'transfer':data.amount>=0?'income':'expense';setTxType(type);if(type==='transfer')document.getElementById('txTransferTo').value=data.transfer_to_account_id||'';
   document.getElementById('txModalTitle').textContent='Editar Transação';openModal('txModal');
 }
@@ -764,11 +979,11 @@ async function loadDashboard(){
   const total=state.accounts.reduce((s,a)=>s+a.balance,0);
   document.getElementById('statTotal').textContent=fmt(total);document.getElementById('statIncome').textContent=fmt(income);document.getElementById('statExpenses').textContent=fmt(expense);
   const bal=income-expense,balEl=document.getElementById('statBalance');balEl.textContent=fmt(bal);balEl.className='stat-value '+(bal>=0?'text-green':'text-red');
-  const{data:recent}=await sb.from('transactions').select('*, accounts(name), categories(name,color)').order('date',{ascending:false}).limit(10);
+  const{data:recent}=await sb.from('transactions').select('*, accounts!account_id(name), categories(name,color)').order('date',{ascending:false}).limit(10);
   const body=document.getElementById('recentTxBody');
   if(!recent?.length){body.innerHTML='<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px;font-size:.83rem">Sem transações</td></tr>';}
   else body.innerHTML=(recent||[]).map(t=>`<tr><td class="text-muted" style="white-space:nowrap">${fmtDate(t.date)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description||'—')}</td><td>${t.categories?`<span class="badge" style="background:${t.categories.color}18;color:${t.categories.color};border:1px solid ${t.categories.color}28">${esc(t.categories.name)}</span>`:'—'}</td><td class="${t.amount>=0?'amount-pos':'amount-neg'}" style="white-space:nowrap">${fmt(t.amount)}</td></tr>`).join('');
-  document.getElementById('accountBalancesList').innerHTML=state.accounts.slice(0,8).map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:${a.color||'var(--accent)'};display:inline-block;flex-shrink:0"></span><span style="font-size:.875rem;color:var(--text2)">${esc(a.name)}</span></div><span class="${a.balance<0?'text-red':'text-accent'}" style="font-size:.875rem;font-weight:500">${fmt(a.balance,a.currency)}</span></div>`).join('');
+  document.getElementById('accountBalancesList').innerHTML=state.accounts.slice(0,8).map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:9px">${renderIconEl(a.icon,a.color,20)}<span style="font-size:.875rem;color:var(--text2)">${esc(a.name)}</span></div><span class="${a.balance<0?'text-red':'text-accent'}" style="font-size:.875rem;font-weight:500">${fmt(a.balance,a.currency)}</span></div>`).join('');
   await Promise.all([renderCashflowChart(),renderCategoryChart()]);
 }
 async function renderCashflowChart(){
@@ -803,10 +1018,10 @@ function renderChart(id,type,labels,datasets){
 }
 
 function populateSelects(){
-  const aOpts=state.accounts.map(a=>`<option value="${a.id}">${a.icon||'🏦'} ${esc(a.name)} (${a.currency})</option>`).join('');
+  const aOpts=state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.currency})</option>`).join('');
   ['txAccountId','txTransferTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Selecione a conta</option>'+aOpts;});
   const txAF=document.getElementById('txAccount');if(txAF)txAF.innerHTML='<option value="">Todas as contas</option>'+aOpts;
-  const pEl=document.getElementById('txPayeeId');if(pEl)pEl.innerHTML='<option value="">— Nenhum —</option>'+state.payees.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  // payee autocomplete uses state.payees directly - no select to populate
   const cEl=document.getElementById('txCategoryId');if(cEl)cEl.innerHTML='<option value="">— Sem categoria —</option>'+state.categories.map(c=>`<option value="${c.id}">${c.icon||''} ${esc(c.name)}</option>`).join('');
   const pCat=document.getElementById('payeeCategory');if(pCat)pCat.innerHTML='<option value="">— Nenhuma —</option>'+state.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
 }
@@ -825,6 +1040,346 @@ function toast(msg,type='info'){
 function fmt(v,currency='BRL'){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:currency||'BRL',minimumFractionDigits:2}).format(v||0);}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('T')[0].split('-');return`${day}/${m}/${y}`;}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+
+/* ═══════════════════════════════════════
+   PAYEE AUTOCOMPLETE
+═══════════════════════════════════════ */
+const payeeAC = {
+  focusIdx: -1,
+  blurTimer: null,
+  selectedId: null,
+  selectedName: null
+};
+
+function clearPayeeField() {
+  document.getElementById('txPayeeId').value = '';
+  document.getElementById('txPayeeName').value = '';
+  document.getElementById('txPayeeStatus').textContent = '';
+  hidePayeeDropdown();
+  hidePayeeSimilar();
+  payeeAC.selectedId = null;
+  payeeAC.selectedName = null;
+}
+
+function setPayeeField(id) {
+  if (!id) { clearPayeeField(); return; }
+  const p = state.payees.find(x => x.id === id);
+  if (p) {
+    document.getElementById('txPayeeId').value = p.id;
+    document.getElementById('txPayeeName').value = p.name;
+    document.getElementById('txPayeeStatus').textContent = '✓';
+    payeeAC.selectedId = p.id;
+    payeeAC.selectedName = p.name;
+  }
+}
+
+function selectPayee(id, name) {
+  document.getElementById('txPayeeId').value = id;
+  document.getElementById('txPayeeName').value = name;
+  document.getElementById('txPayeeStatus').textContent = '✓';
+  payeeAC.selectedId = id;
+  payeeAC.selectedName = name;
+  hidePayeeDropdown();
+  hidePayeeSimilar();
+}
+
+function onPayeeInput(val) {
+  // clear selection if user edits
+  if (val !== payeeAC.selectedName) {
+    document.getElementById('txPayeeId').value = '';
+    document.getElementById('txPayeeStatus').textContent = '';
+    payeeAC.selectedId = null;
+    payeeAC.selectedName = null;
+  }
+  hidePayeeSimilar();
+
+  if (val.length < 3) { hidePayeeDropdown(); return; }
+
+  const q = val.toLowerCase();
+  const matches = state.payees.filter(p => p.name.toLowerCase().includes(q));
+  showPayeeDropdown(matches, val);
+}
+
+function showPayeeDropdown(matches, typed) {
+  const dd = document.getElementById('txPayeeDropdown');
+  payeeAC.focusIdx = -1;
+  let html = '';
+
+  matches.slice(0, 8).forEach((p, i) => {
+    const badge = { beneficiario: 'Beneficiário', fonte_pagadora: 'Fonte Pagadora', ambos: 'Ambos' }[p.type] || p.type;
+    html += `<div class="payee-opt" data-id="${p.id}" data-name="${esc(p.name)}" onmousedown="event.preventDefault()" onclick="selectPayee('${p.id}','${esc(p.name)}')">
+      <span class="payee-opt-icon">👤</span>
+      <div><div class="payee-opt-name">${highlightMatch(esc(p.name), typed)}</div><div class="payee-opt-sub">${badge}</div></div>
+    </div>`;
+  });
+
+  // Always offer "create new" at bottom
+  html += `<div class="payee-opt payee-opt-create" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+    <span class="payee-opt-icon">＋</span>
+    <div><div class="payee-opt-name">Criar "<strong>${esc(typed)}</strong>"</div><div class="payee-opt-sub">Novo beneficiário / fonte pagadora</div></div>
+  </div>`;
+
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+}
+
+function hidePayeeDropdown() {
+  const dd = document.getElementById('txPayeeDropdown');
+  if (dd) dd.style.display = 'none';
+  payeeAC.focusIdx = -1;
+}
+
+function hidePayeeSimilar() {
+  const b = document.getElementById('txPayeeSimilarBanner');
+  if (b) b.style.display = 'none';
+}
+
+function onPayeeBlur() {
+  // Small delay so onclick on dropdown options fires first
+  payeeAC.blurTimer = setTimeout(() => {
+    const typed = document.getElementById('txPayeeName').value.trim();
+    hidePayeeDropdown();
+
+    // If nothing selected and something typed, check for similar
+    if (!payeeAC.selectedId && typed.length >= 2) {
+      checkSimilarPayee(typed);
+    }
+  }, 200);
+}
+
+function onPayeeKey(e) {
+  const dd = document.getElementById('txPayeeDropdown');
+  if (dd.style.display === 'none') return;
+  const opts = dd.querySelectorAll('.payee-opt');
+  if (!opts.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    payeeAC.focusIdx = Math.min(payeeAC.focusIdx + 1, opts.length - 1);
+    opts.forEach((o, i) => o.classList.toggle('focused', i === payeeAC.focusIdx));
+    opts[payeeAC.focusIdx]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    payeeAC.focusIdx = Math.max(payeeAC.focusIdx - 1, 0);
+    opts.forEach((o, i) => o.classList.toggle('focused', i === payeeAC.focusIdx));
+    opts[payeeAC.focusIdx]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter' && payeeAC.focusIdx >= 0) {
+    e.preventDefault();
+    opts[payeeAC.focusIdx]?.click();
+  } else if (e.key === 'Escape') {
+    hidePayeeDropdown();
+  }
+}
+
+function highlightMatch(name, q) {
+  const idx = name.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return name;
+  return name.slice(0, idx) + '<mark style="background:var(--accent-lt);color:var(--accent);border-radius:2px">' + name.slice(idx, idx + q.length) + '</mark>' + name.slice(idx + q.length);
+}
+
+/* ── Similarity (Levenshtein distance) ── */
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) => Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function similarity(a, b) {
+  const al = a.toLowerCase(), bl = b.toLowerCase();
+  // exact substring = very similar
+  if (al.includes(bl) || bl.includes(al)) return 0.9;
+  const dist = levenshtein(al, bl);
+  return 1 - dist / Math.max(al.length, bl.length);
+}
+
+function checkSimilarPayee(typed) {
+  const best = state.payees
+    .map(p => ({ p, score: similarity(typed, p.name) }))
+    .filter(x => x.score >= 0.6)
+    .sort((a, b) => b.score - a.score)[0];
+
+  if (!best) {
+    // No similar — ask to create
+    showCreateNewBanner(typed);
+    return;
+  }
+
+  // Show "did you mean?" banner
+  const banner = document.getElementById('txPayeeSimilarBanner');
+  banner.innerHTML = `
+    <strong>⚠️ Beneficiário semelhante encontrado</strong>
+    É este mesmo? <em>"${esc(best.p.name)}"</em>
+    <div class="payee-similar-actions">
+      <button class="btn btn-primary btn-sm" onmousedown="event.preventDefault()" onclick="confirmSimilarPayee('${best.p.id}','${esc(best.p.name)}')">
+        Sim, usar "${esc(best.p.name)}"
+      </button>
+      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+        Não, criar novo
+      </button>
+    </div>`;
+  banner.style.display = 'block';
+}
+
+function showCreateNewBanner(typed) {
+  const banner = document.getElementById('txPayeeSimilarBanner');
+  banner.innerHTML = `
+    <strong style="color:var(--accent)">➕ Novo beneficiário</strong>
+    Criar "<em>${esc(typed)}</em>" como novo registro?
+    <div class="payee-similar-actions">
+      <button class="btn btn-primary btn-sm" onmousedown="event.preventDefault()" onclick="createPayeeFromInput()">
+        Criar agora
+      </button>
+      <button class="btn btn-ghost btn-sm" onmousedown="event.preventDefault()" onclick="clearPayeeField()">
+        Cancelar
+      </button>
+    </div>`;
+  banner.style.display = 'block';
+}
+
+function confirmSimilarPayee(id, name) {
+  selectPayee(id, name);
+  hidePayeeSimilar();
+}
+
+async function createPayeeFromInput() {
+  const typed = document.getElementById('txPayeeName').value.trim();
+  if (!typed) return;
+
+  // Detect type based on current tx type
+  const txType = document.getElementById('txTypeField').value;
+  const payeeType = txType === 'income' ? 'fonte_pagadora' : 'beneficiario';
+
+  const { data, error } = await sb.from('payees').insert({
+    name: typed,
+    type: payeeType
+  }).select().single();
+
+  if (error) { toast('Erro ao criar beneficiário: ' + error.message, 'error'); return; }
+
+  // Add to local state
+  state.payees.push(data);
+  state.payees.sort((a, b) => a.name.localeCompare(b.name));
+
+  selectPayee(data.id, data.name);
+  hidePayeeSimilar();
+  toast(`"${typed}" criado como ${payeeType === 'fonte_pagadora' ? 'Fonte Pagadora' : 'Beneficiário'}`, 'success');
+}
+
+
+/* ═══════════════════════════════════════
+   ICON PICKER
+═══════════════════════════════════════ */
+const ICON_META = {
+  // Brazilian banks
+  'itau':       {label:'Itaú',        color:'#FF6600', type:'bank'},
+  'inter':      {label:'Inter',       color:'#FF7A00', type:'bank'},
+  'bradesco':   {label:'Bradesco',    color:'#CC092F', type:'bank'},
+  'nubank':     {label:'Nubank',      color:'#820AD1', type:'bank'},
+  'bb':         {label:'BB',          color:'#F5A623', type:'bank'},
+  'caixa':      {label:'Caixa',       color:'#005CA9', type:'bank'},
+  'santander':  {label:'Santander',   color:'#EC0000', type:'bank'},
+  'xp':         {label:'XP',          color:'#000000', type:'bank'},
+  'c6':         {label:'C6',          color:'#242424', type:'bank'},
+  'neon':       {label:'Neon',        color:'#00D4FF', type:'bank'},
+  'next':       {label:'Next',        color:'#00AF3F', type:'bank'},
+  'picpay':     {label:'PicPay',      color:'#21C25E', type:'bank'},
+  'mercadopago':{label:'Mercado Pago',color:'#009EE3', type:'bank'},
+  'sicoob':     {label:'Sicoob',      color:'#006837', type:'bank'},
+  'rico':       {label:'Rico',        color:'#00A86B', type:'bank'},
+  'will':       {label:'Will',        color:'#7B2D8B', type:'bank'},
+  // French banks
+  'boursobank': {label:'Boursobank',  color:'#1A2E5A', type:'bank'},
+  'bnp':        {label:'BNP Paribas', color:'#009B55', type:'bank'},
+  'sg':         {label:'Soc. Gén.',   color:'#E30613', type:'bank'},
+  'ca':         {label:'Crédit Ag.',  color:'#009A44', type:'bank'},
+  'lcl':        {label:'LCL',         color:'#005BAB', type:'bank'},
+  'laposte':    {label:'La Poste',    color:'#FDD000', type:'bank'},
+  'cic':        {label:'CIC',         color:'#003087', type:'bank'},
+  'bred':       {label:'BRED',        color:'#C8102E', type:'bank'},
+  'revolut':    {label:'Revolut',     color:'#0075EB', type:'bank'},
+  'n26':        {label:'N26',         color:'#3B82F6', type:'bank'},
+  'wise':       {label:'Wise',        color:'#9FE870', type:'bank'},
+  'paypal':     {label:'PayPal',      color:'#003087', type:'bank'},
+  // Cards
+  'visa':       {label:'Visa',        color:'#1A1F71', type:'card'},
+  'mastercard': {label:'Mastercard',  color:'#EB001B', type:'card'},
+  'amex':       {label:'Amex',        color:'#2E77BC', type:'card'},
+  'elo':        {label:'Elo',         color:'#000000', type:'card'},
+  'hipercard':  {label:'Hipercard',   color:'#B40019', type:'card'},
+  'dinersclub': {label:'Diners',      color:'#004B87', type:'card'},
+  'sams':       {label:"Sam's",       color:'#0067A0', type:'card'},
+  'porto':      {label:'Porto',       color:'#005B8E', type:'card'},
+};
+
+// Render icon from stored key into an element
+function renderIconEl(iconKey, color, size=28) {
+  if(!iconKey) return `<span style="font-size:${size}px">🏦</span>`;
+  if(iconKey.startsWith('emoji-')) {
+    const emoji = iconKey.replace('emoji-','');
+    return `<span style="font-size:${Math.round(size*0.9)}px">${emoji}</span>`;
+  }
+  const meta = ICON_META[iconKey];
+  if(!meta) return `<span style="font-size:${Math.round(size*0.9)}px">🏦</span>`;
+  const bg = color || meta.color;
+  const initials = meta.label.substring(0,2).toUpperCase();
+  return `<span style="width:${size}px;height:${size}px;background:${bg};color:${isLightColor(bg)?'#333':'#fff'};border-radius:${size*0.22}px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:${Math.round(size*0.35)}px;font-family:var(--font-sans);letter-spacing:-.02em;flex-shrink:0">${initials}</span>`;
+}
+
+function isLightColor(hex) {
+  const c = hex.replace('#','');
+  const r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+  return (r*299+g*587+b*114)/1000 > 160;
+}
+
+function showIconGroup(event, group) {
+  document.querySelectorAll('.icon-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.icon-grid').forEach(g=>g.style.display='none');
+  document.getElementById('iconGroup-'+group).style.display='grid';
+}
+
+function selectAccountIcon(el) {
+  document.querySelectorAll('.icon-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  const iconKey = el.dataset.icon;
+  const iconColor = el.dataset.color;
+  document.getElementById('accountIcon').value = iconKey;
+  if(iconColor) document.getElementById('accountColor').value = iconColor;
+  // Update preview
+  const preview = document.getElementById('accountIconPreview');
+  preview.innerHTML = renderIconEl(iconKey, iconColor, 28);
+}
+
+function syncIconPickerToValue(iconKey, color) {
+  // Mark the right option as selected
+  document.querySelectorAll('.icon-option').forEach(o=>{
+    o.classList.toggle('selected', o.dataset.icon === iconKey);
+  });
+  // Switch to correct tab if needed
+  if(iconKey) {
+    let group = 'generic';
+    const meta = ICON_META[iconKey];
+    if(meta) {
+      const banksFR = ['boursobank','bnp','sg','ca','lcl','laposte','cic','bred','revolut','n26','wise','paypal'];
+      const cards = ['visa','mastercard','amex','elo','hipercard','dinersclub','sams','porto'];
+      if(cards.includes(iconKey)) group = 'cards';
+      else if(banksFR.includes(iconKey)) group = 'banks-fr';
+      else group = 'banks-br';
+    }
+    document.querySelectorAll('.icon-tab').forEach(t=>t.classList.remove('active'));
+    const activeTab = document.querySelector(`.icon-tab[onclick*="${group}"]`);
+    if(activeTab) activeTab.classList.add('active');
+    document.querySelectorAll('.icon-grid').forEach(g=>g.style.display='none');
+    const activeGroup = document.getElementById('iconGroup-'+group);
+    if(activeGroup) activeGroup.style.display='grid';
+  }
+  const preview = document.getElementById('accountIconPreview');
+  if(preview) preview.innerHTML = renderIconEl(iconKey, color, 28);
+}
 
 tryAutoConnect();
 </script>
