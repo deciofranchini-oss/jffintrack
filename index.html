@@ -1444,11 +1444,16 @@ canvas { cursor: default; }
       <button class="nav-item" onclick="navigate('categories')"><span class="ni-icon">🏷</span>Categorias</button>
       <button class="nav-item" onclick="navigate('payees')"><span class="ni-icon">👥</span>Beneficiários</button>
     </div>
+    <div class="nav-section">
+      <div class="nav-label">Externo</div>
+      <a class="nav-item" href="https://deciofranchini-oss.github.io/objetivo" target="_blank" rel="noopener noreferrer" style="text-decoration:none"><span class="ni-icon">🎓</span>Gerenciamento Escola</a>
+    </div>
   </div>
   <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
     <button class="nav-item" onclick="navigate('import')"><span class="ni-icon">📥</span>Importar</button>
       <button class="nav-item" onclick="navigate('settings')"><span class="ni-icon">⚙️</span>Configurações</button>
     <button class="nav-item" onclick="doLogout()" style="color:var(--red)"><span class="ni-icon">↩</span>Sair</button>
+    <button class="nav-item" onclick="clearAppCache()" style="color:var(--orange)"><span class="ni-icon">🗑️</span>Limpar Cache</button>
     <button class="config-btn" onclick="document.getElementById('setupScreen').style.display='flex'">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       Configurar Supabase
@@ -3167,7 +3172,7 @@ async function bootApp(){
   });
   // Carregar dados base
   try {
-    await Promise.all([loadAccounts(),loadCategories(),loadPayees()]);
+    await Promise.all([loadAccounts(),loadCategories(),loadPayees(),loadAppSettings()]);
   } catch(e) {
     toast('Erro ao carregar dados: '+e.message,'error');
     return;
@@ -6143,10 +6148,74 @@ function toggleForecastSection(id) {
    EMAILJS CONFIGURATION
 ═══════════════════════════════════════════════════════════════ */
 const EMAILJS_CONFIG = {
-  serviceId:  localStorage.getItem('ej_service')  || '',
-  templateId: localStorage.getItem('ej_template') || '',
-  publicKey:  localStorage.getItem('ej_key')      || '',
+  serviceId:  '',
+  templateId: '',
+  publicKey:  '',
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   APP SETTINGS — stored in app_settings table (Supabase)
+   Falls back to localStorage for backward compatibility
+═══════════════════════════════════════════════════════════════ */
+let _appSettingsCache = null; // in-memory cache after first load
+
+async function loadAppSettings() {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.from('app_settings').select('key, value').limit(200);
+    if (error) throw error;
+    _appSettingsCache = {};
+    (data || []).forEach(row => { _appSettingsCache[row.key] = row.value; });
+    // Hydrate EmailJS config
+    EMAILJS_CONFIG.serviceId  = _appSettingsCache['ej_service']  || localStorage.getItem('ej_service')  || '';
+    EMAILJS_CONFIG.templateId = _appSettingsCache['ej_template'] || localStorage.getItem('ej_template') || '';
+    EMAILJS_CONFIG.publicKey  = _appSettingsCache['ej_key']      || localStorage.getItem('ej_key')      || '';
+    // Hydrate masterPin
+    const dbPin = _appSettingsCache['masterPin'];
+    if (dbPin) localStorage.setItem('masterPin', dbPin); // keep local in sync
+    // Hydrate auto-check config
+    const dbAutoCheck = _appSettingsCache[AUTO_CHECK_CONFIG_KEY];
+    if (dbAutoCheck) {
+      try { localStorage.setItem(AUTO_CHECK_CONFIG_KEY, JSON.stringify(dbAutoCheck)); } catch {}
+    }
+  } catch(e) {
+    console.warn('loadAppSettings fallback to localStorage:', e.message);
+    // Fallback: load from localStorage
+    EMAILJS_CONFIG.serviceId  = localStorage.getItem('ej_service')  || '';
+    EMAILJS_CONFIG.templateId = localStorage.getItem('ej_template') || '';
+    EMAILJS_CONFIG.publicKey  = localStorage.getItem('ej_key')      || '';
+  }
+}
+
+async function saveAppSetting(key, value) {
+  // Always persist locally as fallback
+  if (typeof value === 'object') {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  } else {
+    localStorage.setItem(key, value);
+  }
+  if (!sb) return;
+  try {
+    // upsert: insert or update by key
+    const { error } = await sb.from('app_settings')
+      .upsert({ key, value: typeof value === 'object' ? value : value }, { onConflict: 'key' });
+    if (error) throw error;
+    if (!_appSettingsCache) _appSettingsCache = {};
+    _appSettingsCache[key] = value;
+  } catch(e) {
+    console.warn('saveAppSetting DB error (saved locally):', e.message);
+  }
+}
+
+async function getAppSetting(key, defaultValue = null) {
+  if (_appSettingsCache && key in _appSettingsCache) return _appSettingsCache[key];
+  // Fallback localStorage
+  const local = localStorage.getItem(key);
+  if (local !== null) {
+    try { return JSON.parse(local); } catch { return local; }
+  }
+  return defaultValue;
+}
 
 function showEmailConfig() {
   // Populate fields with saved values
@@ -6180,7 +6249,7 @@ function ejCheckStatus() {
   if(res) { res.className = 'ej-test-result'; res.textContent = ''; }
 }
 
-function saveEmailJSConfig() {
+async function saveEmailJSConfig() {
   const svc = document.getElementById('ejServiceId').value.trim();
   const tpl = document.getElementById('ejTemplateId').value.trim();
   const key = document.getElementById('ejPublicKey').value.trim();
@@ -6190,12 +6259,12 @@ function saveEmailJSConfig() {
   EMAILJS_CONFIG.serviceId  = svc;
   EMAILJS_CONFIG.templateId = tpl;
   EMAILJS_CONFIG.publicKey  = key;
-  localStorage.setItem('ej_service',  svc);
-  localStorage.setItem('ej_template', tpl);
-  localStorage.setItem('ej_key',      key);
+  await saveAppSetting('ej_service',  svc);
+  await saveAppSetting('ej_template', tpl);
+  await saveAppSetting('ej_key',      key);
   ejCheckStatus();
   closeModal('emailjsModal');
-  toast('✓ EmailJS configurado com sucesso!', 'success');
+  toast('✓ EmailJS configurado e salvo no banco!', 'success');
 }
 
 function toggleEjKey() {
@@ -6485,8 +6554,9 @@ function advancePinStep() {
     }
     // Save new PIN
     localStorage.setItem('masterPin', _pinModalNew);
-        localStorage.removeItem('masterpin');
-toast('Masterpin alterado com sucesso! 🔐','success');
+    localStorage.removeItem('masterpin');
+    saveAppSetting('masterPin', _pinModalNew); // persist to DB
+    toast('Masterpin alterado com sucesso! 🔐','success');
     closeModal('changePinModal');
   }
 }
@@ -8182,6 +8252,39 @@ async function doLogout() {
   window.location.reload();
 }
 
+// ── Clear App Cache ──
+async function clearAppCache() {
+  if (!confirm('Limpar cache do aplicativo?\n\nIsso removerá dados temporários do navegador. Suas configurações e dados do banco permanecerão intactos.')) return;
+  try {
+    // Preserve essential connection keys
+    const sbUrl = localStorage.getItem('sb_url');
+    const sbKey  = localStorage.getItem('sb_key');
+    const sessionToken = localStorage.getItem('ft_session_token');
+    const userId  = localStorage.getItem('ft_user_id');
+    const rememberMe = localStorage.getItem('ft_remember_me');
+    localStorage.clear();
+    // Restore essential keys
+    if (sbUrl)        localStorage.setItem('sb_url', sbUrl);
+    if (sbKey)        localStorage.setItem('sb_key', sbKey);
+    if (sessionToken) localStorage.setItem('ft_session_token', sessionToken);
+    if (userId)       localStorage.setItem('ft_user_id', userId);
+    if (rememberMe)   localStorage.setItem('ft_remember_me', rememberMe);
+    // Clear in-memory settings cache so next load re-fetches from DB
+    _appSettingsCache = null;
+    // Clear Service Worker caches (PWA cache)
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    // Clear sessionStorage
+    sessionStorage.clear();
+    toast('✓ Cache limpo com sucesso! Recarregando...', 'success');
+    setTimeout(() => window.location.reload(), 1200);
+  } catch(e) {
+    toast('Erro ao limpar cache: ' + e.message, 'error');
+  }
+}
+
 // ── Session restore on load ──
 async function tryRestoreSession() {
   const token = localStorage.getItem('ft_session_token');
@@ -8511,7 +8614,7 @@ function getAutoCheckConfig() {
   } catch { return { ...AUTO_CHECK_DEFAULTS }; }
 }
 
-function saveAutoCheckConfig() {
+async function saveAutoCheckConfig() {
   const cfg = {
     enabled: document.getElementById('autoCheckEnabled')?.checked || false,
     intervalMinutes: parseInt(document.getElementById('autoCheckInterval')?.value||'60'),
@@ -8523,6 +8626,7 @@ function saveAutoCheckConfig() {
   const current = getAutoCheckConfig();
   const merged = { ...current, ...cfg };
   localStorage.setItem(AUTO_CHECK_CONFIG_KEY, JSON.stringify(merged));
+  await saveAppSetting(AUTO_CHECK_CONFIG_KEY, merged);
   applyAutoCheckTimer(merged);
   updateAutoCheckUI(merged);
   toast('Configuração de automação salva', 'success');
@@ -8859,6 +8963,7 @@ function updateLastRunConfig(count) {
   cfg.lastRun = new Date().toISOString();
   cfg.lastRunCount = count;
   localStorage.setItem(AUTO_CHECK_CONFIG_KEY, JSON.stringify(cfg));
+  saveAppSetting(AUTO_CHECK_CONFIG_KEY, cfg).catch(()=>{});
   updateAutoCheckUI(cfg);
 }
 
