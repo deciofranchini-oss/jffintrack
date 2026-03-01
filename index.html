@@ -1781,10 +1781,51 @@ canvas { cursor: default; }
       <!-- File drop zone -->
       <div class="import-drop-zone" id="importDropZone"
            ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
-        <input type="file" id="importFileInput" accept=".xlsx,.xls" onchange="importFileSelected(event)">
+        <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" onchange="importFileSelected(event)">
         <div class="import-drop-icon">📂</div>
-        <div class="import-drop-title" id="importDropTitle">Arraste o arquivo MoneyWiz (.xlsx) ou clique para selecionar</div>
-        <div class="import-drop-sub" id="importDropSub">Relatório completo exportado do MoneyWiz</div>
+        <div class="import-drop-title" id="importDropTitle">Arraste o arquivo MoneyWiz (.csv ou .xlsx) ou clique para selecionar</div>
+        <div class="import-drop-sub" id="importDropSub">Arquivo exportado do MoneyWiz (CSV ou Excel)</div>
+      </div>
+
+
+      <!-- ══ FIELD MAPPING SCREEN ══ -->
+      <div class="field-map-screen" id="fieldMapScreen">
+        <div class="field-map-title">🔄 Equivalência de Campos — Revisão antes de Importar</div>
+        <div class="field-map-sub">Revise como cada item do MoneyWiz será importado. <span style="color:var(--green);font-weight:600">Novo</span> = será criado. <span style="color:var(--muted);font-weight:600">Existente</span> = já existe no FinTrack.</div>
+        <div class="field-map-tabs">
+          <button class="field-map-tab active" onclick="showFieldMapTab('accounts')">🏦 Contas <span id="fmTabAccBadge" class="map-count"></span></button>
+          <button class="field-map-tab" onclick="showFieldMapTab('categories')">🏷️ Categorias <span id="fmTabCatBadge" class="map-count"></span></button>
+          <button class="field-map-tab" onclick="showFieldMapTab('payees')">👤 Beneficiários <span id="fmTabPayBadge" class="map-count"></span></button>
+          <button class="field-map-tab" onclick="showFieldMapTab('transfers')">🔄 Transferências <span id="fmTabXferBadge" class="map-count"></span></button>
+        </div>
+        <div class="field-map-panel active" id="fmpanel-accounts">
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Contas encontradas no arquivo. Mapeie para uma conta existente ou deixe em branco para criar automaticamente.</p>
+          <div class="table-wrap"><table class="distinct-table"><thead><tr>
+            <th>Conta no MoneyWiz</th><th>Transações</th><th>Saldo Final</th><th>Status</th><th>Mapear para →</th>
+          </tr></thead><tbody id="fmAccountsBody"></tbody></table></div>
+        </div>
+        <div class="field-map-panel" id="fmpanel-categories">
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Categorias com hierarquia (► = pai › filho). Subcategorias criadas automaticamente.</p>
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto"><table class="distinct-table"><thead><tr>
+            <th>Categoria (MoneyWiz)</th><th>Tipo</th><th>Transações</th><th>Status</th>
+          </tr></thead><tbody id="fmCategoriesBody"></tbody></table></div>
+        </div>
+        <div class="field-map-panel" id="fmpanel-payees">
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Beneficiários únicos encontrados no arquivo.</p>
+          <div class="table-wrap" style="max-height:300px;overflow-y:auto"><table class="distinct-table"><thead><tr>
+            <th>Beneficiário (MoneyWiz)</th><th>Transações</th><th>Status</th>
+          </tr></thead><tbody id="fmPayeesBody"></tbody></table></div>
+        </div>
+        <div class="field-map-panel" id="fmpanel-transfers">
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Contas de destino mencionadas em transferências — mapeie para contas existentes.</p>
+          <div class="table-wrap"><table class="distinct-table"><thead><tr>
+            <th>Conta Destino (MoneyWiz)</th><th>Transferências</th><th>Status</th><th>Mapear para →</th>
+          </tr></thead><tbody id="fmTransfersBody"></tbody></table></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+          <button class="btn btn-ghost" onclick="cancelImport()">✕ Cancelar</button>
+          <button class="btn btn-primary" onclick="proceedFromFieldMap()" id="proceedImportBtn">Continuar Importação →</button>
+        </div>
       </div>
 
       <!-- Transaction options bar -->
@@ -1971,6 +2012,26 @@ canvas { cursor: default; }
               <button class="btn btn-ghost btn-sm" onclick="showEmailConfig()">Configurar</button>
             </div>
           </div>
+          <div class="settings-row">
+            <div class="settings-row-icon" style="background:var(--blue-lt,#eff6ff)">📋</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">SQL: Migração Auto-Registro</div>
+              <div class="settings-row-sub">Adiciona colunas de automação à tabela scheduled_transactions</div>
+            </div>
+            <div class="settings-row-action">
+              <button class="btn btn-ghost btn-sm" onclick="showAutoRegisterMigration()">Ver SQL</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon" style="background:#fef3c7">🔐</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">SQL: Migração Multi-Usuário</div>
+              <div class="settings-row-sub">Cria tabelas app_users e app_sessions para login com aprovação</div>
+            </div>
+            <div class="settings-row-action">
+              <button class="btn btn-ghost btn-sm" onclick="showAuthMigration()">Ver SQL</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2001,6 +2062,110 @@ canvas { cursor: default; }
             </div>
             <div class="settings-row-action">
               <button class="btn btn-ghost btn-sm" onclick="openUserMgmt()">Abrir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ AUTOMAÇÃO ══ -->
+      <div class="settings-section">
+        <div style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;padding-left:4px">⚙️ Automação de Programados</div>
+        <div class="settings-card">
+          <!-- Enable/disable auto check -->
+          <div class="settings-row">
+            <div class="settings-row-icon" style="background:var(--green-lt)">🤖</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">Verificação Automática</div>
+              <div class="settings-row-sub">Registra transações programadas automaticamente quando a data chegar</div>
+            </div>
+            <div class="settings-row-action">
+              <label style="position:relative;display:inline-block;width:42px;height:22px">
+                <input type="checkbox" id="autoCheckEnabled" onchange="saveAutoCheckConfig()" style="opacity:0;width:0;height:0">
+                <span style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:100px;transition:.3s" id="autoCheckToggle"></span>
+              </label>
+            </div>
+          </div>
+          <!-- Frequency -->
+          <div class="settings-row" id="autoCheckFreqRow">
+            <div class="settings-row-icon" style="background:var(--bg2)">⏱️</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">Frequência de Verificação</div>
+              <div class="settings-row-sub">Com que frequência verificar transações pendentes</div>
+            </div>
+            <div class="settings-row-action">
+              <select id="autoCheckInterval" onchange="saveAutoCheckConfig()" style="font-size:.82rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface)">
+                <option value="15">A cada 15 min</option>
+                <option value="30">A cada 30 min</option>
+                <option value="60" selected>A cada 1 hora</option>
+                <option value="360">A cada 6 horas</option>
+                <option value="720">A cada 12 horas</option>
+                <option value="1440">Uma vez ao dia</option>
+              </select>
+            </div>
+          </div>
+          <!-- Days ahead -->
+          <div class="settings-row" id="autoCheckDaysRow">
+            <div class="settings-row-icon" style="background:var(--bg2)">📅</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">Antecipar Registro</div>
+              <div class="settings-row-sub">Quantos dias antes da data registrar a transação automática</div>
+            </div>
+            <div class="settings-row-action">
+              <select id="autoCheckDaysAhead" onchange="saveAutoCheckConfig()" style="font-size:.82rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface)">
+                <option value="0" selected>No dia exato</option>
+                <option value="1">1 dia antes</option>
+                <option value="2">2 dias antes</option>
+                <option value="3">3 dias antes</option>
+                <option value="7">1 semana antes</option>
+              </select>
+            </div>
+          </div>
+          <!-- Email for notifications -->
+          <div class="settings-row" id="autoCheckEmailRow">
+            <div class="settings-row-icon" style="background:var(--bg2)">📧</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">E-mail para Notificações</div>
+              <div class="settings-row-sub">E-mail padrão para avisos de transações programadas</div>
+            </div>
+            <div class="settings-row-action">
+              <input type="email" id="autoCheckEmailDefault" placeholder="email@exemplo.com" oninput="saveAutoCheckConfig()"
+                style="font-size:.82rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r-sm);max-width:220px;background:var(--surface)">
+            </div>
+          </div>
+          <!-- Method: browser vs Supabase -->
+          <div class="settings-row">
+            <div class="settings-row-icon" style="background:var(--bg2)">🔧</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">Método de Execução</div>
+              <div class="settings-row-sub" id="autoCheckMethodSub">Como a verificação automática é executada</div>
+            </div>
+            <div class="settings-row-action">
+              <select id="autoCheckMethod" onchange="onAutoCheckMethodChange()" style="font-size:.82rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface)">
+                <option value="browser">Navegador (setInterval)</option>
+                <option value="supabase_cron">Supabase pg_cron</option>
+                <option value="supabase_edge">Supabase Edge Function</option>
+              </select>
+            </div>
+          </div>
+          <!-- Supabase cron info (shown when method=supabase) -->
+          <div id="autoCheckSupabaseInfo" style="display:none;padding:12px 16px;background:var(--accent-lt);border-radius:var(--r-sm);margin:8px 16px 16px;border-left:3px solid var(--accent)">
+            <div style="font-size:.82rem;font-weight:600;color:var(--accent);margin-bottom:8px">📋 SQL para configurar no Supabase</div>
+            <div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">Execute este SQL no Editor SQL do Supabase para registrar transações automaticamente via pg_cron:</div>
+            <pre id="autoCheckSqlCode" style="font-size:.7rem;background:var(--surface);padding:10px;border-radius:6px;overflow-x:auto;color:var(--text1);border:1px solid var(--border);white-space:pre-wrap;word-break:break-all"></pre>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn btn-ghost btn-sm" onclick="copyAutoCheckSql()">📋 Copiar SQL</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.open('https://supabase.com/dashboard','_blank')">🔗 Abrir Supabase</button>
+            </div>
+          </div>
+          <!-- Last run info -->
+          <div class="settings-row">
+            <div class="settings-row-icon" style="background:var(--bg2)">📊</div>
+            <div class="settings-row-info">
+              <div class="settings-row-label">Última Verificação</div>
+              <div class="settings-row-sub" id="autoCheckLastRun">Nunca executada</div>
+            </div>
+            <div class="settings-row-action">
+              <button class="btn btn-ghost btn-sm" onclick="runAutoRegister(true)">▶️ Executar agora</button>
             </div>
           </div>
         </div>
@@ -2085,6 +2250,56 @@ canvas { cursor: default; }
           Entrar
         </button>
         <div id="loginError" style="margin-top:12px;color:#dc2626;font-size:.8rem;text-align:center;display:none"></div>
+        <div style="text-align:center;margin-top:16px;font-size:.8rem;color:#6b7280">
+          Não tem conta?
+          <button onclick="showRegisterForm()" style="background:none;border:none;color:#2a6049;font-weight:600;cursor:pointer;font-size:.8rem;text-decoration:underline">Solicitar acesso</button>
+        </div>
+      </div>
+
+      <!-- Register form -->
+      <div id="registerFormArea" style="display:none">
+        <div style="font-size:1rem;font-weight:700;color:#1e5c42;text-align:center;margin-bottom:16px">📝 Solicitar Acesso</div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label style="font-size:.8rem;font-weight:600;color:#374151;margin-bottom:4px;display:block">Nome completo</label>
+          <input type="text" id="regName" placeholder="Seu nome"
+            style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='#2a6049'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label style="font-size:.8rem;font-weight:600;color:#374151;margin-bottom:4px;display:block">E-mail</label>
+          <input type="email" id="regEmail" placeholder="seu@email.com"
+            style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='#2a6049'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label style="font-size:.8rem;font-weight:600;color:#374151;margin-bottom:4px;display:block">Senha (mín. 8 chars)</label>
+          <input type="password" id="regPassword" placeholder="••••••••"
+            style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='#2a6049'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div class="form-group" style="margin-bottom:20px">
+          <label style="font-size:.8rem;font-weight:600;color:#374151;margin-bottom:4px;display:block">Confirmar Senha</label>
+          <input type="password" id="regPassword2" placeholder="••••••••"
+            style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box"
+            onkeydown="if(event.key==='Enter')doRegister()"
+            onfocus="this.style.borderColor='#2a6049'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <button onclick="doRegister()" id="regBtn"
+          style="width:100%;padding:13px;background:linear-gradient(135deg,#1e5c42,#2a6049);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit">
+          Enviar Solicitação
+        </button>
+        <div id="regError" style="margin-top:12px;color:#dc2626;font-size:.8rem;text-align:center;display:none"></div>
+        <div style="text-align:center;margin-top:14px">
+          <button onclick="showLoginFormArea()" style="background:none;border:none;color:#6b7280;font-size:.8rem;cursor:pointer;text-decoration:underline">← Voltar ao login</button>
+        </div>
+      </div>
+
+      <!-- Pending approval screen -->
+      <div id="pendingApprovalArea" style="display:none;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:12px">⏳</div>
+        <div style="font-size:1rem;font-weight:700;color:#1e5c42;margin-bottom:8px">Aguardando aprovação</div>
+        <div style="font-size:.82rem;color:#6b7280;margin-bottom:20px">Sua solicitação foi enviada. Um administrador precisa aprovar seu acesso antes que você possa entrar.</div>
+        <button onclick="showLoginFormArea()" style="background:none;border:1.5px solid #2a6049;color:#2a6049;padding:10px 24px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">Voltar ao login</button>
       </div>
       <!-- Change password form (shown on first login) -->
       <div id="changePwdArea" style="display:none">
@@ -2339,6 +2554,52 @@ canvas { cursor: default; }
         </div>
 
         <div class="form-group full"><label>Memo / Observação</label><textarea id="scMemo" rows="2" placeholder="Notas..."></textarea></div>
+
+        <!-- Divider -->
+        <div class="full" style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">
+          <span style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Automação</span>
+        </div>
+
+        <!-- Auto register -->
+        <div class="form-group full">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:400">
+            <input type="checkbox" id="scAutoRegister" style="width:16px;height:16px;margin-top:2px;cursor:pointer">
+            <div>
+              <div style="font-weight:600;font-size:.88rem">Registrar automaticamente</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Quando a data chegar, cria a transação automaticamente sem necessidade de aprovação manual</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Email notification -->
+        <div class="form-group full">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:400">
+            <input type="checkbox" id="scNotifyEmail" style="width:16px;height:16px;margin-top:2px;cursor:pointer" onchange="document.getElementById('scNotifyEmailDetails').style.display=this.checked?'':'none'">
+            <div>
+              <div style="font-weight:600;font-size:.88rem">Notificar por e-mail</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Enviar e-mail de aviso quando a transação estiver próxima ou for registrada automaticamente</div>
+            </div>
+          </label>
+        </div>
+        <div class="form-group full" id="scNotifyEmailDetails" style="display:none;padding:12px;background:var(--accent-lt);border-radius:var(--r-sm);border:1px solid rgba(42,96,73,.15)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group" style="margin:0">
+              <label>E-mail destino</label>
+              <input type="email" id="scNotifyEmailAddr" placeholder="email@exemplo.com">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Avisar com antecedência</label>
+              <select id="scNotifyDaysBefore">
+                <option value="0">No dia</option>
+                <option value="1" selected>1 dia antes</option>
+                <option value="2">2 dias antes</option>
+                <option value="3">3 dias antes</option>
+                <option value="7">1 semana antes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="modal-footer">
@@ -2755,6 +3016,9 @@ async function bootApp(){
     return;
   }
   populateSelects();
+  // Start auto-check timer if configured
+  const _cfg = getAutoCheckConfig();
+  if(_cfg.enabled && _cfg.method === 'browser') applyAutoCheckTimer(_cfg);
   // Datas padrão
   const ym=new Date().toISOString().slice(0,7);
   const txMonthEl=document.getElementById('txMonth');if(txMonthEl)txMonthEl.value=ym;
@@ -5008,6 +5272,21 @@ function openScheduledModal(id='') {
   });
 
   document.getElementById('scheduledModalTitle').textContent = id ? 'Editar Programação' : 'Programar Transação';
+
+  // Auto-register & notify fields
+  const arEl = document.getElementById('scAutoRegister');
+  const neEl = document.getElementById('scNotifyEmail');
+  const naEl = document.getElementById('scNotifyEmailAddr');
+  const ndEl = document.getElementById('scNotifyDaysBefore');
+  const ndDiv = document.getElementById('scNotifyEmailDetails');
+  if(arEl) arEl.checked = sc?.auto_register || false;
+  if(neEl) {
+    neEl.checked = sc?.notify_email || false;
+    if(ndDiv) ndDiv.style.display = neEl.checked ? '' : 'none';
+  }
+  if(naEl) naEl.value = sc?.notify_email_addr || '';
+  if(ndEl) ndEl.value = sc?.notify_days_before ?? 1;
+
   updateScPreview();
   openModal('scheduledModal');
 }
@@ -5067,6 +5346,8 @@ async function saveScheduled() {
   const amount = parseFloat(document.getElementById('scAmount').value) || 0;
   const tags = document.getElementById('scTags').value.split(',').map(s=>s.trim()).filter(Boolean);
 
+  const autoReg = document.getElementById('scAutoRegister')?.checked || false;
+  const notifyEm = document.getElementById('scNotifyEmail')?.checked || false;
   const data = {
     description: document.getElementById('scDesc').value.trim(),
     type,
@@ -5083,6 +5364,10 @@ async function saveScheduled() {
     custom_unit: freq==='custom' ? document.getElementById('scCustomUnit').value : null,
     end_count: endType==='count' ? parseInt(document.getElementById('scEndCount').value)||null : null,
     end_date: endType==='date' ? document.getElementById('scEndDate').value||null : null,
+    auto_register: autoReg,
+    notify_email: notifyEm,
+    notify_email_addr: notifyEm ? (document.getElementById('scNotifyEmailAddr')?.value.trim()||null) : null,
+    notify_days_before: notifyEm ? parseInt(document.getElementById('scNotifyDaysBefore')?.value||'1') : 1,
     updated_at: new Date().toISOString(),
   };
 
@@ -5938,6 +6223,7 @@ function advancePinStep() {
 
 // ── Settings page ─────────────────────────────────────────────
 function loadSettings() {
+  loadAutoCheckConfig(); // Load automation settings
   // Update auto-lock select
   const sel = document.getElementById('autoLockSelect');
   if(sel) sel.value = String(_autoLockMinutes);
@@ -5996,11 +6282,21 @@ async function loadImportFile(file) {
   showImportProgress('Lendo arquivo...');
   importLogMsg('info', `📂 ${file.name} (${(file.size/1024).toFixed(0)} KB)`);
   try {
-    const buf = await file.arrayBuffer();
-    const wb  = XLSX.read(buf, { type:'array', raw:true });
-    const wsn = wb.SheetNames.includes('report') ? 'report' : wb.SheetNames[0];
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wsn], { header:1, defval:null, raw:false });
-    importLogMsg('ok', `✓ ${rows.length} linhas — aba "${wsn}"`);
+    let rows;
+    const isCsv = file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv';
+    if (isCsv) {
+      // Parse CSV (MoneyWiz exports as CSV with sep=, header)
+      const text = await file.text();
+      rows = parseCsvToRows(text);
+      importLogMsg('ok', `✓ ${rows.length} linhas (CSV)`);
+    } else {
+      // XLSX
+      const buf = await file.arrayBuffer();
+      const wb  = XLSX.read(buf, { type:'array', raw:true });
+      const wsn = wb.SheetNames.includes('report') ? 'report' : wb.SheetNames[0];
+      rows = XLSX.utils.sheet_to_json(wb.Sheets[wsn], { header:1, defval:null, raw:false });
+      importLogMsg('ok', `✓ ${rows.length} linhas — aba "${wsn}"`);
+    }
     setImportProgress(15, 'Parseando...');
     importState.parsedData = parseMoneyWizRows(rows);
     importState.fileLoaded = true;
@@ -6009,55 +6305,142 @@ async function loadImportFile(file) {
     document.getElementById('importDropTitle').textContent = '✓ ' + file.name;
     document.getElementById('importDropSub').textContent =
       `${d.accounts.length} contas · ${d.transactions.length} transações · ${d.categories.size} categorias`;
-    setImportProgress(30, 'Analisando...');
-    await analyzeAndStage();
+    setImportProgress(100, '✓ Arquivo lido — revise a equivalência de campos abaixo');
+    // Show field mapping screen instead of going directly to staging
+    showFieldMapScreen(d);
   } catch(err) {
     importLogMsg('err', '✗ ' + err.message); console.error(err);
   }
 }
 
-/* ── Parser ── */
-function parseMoneyWizRows(rows) {
-  const accounts=[], categories=new Set(), payees=new Set(), transactions=[];
-  let cur = null;
-  for (let i = 3; i < rows.length; i++) {
-    const r = rows[i]; if (!r || !r.length) continue;
-    const c0 = r[0] ? String(r[0]).trim() : null;
-    const c2 = r[2] ? String(r[2]).trim() : null;
-    if (c0 && !c2) {
-      // Account header row: col0=name, col1=balance, col2=currency
-      cur = {
-        name: c0,
-        balance: parseMWAmt(r[1] ? String(r[1]) : '0'),
-        currency: r[2] ? String(r[2]).trim() : 'BRL',
-        transactions: []
-      };
-      accounts.push(cur);
-    } else if (c2 && cur) {
-      // Transaction row
-      const cat  = r[6]  ? String(r[6]).trim() : null;
-      const pay  = r[5]  ? String(r[5]).replace(/\xa0/g,' ').trim() : null;
-      const desc = r[4]  ? String(r[4]).replace(/\xa0/g,' ').trim() : '';
-      const dt   = parseMWDate(r[7] ? String(r[7]).trim() : null);
-      const tm   = r[8]  ? String(r[8]).trim() : '12:00';
-      const amt  = parseMWAmt(r[10] ? String(r[10]) : '0');
-      const bal  = parseMWAmt(r[14] ? String(r[14]) : '0');
-      const xfer = r[3]  ? String(r[3]).trim() : null;
-      if (cat) categories.add(cat);
-      if (pay) payees.add(pay);
-      const tx = {
-        account_name: cur.name, transfer_account: xfer || null,
-        description: desc, payee_name: pay, category_path: cat,
-        date: dt, time: tm, memo: r[9] ? String(r[9]).trim() : null,
-        amount: amt, currency: r[11] ? String(r[11]).trim() : cur.currency,
-        tags: r[13] ? String(r[13]).trim() : null,
-        running_balance: bal, is_transfer: !!xfer,
-        moneywiz_key: `${cur.name}|${dt}|${tm}|${amt}|${desc}`,
-      };
-      transactions.push(tx); cur.transactions.push(tx);
+/* ── CSV Parser ── */
+function parseCsvToRows(text) {
+  // Handle MoneyWiz CSV format: first line is "sep=," then header then data
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const rows = [];
+  let startLine = 0;
+  // Skip "sep=X" line if present
+  if (lines[0] && lines[0].startsWith('sep=')) startLine = 1;
+  for (let i = startLine; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) { rows.push([]); continue; }
+    const row = parseCsvLine(line);
+    rows.push(row);
+  }
+  return rows;
+}
+function parseCsvLine(line) {
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur || null); cur = '';
+    } else {
+      cur += ch;
     }
   }
-  return { accounts, categories, payees, transactions };
+  result.push(cur || null);
+  return result;
+}
+
+/* ── Parser ── */
+function parseMoneyWizRows(rows) {
+  // MoneyWiz CSV structure:
+  //   Row 0: sep=,  (or header if xlsx)
+  //   Row N: header row (Nome, Saldo atual, Conta, Transferências, ...)
+  //   Account row: col[0]=AccountName, col[1]=balance, col[2]=CurrencyCode (e.g. BRL), rest blank
+  //   Txn row: col[0]='', col[2]=AccountName, col[3]=TransferTo, col[4]=Desc,
+  //            col[5]=Payee, col[6]=Category, col[7]=Date, col[8]=Time,
+  //            col[9]=Memo, col[10]=Amount, col[11]=Currency, col[13]=Tags, col[14]=Balance
+
+  const accounts=[], categories=new Set(), payees=new Set(), transactions=[];
+  const transferAccounts=new Set(); // accounts mentioned only in Transferências column
+
+  // Find header row
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 5); i++) {
+    const r = rows[i];
+    if (r && r[0] && (r[0]==='Nome' || r[0]==='Name')) { headerIdx = i; break; }
+    if (r && r[1] && r[1]==='Saldo atual') { headerIdx = i; break; }
+  }
+  const startIdx = headerIdx >= 0 ? headerIdx + 1 : 2;
+
+  // Helper: clean non-breaking spaces and trim
+  const clean = s => s ? String(s).replace(/\xa0/g,' ').replace(/\u00a0/g,' ').trim() : '';
+  const isCurrency = s => /^[A-Z]{2,4}$/.test(s);
+
+  let currentAccount = null; // track current account context
+
+  for (let i = startIdx; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || r.length < 3) continue;
+
+    const c0 = clean(r[0]);
+    const c2 = clean(r[2]);
+    const c7 = clean(r[7]); // Date column
+
+    // ── Account header row ──
+    // Pattern: col0 has account name, col2 has currency code (BRL/USD/EUR), no date
+    if (c0 && !c7 && (isCurrency(c2) || (!c2 && !clean(r[3])))) {
+      const currency = isCurrency(c2) ? c2 : 'BRL';
+      const balStr = clean(r[1]) || '0';
+      currentAccount = {
+        name: c0,
+        balance: parseMWAmt(balStr),
+        currency,
+        transactions: []
+      };
+      accounts.push(currentAccount);
+    }
+    // ── Transaction row ──
+    // Pattern: col0 empty, col2 has account name, col7 has date with digits
+    else if (!c0 && c2 && c7 && /\d/.test(c7)) {
+      const accName = c2;
+      // Find account in our list; if not found use currentAccount
+      let acc = accounts.find(a => a.name === accName) || currentAccount;
+      if (!acc) continue;
+
+      const cat  = clean(r[6]);
+      const pay  = clean(r[5]);
+      const desc = clean(r[4]);
+      const dt   = parseMWDate(c7);
+      const tm   = clean(r[8]) || '12:00';
+      const amt  = parseMWAmt(clean(r[10]));
+      const xfer = clean(r[3]);
+      const curr = clean(r[11]) || acc.currency || 'BRL';
+      const tags = clean(r[13]);
+
+      if (cat) categories.add(cat);
+      if (pay) payees.add(pay);
+      if (xfer) transferAccounts.add(xfer);
+
+      const tx = {
+        account_name:    accName,
+        transfer_account: xfer || null,
+        description:     desc,
+        payee_name:      pay || null,
+        category_path:   cat || null,
+        date:            dt,
+        time:            tm,
+        memo:            clean(r[9]) || null,
+        amount:          amt,
+        currency:        curr,
+        tags:            tags || null,
+        running_balance: parseMWAmt(clean(r[14])),
+        is_transfer:     !!xfer,
+        moneywiz_key:    `${accName}|${dt}|${tm}|${amt}|${desc}`,
+      };
+      transactions.push(tx);
+      acc.transactions.push(tx);
+      currentAccount = acc; // update context
+    }
+  }
+
+  return { accounts, categories, payees, transactions, transferAccounts };
 }
 function parseMWAmt(s) {
   if (!s) return 0;
@@ -6079,6 +6462,155 @@ function inferAccType(name) {
 }
 function inferCatType(path) {
   return /salário|bônus|férias|plr|rendimento|juros|proventos|reembolso|cashback|pix crédito|atividade profissional|vendas|indeniz|restituição/.test(path.toLowerCase()) ? 'receita' : 'despesa';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FIELD MAPPING — Tela de Equivalência
+══════════════════════════════════════════════════════════════════ */
+const fieldMap = { accounts:{}, transfers:{} }; // maps moneywiz name → fintrack id or 'new'
+
+function showFieldMapScreen(parsedData) {
+  const d = parsedData;
+  const fms = document.getElementById('fieldMapScreen');
+  if (!fms) { analyzeAndStage(); return; }
+  fms.style.display = '';
+
+  // Reset field map state
+  fieldMap.accounts = {}; fieldMap.transfers = {};
+
+  // Count transactions per entity
+  const accTxCount={}, catTxCount={}, payTxCount={}, xferTxCount={};
+  d.transactions.forEach(tx => {
+    if(tx.account_name)     accTxCount[tx.account_name]      = (accTxCount[tx.account_name]||0)+1;
+    if(tx.category_path)    catTxCount[tx.category_path]     = (catTxCount[tx.category_path]||0)+1;
+    if(tx.payee_name)       payTxCount[tx.payee_name]        = (payTxCount[tx.payee_name]||0)+1;
+    if(tx.transfer_account) xferTxCount[tx.transfer_account] = (xferTxCount[tx.transfer_account]||0)+1;
+  });
+
+  // Lookup maps for existing data
+  const exAcc={}, exCat={}, exPay={};
+  state.accounts.forEach(a => exAcc[a.name.toLowerCase()] = a);
+  state.categories.forEach(c => exCat[c.name.toLowerCase()] = c);
+  state.payees.forEach(p => exPay[p.name.toLowerCase()] = p);
+
+  const mkBadge = (exists, newLabel='Novo', exLabel='Existente') => exists
+    ? `<span class="map-badge-exists">${exLabel}</span>`
+    : `<span class="map-badge-new">${newLabel}</span>`;
+
+  const accOptsList = '<option value="">— Criar automaticamente —</option>' +
+    state.accounts.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+
+  // ── TAB: CONTAS ──
+  let newAccN=0, accHtml='';
+  d.accounts.forEach(a => {
+    const ex = exAcc[a.name.toLowerCase()];
+    if(!ex) newAccN++;
+    const typeInferred = inferAccType(a.name);
+    const typeLbl = {corrente:'Corrente',cartao_credito:'Crédito',investimento:'Invest.',dinheiro:'Dinheiro',outros:'Outros'}[typeInferred]||typeInferred;
+    accHtml += `<tr>
+      <td><strong>${esc(a.name)}</strong><br><span style="font-size:.7rem;color:var(--muted)">${typeLbl} · ${a.currency||'BRL'}</span></td>
+      <td style="text-align:center">${accTxCount[a.name]||0}</td>
+      <td class="${(a.balance||0)>=0?'amount-pos':'amount-neg'}" style="white-space:nowrap">${fmt(a.balance||0, a.currency||'BRL')}</td>
+      <td>${mkBadge(ex)}</td>
+      <td>${ex
+        ? `<span style="font-size:.78rem;color:var(--accent);font-weight:600">✓ ${esc(ex.name)}</span>`
+        : `<select class="map-select" onchange="setFieldMap('account','${esc(a.name)}',this.value)">${accOptsList}</select>`
+      }</td></tr>`;
+  });
+  document.getElementById('fmAccountsBody').innerHTML = accHtml ||
+    '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Nenhuma conta encontrada no arquivo</td></tr>';
+  document.getElementById('fmTabAccBadge').textContent = `(${d.accounts.length}, ${newAccN} nov.)`;
+
+  // ── TAB: CATEGORIAS ──
+  let newCatN=0, catHtml='';
+  const catsSorted = [...d.categories].sort();
+  catsSorted.forEach(path => {
+    const parts = path.split('►').map(p=>p.trim());
+    const leaf = parts[parts.length-1];
+    const ex = exCat[leaf.toLowerCase()];
+    const type = inferCatType(path);
+    if(!ex) newCatN++;
+    const hierarchy = parts.length > 1
+      ? `<span style="color:var(--muted);font-size:.7rem">${parts.slice(0,-1).join(' › ')} › </span>`
+      : '';
+    catHtml += `<tr>
+      <td>${'&nbsp;'.repeat((parts.length-1)*3)}${hierarchy}<strong>${esc(leaf)}</strong></td>
+      <td><span class="badge ${type==='receita'?'badge-green':'badge-red'}" style="font-size:.65rem">${type}</span></td>
+      <td style="text-align:center">${catTxCount[path]||0}</td>
+      <td>${mkBadge(ex)}</td></tr>`;
+  });
+  document.getElementById('fmCategoriesBody').innerHTML = catHtml ||
+    '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Nenhuma categoria encontrada</td></tr>';
+  document.getElementById('fmTabCatBadge').textContent = `(${d.categories.size}, ${newCatN} nov.)`;
+
+  // ── TAB: BENEFICIÁRIOS ──
+  let newPayN=0, payHtml='';
+  [...d.payees].sort().forEach(name => {
+    const ex = exPay[name.toLowerCase()];
+    if(!ex) newPayN++;
+    payHtml += `<tr>
+      <td>${esc(name)}</td>
+      <td style="text-align:center">${payTxCount[name]||0}</td>
+      <td>${mkBadge(ex)}</td></tr>`;
+  });
+  document.getElementById('fmPayeesBody').innerHTML = payHtml ||
+    '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Nenhum beneficiário</td></tr>';
+  document.getElementById('fmTabPayBadge').textContent = `(${d.payees.size}, ${newPayN} nov.)`;
+
+  // ── TAB: TRANSFERÊNCIAS ──
+  const xferSet = d.transferAccounts || new Set(d.transactions.filter(t=>t.transfer_account).map(t=>t.transfer_account));
+  let newXferN=0, xferHtml='';
+  [...xferSet].sort().forEach(xname => {
+    const exInFile = d.accounts.find(a => a.name.toLowerCase()===xname.toLowerCase());
+    const exInApp  = exAcc[xname.toLowerCase()];
+    const ex = exInApp || exInFile;
+    if(!ex) newXferN++;
+    const badge = ex
+      ? `<span class="map-badge-exists">Mapeada</span>`
+      : `<span class="map-badge-new">Não existe</span>`;
+    xferHtml += `<tr>
+      <td><strong>${esc(xname)}</strong></td>
+      <td style="text-align:center">${xferTxCount[xname]||0}</td>
+      <td>${badge}</td>
+      <td><select class="map-select" onchange="setFieldMap('transfer','${esc(xname)}',this.value)">
+        <option value="">— Ignorar transferências —</option>
+        ${state.accounts.map(a=>`<option value="${a.id}"${exInApp&&exInApp.id===a.id?' selected':''}>${esc(a.name)}</option>`).join('')}
+      </select></td></tr>`;
+  });
+  document.getElementById('fmTransfersBody').innerHTML = xferHtml ||
+    '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Nenhuma transferência entre contas</td></tr>';
+  document.getElementById('fmTabXferBadge').textContent = `(${xferSet.size}, ${newXferN} sem conta)`;
+
+  // Show summary warning if new items
+  const totalNew = newAccN + newCatN + newPayN;
+  const btn = document.getElementById('proceedImportBtn');
+  if(btn) btn.textContent = totalNew > 0
+    ? `Continuar → (${totalNew} itens novos serão criados)`
+    : 'Continuar Importação →';
+}
+
+function showFieldMapTab(tab) {
+  document.querySelectorAll('.field-map-tab').forEach((t,i) => {
+    const tabs = ['accounts','categories','payees','transfers'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.field-map-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'fmpanel-' + tab);
+  });
+}
+
+function setFieldMap(type, mwName, fintrackId) {
+  if (type === 'account')  fieldMap.accounts[mwName]  = fintrackId || 'new';
+  if (type === 'transfer') fieldMap.transfers[mwName] = fintrackId || 'new';
+}
+
+function proceedFromFieldMap() {
+  // Hide field map, show import options, proceed to staging
+  const fms = document.getElementById('fieldMapScreen');
+  if(fms) fms.style.display = 'none';
+  const txOpts = document.getElementById('importTxOptions');
+  if(txOpts) txOpts.style.display = '';
+  analyzeAndStage();
 }
 
 /* ── Analyze & Stage ── */
@@ -6304,8 +6836,8 @@ async function commitImport() {
     document.getElementById('importProgress').style.display = 'none';
     importState.fileLoaded = false; importState.parsedData = null;
     document.getElementById('importFileInput').value = '';
-    document.getElementById('importDropTitle').textContent = 'Arraste o arquivo MoneyWiz (.xlsx) ou clique para selecionar';
-    document.getElementById('importDropSub').textContent = 'Relatório completo exportado do MoneyWiz';
+    document.getElementById('importDropTitle').textContent = 'Arraste o arquivo MoneyWiz (.csv ou .xlsx) ou clique para selecionar';
+    document.getElementById('importDropSub').textContent = 'Arquivo exportado do MoneyWiz (CSV ou Excel)';
   } catch(err) {
     importLogMsg('err', '✗ ' + err.message); toast('Erro: ' + err.message, 'error'); console.error(err);
   } finally {
@@ -6360,8 +6892,8 @@ function cancelImport() {
   importState.staging = { accounts:[], categories:[], payees:[], transactions:[] };
   importState.parsedData = null; importState.fileLoaded = false;
   document.getElementById('importFileInput').value = '';
-  document.getElementById('importDropTitle').textContent = 'Arraste o arquivo MoneyWiz (.xlsx) ou clique para selecionar';
-  document.getElementById('importDropSub').textContent = 'Relatório completo exportado do MoneyWiz';
+  document.getElementById('importDropTitle').textContent = 'Arraste o arquivo MoneyWiz (.csv ou .xlsx) ou clique para selecionar';
+  document.getElementById('importDropSub').textContent = 'Arquivo exportado do MoneyWiz (CSV ou Excel)';
   showStagingArea(false);
   document.getElementById('importProgress').style.display = 'none';
   toast('Importação cancelada', 'info');
@@ -6556,12 +7088,36 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = 'Verificando...';
   try {
     const hash = await sha256(password);
-    const { data: users, error } = await sb.from('app_users')
-      .select('*').eq('email', email).eq('active', true).limit(1);
-    if (error) throw error;
+    // First check if user exists at all
+    const { data: anyUser, error: anyErr } = await sb.from('app_users')
+      .select('id,email,active,approved,password_hash,role,must_change_pwd,name,can_view,can_create,can_edit,can_delete,can_export,can_import,can_admin,last_login,created_at')
+      .eq('email', email).limit(1);
+    if (anyErr) throw anyErr;
+
+    if (!anyUser?.length) { showLoginErr('E-mail ou senha incorretos.'); return; }
+    const user = anyUser[0];
+
+    // Check password first
+    if (user.password_hash !== hash && user.password_hash !== 'placeholder_will_be_set_on_first_login') {
+      showLoginErr('E-mail ou senha incorretos.'); return;
+    }
+
+    // Check approval status
+    if (!user.approved) {
+      // User registered but not approved yet
+      document.getElementById('loginFormArea').style.display = 'none';
+      document.getElementById('pendingApprovalArea').style.display = '';
+      btn.disabled = false; btn.textContent = 'Entrar';
+      return;
+    }
+
+    // Check if active
+    if (!user.active) {
+      showLoginErr('Conta desativada. Contate o administrador.'); return;
+    }
+
+    const users = [user];
     if (!users?.length) { showLoginErr('E-mail ou senha incorretos.'); return; }
-    const user = users[0];
-    if (user.password_hash !== hash) { showLoginErr('E-mail ou senha incorretos.'); return; }
 
     // Success — set session
     currentUser = user;
@@ -6706,8 +7262,85 @@ async function tryRestoreSession() {
 async function isMultiUserEnabled() {
   try {
     const { error } = await sb.from('app_users').select('id').limit(1);
-    return !error;
+    if (error) {
+      console.warn('app_users not found:', error.message);
+      return false;
+    }
+    return true;
   } catch { return false; }
+}
+
+// ── Show / hide register form ──
+function showRegisterForm() {
+  document.getElementById('loginFormArea').style.display = 'none';
+  document.getElementById('registerFormArea').style.display = '';
+  document.getElementById('pendingApprovalArea').style.display = 'none';
+  setTimeout(() => document.getElementById('regName')?.focus(), 100);
+}
+function showLoginFormArea() {
+  document.getElementById('loginFormArea').style.display = '';
+  document.getElementById('registerFormArea').style.display = 'none';
+  document.getElementById('pendingApprovalArea').style.display = 'none';
+  document.getElementById('changePwdArea').style.display = 'none';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('regError').style.display = 'none';
+  setTimeout(() => document.getElementById('loginEmail')?.focus(), 100);
+}
+
+// ── Register (self-register) ──
+async function doRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pwd   = document.getElementById('regPassword').value;
+  const pwd2  = document.getElementById('regPassword2').value;
+  const errEl = document.getElementById('regError');
+  errEl.style.display = 'none';
+
+  if (!name)  { errEl.textContent='Informe seu nome.';         errEl.style.display=''; return; }
+  if (!email) { errEl.textContent='Informe seu e-mail.';       errEl.style.display=''; return; }
+  if (pwd.length < 8) { errEl.textContent='Senha mínima: 8 caracteres.'; errEl.style.display=''; return; }
+  if (pwd !== pwd2)   { errEl.textContent='Senhas não conferem.';         errEl.style.display=''; return; }
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    // Check if email already exists
+    const { data: exist } = await sb.from('app_users').select('id,active,approved').eq('email', email).limit(1);
+    if (exist?.length) {
+      const u = exist[0];
+      if (!u.approved) {
+        // Already registered, still pending
+        document.getElementById('registerFormArea').style.display = 'none';
+        document.getElementById('pendingApprovalArea').style.display = '';
+        return;
+      }
+      errEl.textContent = 'E-mail já cadastrado. Faça login.';
+      errEl.style.display = '';
+      return;
+    }
+
+    const hash = await sha256(pwd);
+    const { error } = await sb.from('app_users').insert({
+      email, name,
+      password_hash: hash,
+      role: 'user',
+      active: false,      // admin must activate
+      approved: false,    // admin must approve
+      must_change_pwd: false,
+      can_view: true, can_create: true, can_edit: true,
+      can_delete: false, can_export: true, can_import: false, can_admin: false
+    });
+    if (error) throw error;
+
+    // Show pending screen
+    document.getElementById('registerFormArea').style.display = 'none';
+    document.getElementById('pendingApprovalArea').style.display = '';
+  } catch(e) {
+    errEl.textContent = 'Erro: ' + e.message;
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar Solicitação';
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -6727,11 +7360,38 @@ async function loadUsersList() {
   const countEl = document.getElementById('userAdminCount');
   if (countEl) countEl.textContent = `${users?.length||0} usuários cadastrados`;
   if (!users?.length) { el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum usuário.</div>'; return; }
-  el.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último login</th><th>Ações</th></tr></thead><tbody>' +
-    users.map(u => `<tr>
+  // Separate pending from active
+  const pendingUsers = users.filter(u => !u.approved);
+  const activeUsers  = users.filter(u => u.approved);
+
+  let html = '';
+
+  if (pendingUsers.length) {
+    html += `<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#92400e">
+      ⏳ <strong>${pendingUsers.length} solicitação(ões) aguardando aprovação</strong>
+    </div>`;
+    html += '<div class="table-wrap" style="margin-bottom:16px"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Solicitado</th><th>Ações</th></tr></thead><tbody>';
+    html += pendingUsers.map(u => `<tr style="background:#fffbeb">
       <td><strong>${esc(u.name||'—')}</strong></td>
       <td style="font-size:.82rem">${esc(u.email)}</td>
-      <td><span class="badge ${u.role==='admin'?'badge-green':u.role==='viewer'?'':'badge-green'}" style="font-size:.7rem">${u.role==='admin'?'Admin':u.role==='viewer'?'Viewer':'Usuário'}</span></td>
+      <td style="font-size:.75rem;color:var(--muted)">${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-primary btn-sm" onclick="approveUser('${u.id}','${esc(u.name||u.email)}')" style="padding:3px 10px;font-size:.73rem;background:#16a34a">✅ Aprovar</button>
+        <button class="btn btn-ghost btn-sm" onclick="rejectUser('${u.id}','${esc(u.name||u.email)}')" style="padding:3px 10px;font-size:.73rem;color:#dc2626">🗑 Rejeitar</button>
+      </td>
+    </tr>`).join('');
+    html += '</tbody></table></div>';
+    html += '<div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--muted)">Usuários ativos</div>';
+  }
+
+  if (!activeUsers.length) {
+    html += '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum usuário ativo.</div>';
+  } else {
+    html += '<div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último login</th><th>Ações</th></tr></thead><tbody>';
+    html += activeUsers.map(u => `<tr>
+      <td><strong>${esc(u.name||'—')}</strong></td>
+      <td style="font-size:.82rem">${esc(u.email)}</td>
+      <td><span class="badge badge-green" style="font-size:.7rem">${u.role==='admin'?'Admin':u.role==='viewer'?'Viewer':'Usuário'}</span></td>
       <td><span style="font-size:.75rem;color:${u.active?'var(--green)':'var(--red)'}">● ${u.active?'Ativo':'Inativo'}</span></td>
       <td style="font-size:.75rem;color:var(--muted)">${u.last_login?new Date(u.last_login).toLocaleDateString('pt-BR'):'Nunca'}</td>
       <td style="white-space:nowrap">
@@ -6739,7 +7399,10 @@ async function loadUsersList() {
         ${u.id !== currentUser?.id ? `<button class="btn btn-ghost btn-sm" onclick="toggleUserActive('${u.id}',${u.active})" style="padding:3px 8px;font-size:.73rem">${u.active?'🚫':'✅'}</button>` : ''}
         ${u.id !== currentUser?.id ? `<button class="btn btn-ghost btn-sm" onclick="resetUserPwd('${u.id}','${esc(u.name||u.email)}')" style="padding:3px 8px;font-size:.73rem">🔑</button>` : ''}
       </td>
-    </tr>`).join('') + '</tbody></table></div>';
+    </tr>`).join('');
+    html += '</tbody></table></div>';
+  }
+  el.innerHTML = html;
 }
 
 function showNewUserForm() {
@@ -6815,6 +7478,24 @@ async function saveUser() {
   } catch(e) { toast('Erro: '+e.message,'error'); }
 }
 
+async function approveUser(userId, userName) {
+  if (!confirm(`Aprovar acesso de ${userName}?`)) return;
+  const { error } = await sb.from('app_users').update({
+    active: true, approved: true
+  }).eq('id', userId);
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast(`✓ ${userName} aprovado! Já pode fazer login.`,'success');
+  await loadUsersList();
+}
+
+async function rejectUser(userId, userName) {
+  if (!confirm(`Rejeitar e excluir solicitação de ${userName}?`)) return;
+  const { error } = await sb.from('app_users').delete().eq('id', userId);
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast(`Solicitação de ${userName} removida.`,'success');
+  await loadUsersList();
+}
+
 async function toggleUserActive(userId, currentActive) {
   const { error } = await sb.from('app_users').update({ active: !currentActive }).eq('id', userId);
   if (error) { toast('Erro: '+error.message,'error'); return; }
@@ -6863,6 +7544,591 @@ async function ensureMasterAdmin() {
 }
 
 tryAutoConnect();
+
+/* ══════════════════════════════════════════════════════════════════
+   AUTO-REGISTER ENGINE — Transações Programadas Automáticas
+══════════════════════════════════════════════════════════════════ */
+
+const AUTO_CHECK_CONFIG_KEY = 'fintrack_auto_check_config';
+let _autoCheckTimer = null;
+
+// Default config
+const AUTO_CHECK_DEFAULTS = {
+  enabled: false,
+  intervalMinutes: 60,
+  daysAhead: 0,
+  emailDefault: '',
+  method: 'browser',
+  lastRun: null,
+  lastRunCount: 0,
+};
+
+function getAutoCheckConfig() {
+  try {
+    const raw = localStorage.getItem(AUTO_CHECK_CONFIG_KEY);
+    return raw ? { ...AUTO_CHECK_DEFAULTS, ...JSON.parse(raw) } : { ...AUTO_CHECK_DEFAULTS };
+  } catch { return { ...AUTO_CHECK_DEFAULTS }; }
+}
+
+function saveAutoCheckConfig() {
+  const cfg = {
+    enabled: document.getElementById('autoCheckEnabled')?.checked || false,
+    intervalMinutes: parseInt(document.getElementById('autoCheckInterval')?.value||'60'),
+    daysAhead: parseInt(document.getElementById('autoCheckDaysAhead')?.value||'0'),
+    emailDefault: document.getElementById('autoCheckEmailDefault')?.value.trim()||'',
+    method: document.getElementById('autoCheckMethod')?.value||'browser',
+  };
+  // Preserve non-form fields
+  const current = getAutoCheckConfig();
+  const merged = { ...current, ...cfg };
+  localStorage.setItem(AUTO_CHECK_CONFIG_KEY, JSON.stringify(merged));
+  applyAutoCheckTimer(merged);
+  updateAutoCheckUI(merged);
+  toast('Configuração de automação salva', 'success');
+}
+
+function loadAutoCheckConfig() {
+  const cfg = getAutoCheckConfig();
+  const enEl = document.getElementById('autoCheckEnabled');
+  const intEl = document.getElementById('autoCheckInterval');
+  const dayEl = document.getElementById('autoCheckDaysAhead');
+  const emEl  = document.getElementById('autoCheckEmailDefault');
+  const mEl   = document.getElementById('autoCheckMethod');
+  if(enEl) enEl.checked = cfg.enabled;
+  if(intEl) intEl.value = cfg.intervalMinutes;
+  if(dayEl) dayEl.value = cfg.daysAhead;
+  if(emEl)  emEl.value  = cfg.emailDefault;
+  if(mEl)   mEl.value   = cfg.method;
+  updateAutoCheckUI(cfg);
+  applyAutoCheckTimer(cfg);
+}
+
+function updateAutoCheckUI(cfg) {
+  // Toggle visual
+  const chk = document.getElementById('autoCheckEnabled');
+  const tog = document.getElementById('autoCheckToggle');
+  if(tog) {
+    tog.style.background = cfg.enabled ? 'var(--accent)' : '#ccc';
+    // Move knob
+    const before = document.createElement('style');
+    before.id = 'tog-style';
+    document.getElementById('tog-style')?.remove();
+    before.textContent = `#autoCheckToggle::before{transform:translateX(${cfg.enabled?20:0}px)}`;
+    document.head.appendChild(before);
+  }
+  // Method info
+  onAutoCheckMethodChange();
+  // Last run
+  const lrEl = document.getElementById('autoCheckLastRun');
+  if(lrEl) {
+    if(cfg.lastRun) {
+      const d = new Date(cfg.lastRun);
+      lrEl.textContent = `${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} — ${cfg.lastRunCount||0} transação(ões) registrada(s)`;
+    } else {
+      lrEl.textContent = 'Nunca executada';
+    }
+  }
+}
+
+function onAutoCheckMethodChange() {
+  const method = document.getElementById('autoCheckMethod')?.value || 'browser';
+  const infoEl = document.getElementById('autoCheckSupabaseInfo');
+  const subEl  = document.getElementById('autoCheckMethodSub');
+  const sqlEl  = document.getElementById('autoCheckSqlCode');
+
+  const descriptions = {
+    browser: 'O navegador executa a verificação periodicamente enquanto o app estiver aberto',
+    supabase_cron: 'Supabase pg_cron — executa via banco de dados, mesmo com app fechado (requer extensão pg_cron)',
+    supabase_edge: 'Supabase Edge Function — executa via função serverless, requer deploy manual',
+  };
+  if(subEl) subEl.textContent = descriptions[method] || '';
+
+  if(infoEl) {
+    infoEl.style.display = (method === 'browser') ? 'none' : '';
+    if(method === 'supabase_cron' && sqlEl) {
+      const intervalCfg = document.getElementById('autoCheckInterval')?.value || '60';
+      const cronExpr = getCronExpression(parseInt(intervalCfg));
+      sqlEl.textContent = getSupabaseCronSql(cronExpr);
+    } else if(method === 'supabase_edge' && sqlEl) {
+      sqlEl.textContent = getSupabaseEdgeSql();
+    }
+  }
+}
+
+function getCronExpression(minutes) {
+  if(minutes < 60) return `*/${minutes} * * * *`;
+  const hours = Math.floor(minutes/60);
+  if(hours === 1) return '0 * * * *';
+  if(hours < 24) return `0 */${hours} * * *`;
+  return '0 8 * * *'; // daily at 8am
+}
+
+function getSupabaseCronSql(cronExpr) {
+  return `-- Execute no SQL Editor do Supabase
+-- Requer extensão pg_cron habilitada
+
+-- 1. Habilitar extensão (se ainda não estiver)
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- 2. Criar função que registra transações automáticas
+CREATE OR REPLACE FUNCTION public.auto_register_scheduled_transactions()
+RETURNS INTEGER AS $$
+DECLARE
+  v_count INTEGER := 0;
+  v_sc RECORD;
+  v_next_date DATE;
+BEGIN
+  -- Buscar todos os programados ativos com auto_register=true
+  FOR v_sc IN
+    SELECT st.*, a.id as acc_id
+    FROM scheduled_transactions st
+    JOIN accounts a ON a.id = st.account_id
+    WHERE st.status = 'active'
+      AND st.auto_register = true
+  LOOP
+    -- Calcular próximas datas até hoje
+    v_next_date := v_sc.start_date;
+    WHILE v_next_date <= CURRENT_DATE LOOP
+      -- Verificar se já foi registrada
+      IF NOT EXISTS (
+        SELECT 1 FROM scheduled_occurrences
+        WHERE scheduled_id = v_sc.id
+          AND scheduled_date = v_next_date
+          AND transaction_id IS NOT NULL
+      ) THEN
+        -- Registrar a transação
+        INSERT INTO transactions (
+          account_id, description, amount, date,
+          category_id, payee_id, memo, is_transfer
+        ) VALUES (
+          v_sc.account_id, v_sc.description, v_sc.amount, v_next_date,
+          v_sc.category_id, v_sc.payee_id, v_sc.memo, false
+        );
+
+        -- Marcar ocorrência como registrada
+        INSERT INTO scheduled_occurrences
+          (scheduled_id, scheduled_date, actual_date, amount, transaction_id)
+        VALUES (
+          v_sc.id, v_next_date, CURRENT_DATE, v_sc.amount,
+          (SELECT id FROM transactions WHERE account_id=v_sc.account_id
+           AND date=v_next_date AND description=v_sc.description
+           ORDER BY created_at DESC LIMIT 1)
+        );
+
+        -- Atualizar saldo da conta
+        UPDATE accounts SET balance = balance + v_sc.amount
+        WHERE id = v_sc.account_id;
+
+        v_count := v_count + 1;
+      END IF;
+
+      -- Calcular próxima data baseada na frequência
+      v_next_date := CASE v_sc.frequency
+        WHEN 'once'       THEN v_next_date + INTERVAL '99 years'
+        WHEN 'weekly'     THEN v_next_date + INTERVAL '7 days'
+        WHEN 'biweekly'   THEN v_next_date + INTERVAL '14 days'
+        WHEN 'monthly'    THEN v_next_date + INTERVAL '1 month'
+        WHEN 'bimonthly'  THEN v_next_date + INTERVAL '2 months'
+        WHEN 'quarterly'  THEN v_next_date + INTERVAL '3 months'
+        WHEN 'semiannual' THEN v_next_date + INTERVAL '6 months'
+        WHEN 'annual'     THEN v_next_date + INTERVAL '1 year'
+        ELSE v_next_date + INTERVAL '99 years'
+      END;
+    END LOOP;
+  END LOOP;
+  RETURN v_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. Agendar execução com pg_cron
+SELECT cron.schedule(
+  'fintrack-auto-register',  -- nome do job
+  '${cronExpr}',             -- expressão cron
+  $$SELECT public.auto_register_scheduled_transactions()$$
+);
+
+-- 4. Verificar jobs agendados:
+-- SELECT * FROM cron.job;
+
+-- 5. Para remover o job:
+-- SELECT cron.unschedule('fintrack-auto-register');`;
+}
+
+function getSupabaseEdgeSql() {
+  return `/* Deploy esta Edge Function no Supabase:
+supabase functions new auto-register
+supabase functions deploy auto-register
+
+Arquivo: supabase/functions/auto-register/index.ts */
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std/http/server.ts'
+
+serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+  const { data, error } = await supabase.rpc('auto_register_scheduled_transactions')
+  return new Response(JSON.stringify({ registered: data, error }), {
+    headers: { 'Content-Type': 'application/json' }
+  })
+})
+
+/* Após deploy, configure um webhook/cron externo para chamar:
+POST https://<project>.supabase.co/functions/v1/auto-register
+Authorization: Bearer <anon-key> */`;
+}
+
+function copyAutoCheckSql() {
+  const el = document.getElementById('autoCheckSqlCode');
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => toast('SQL copiado!', 'success'));
+}
+
+function applyAutoCheckTimer(cfg) {
+  // Clear existing timer
+  if(_autoCheckTimer) { clearInterval(_autoCheckTimer); _autoCheckTimer = null; }
+  if(cfg.enabled && cfg.method === 'browser') {
+    const ms = (cfg.intervalMinutes||60) * 60 * 1000;
+    _autoCheckTimer = setInterval(() => runAutoRegister(false), ms);
+    console.log(`[AutoCheck] Timer set: every ${cfg.intervalMinutes} min`);
+  }
+}
+
+/* ── Main auto-register runner ── */
+async function runAutoRegister(manual=false) {
+  const cfg = getAutoCheckConfig();
+  if(!manual && !cfg.enabled) return;
+
+  const today = new Date();
+  const cutoffDate = new Date(today);
+  cutoffDate.setDate(cutoffDate.getDate() + (cfg.daysAhead||0));
+  const cutoff = cutoffDate.toISOString().slice(0,10);
+
+  if(manual) toast('🔄 Verificando transações programadas...', 'info');
+
+  try {
+    // Load active scheduled transactions with auto_register=true
+    const { data: schedList, error } = await sb.from('scheduled_transactions')
+      .select('*, accounts(id,name,currency,balance), categories(id,name), payees(id,name)')
+      .eq('status', 'active')
+      .eq('auto_register', true);
+
+    if(error) { if(manual) toast('Erro: ' + error.message, 'error'); return; }
+    if(!schedList?.length) {
+      if(manual) toast('Nenhuma transação com registro automático ativo', 'info');
+      updateLastRunConfig(0);
+      return;
+    }
+
+    let totalRegistered = 0;
+    let totalNotified = 0;
+
+    for(const sc of schedList) {
+      const dates = getScheduledDates(sc, cutoff);
+      for(const date of dates) {
+        // Check if already registered
+        const { data: existing } = await sb.from('scheduled_occurrences')
+          .select('id')
+          .eq('scheduled_id', sc.id)
+          .eq('scheduled_date', date)
+          .not('transaction_id', 'is', null)
+          .maybeSingle();
+
+        if(existing) continue; // already done
+
+        // Create the transaction
+        const txAmt = sc.type === 'expense' ? -Math.abs(sc.amount) : Math.abs(sc.amount);
+        const { data: newTx, error: txErr } = await sb.from('transactions').insert({
+          account_id:  sc.account_id,
+          description: sc.description,
+          amount:      txAmt,
+          date:        date,
+          category_id: sc.category_id || null,
+          payee_id:    sc.payee_id    || null,
+          memo:        sc.memo ? `[Auto] ${sc.memo}` : '[Registro automático]',
+          is_transfer: false,
+        }).select().single();
+
+        if(txErr) { console.error('[AutoReg] Tx error:', txErr.message); continue; }
+
+        // Update account balance
+        const newBal = (parseFloat(sc.accounts?.balance)||0) + txAmt;
+        await sb.from('accounts').update({ balance: newBal }).eq('id', sc.account_id);
+
+        // Mark occurrence as registered
+        await sb.from('scheduled_occurrences').upsert({
+          scheduled_id:  sc.id,
+          scheduled_date: date,
+          actual_date:   new Date().toISOString().slice(0,10),
+          amount:        txAmt,
+          transaction_id: newTx.id,
+        }, { onConflict: 'scheduled_id,scheduled_date' });
+
+        totalRegistered++;
+
+        // Send email notification if configured
+        if(sc.notify_email && (sc.notify_email_addr || cfg.emailDefault)) {
+          const emailTo = sc.notify_email_addr || cfg.emailDefault;
+          await sendScheduledNotification(sc, date, txAmt, emailTo);
+          totalNotified++;
+        }
+      }
+
+      // Send UPCOMING notifications (notify_days_before)
+      if(sc.notify_email) {
+        const daysBefore = sc.notify_days_before || 1;
+        const upcoming = getScheduledDates(sc, new Date(Date.now() + daysBefore*86400000).toISOString().slice(0,10));
+        const todayStr = new Date().toISOString().slice(0,10);
+        for(const date of upcoming) {
+          if(date > todayStr) {
+            // Upcoming - send notification if not already sent
+            const emailTo = sc.notify_email_addr || cfg.emailDefault;
+            if(emailTo) await sendUpcomingNotification(sc, date, emailTo, daysBefore);
+          }
+        }
+      }
+    }
+
+    // Update last run
+    updateLastRunConfig(totalRegistered);
+    await loadAccounts(); // refresh balances
+
+    if(manual) {
+      if(totalRegistered > 0) {
+        toast(`✅ ${totalRegistered} transação(ões) registrada(s) automaticamente!`, 'success');
+        if(state.currentPage === 'transactions') loadTransactions();
+        if(state.currentPage === 'dashboard') loadDashboard();
+      } else {
+        toast('✅ Verificação concluída — nenhuma transação pendente', 'info');
+      }
+    } else if(totalRegistered > 0) {
+      toast(`🤖 ${totalRegistered} transação(ões) registrada(s) automaticamente`, 'success');
+    }
+
+  } catch(e) {
+    console.error('[AutoReg] Error:', e);
+    if(manual) toast('Erro na verificação: ' + e.message, 'error');
+  }
+}
+
+function updateLastRunConfig(count) {
+  const cfg = getAutoCheckConfig();
+  cfg.lastRun = new Date().toISOString();
+  cfg.lastRunCount = count;
+  localStorage.setItem(AUTO_CHECK_CONFIG_KEY, JSON.stringify(cfg));
+  updateAutoCheckUI(cfg);
+}
+
+/* ── Calculate upcoming dates for a scheduled transaction ── */
+function getScheduledDates(sc, upToCutoff) {
+  const dates = [];
+  if(!sc.start_date) return dates;
+  let cur = sc.start_date;
+  const maxIter = 500;
+  let iter = 0;
+  while(cur <= upToCutoff && iter++ < maxIter) {
+    dates.push(cur);
+    if(sc.frequency === 'once') break;
+    cur = nextScheduledDate(cur, sc);
+    if(!cur) break;
+    // Check end conditions
+    if(sc.end_date && cur > sc.end_date) break;
+    if(sc.end_count && dates.length >= sc.end_count) break;
+  }
+  return dates;
+}
+
+function nextScheduledDate(dateStr, sc) {
+  const d = new Date(dateStr + 'T12:00:00');
+  switch(sc.frequency) {
+    case 'weekly':     d.setDate(d.getDate()+7); break;
+    case 'biweekly':   d.setDate(d.getDate()+14); break;
+    case 'monthly':    d.setMonth(d.getMonth()+1); break;
+    case 'bimonthly':  d.setMonth(d.getMonth()+2); break;
+    case 'quarterly':  d.setMonth(d.getMonth()+3); break;
+    case 'semiannual': d.setMonth(d.getMonth()+6); break;
+    case 'annual':     d.setFullYear(d.getFullYear()+1); break;
+    case 'custom': {
+      const n = sc.custom_interval||1;
+      const u = sc.custom_unit||'months';
+      if(u==='days')   d.setDate(d.getDate()+n);
+      else if(u==='weeks')  d.setDate(d.getDate()+7*n);
+      else if(u==='months') d.setMonth(d.getMonth()+n);
+      else if(u==='years')  d.setFullYear(d.getFullYear()+n);
+      break;
+    }
+    default: return null;
+  }
+  return d.toISOString().slice(0,10);
+}
+
+/* ── Email Notifications ── */
+async function sendScheduledNotification(sc, date, amount, emailTo) {
+  if(!EMAILJS_CONFIG.serviceId || !EMAILJS_CONFIG.publicKey || !EMAILJS_CONFIG.templateId) return;
+  try {
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+      to_email:    emailTo,
+      subject:     `✅ Transação registrada: ${sc.description}`,
+      message:     `A transação "${sc.description}" de ${fmt(Math.abs(amount))} foi registrada automaticamente em ${fmtDate(date)}.`,
+      from_name:   'J.F. Family FinTrack',
+      report_period: fmtDate(date),
+      report_income: amount > 0 ? fmt(amount) : '—',
+      report_expense: amount < 0 ? fmt(Math.abs(amount)) : '—',
+      report_balance: fmt(amount),
+      report_count: '1',
+      report_view: 'Automático',
+    });
+  } catch(e) { console.warn('[AutoReg] Email error:', e.message); }
+}
+
+async function sendUpcomingNotification(sc, date, emailTo, daysBefore) {
+  if(!EMAILJS_CONFIG.serviceId || !EMAILJS_CONFIG.publicKey || !EMAILJS_CONFIG.templateId) return;
+  // Check if already sent (use localStorage to avoid duplicates)
+  const sentKey = `notified_${sc.id}_${date}`;
+  if(localStorage.getItem(sentKey)) return;
+  try {
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+      to_email:    emailTo,
+      subject:     `🔔 Transação programada em ${daysBefore > 0 ? daysBefore + ' dia(s)' : 'hoje'}: ${sc.description}`,
+      message:     `Lembrete: a transação "${sc.description}" de ${fmt(Math.abs(sc.amount))} está programada para ${fmtDate(date)}.`,
+      from_name:   'J.F. Family FinTrack — Lembrete',
+      report_period: fmtDate(date),
+      report_income: sc.amount > 0 ? fmt(sc.amount) : '—',
+      report_expense: sc.amount < 0 ? fmt(Math.abs(sc.amount)) : '—',
+      report_balance: fmt(sc.amount),
+      report_count: '1',
+      report_view: 'Lembrete',
+    });
+    localStorage.setItem(sentKey, '1');
+  } catch(e) { console.warn('[AutoReg] Upcoming email error:', e.message); }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SQL MIGRATION — Fields for auto_register
+   (run in Supabase SQL Editor)
+══════════════════════════════════════════════════════════════════ */
+const AUTO_REGISTER_SQL = `
+-- Add auto-register columns to scheduled_transactions
+ALTER TABLE scheduled_transactions
+  ADD COLUMN IF NOT EXISTS auto_register      BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notify_email       BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notify_email_addr  TEXT,
+  ADD COLUMN IF NOT EXISTS notify_days_before INTEGER DEFAULT 1;
+
+-- Index for efficient auto-register queries
+CREATE INDEX IF NOT EXISTS idx_scheduled_auto_register
+  ON scheduled_transactions(status, auto_register)
+  WHERE auto_register = true AND status = 'active';
+
+-- Optional: pg_cron extension for server-side execution
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+`;
+
+
+function showAuthMigration() {
+  const sql = `-- FinTrack: Multi-User Auth Migration
+-- Execute no Supabase SQL Editor
+
+CREATE TABLE IF NOT EXISTS public.app_users (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email           TEXT NOT NULL UNIQUE,
+  name            TEXT NOT NULL,
+  password_hash   TEXT NOT NULL,
+  role            TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin','user','viewer')),
+  active          BOOLEAN NOT NULL DEFAULT false,
+  approved        BOOLEAN NOT NULL DEFAULT false,
+  must_change_pwd BOOLEAN NOT NULL DEFAULT false,
+  can_view        BOOLEAN NOT NULL DEFAULT true,
+  can_create      BOOLEAN NOT NULL DEFAULT true,
+  can_edit        BOOLEAN NOT NULL DEFAULT true,
+  can_delete      BOOLEAN NOT NULL DEFAULT false,
+  can_export      BOOLEAN NOT NULL DEFAULT true,
+  can_import      BOOLEAN NOT NULL DEFAULT false,
+  can_admin       BOOLEAN NOT NULL DEFAULT false,
+  last_login      TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_by      UUID REFERENCES public.app_users(id)
+);
+
+CREATE TABLE IF NOT EXISTS public.app_sessions (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
+  token      TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_users_email    ON public.app_users(email);
+CREATE INDEX IF NOT EXISTS idx_app_sessions_token ON public.app_sessions(token);
+
+ALTER TABLE public.app_users    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.app_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "allow_all_app_users"    ON public.app_users;
+DROP POLICY IF EXISTS "allow_all_app_sessions" ON public.app_sessions;
+
+CREATE POLICY "allow_all_app_users"
+  ON public.app_users FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_app_sessions"
+  ON public.app_sessions FOR ALL USING (true) WITH CHECK (true);
+
+-- Admin master inicial (senha será definida no primeiro login)
+INSERT INTO public.app_users (
+  email, name, password_hash, role,
+  active, approved, must_change_pwd,
+  can_view, can_create, can_edit, can_delete,
+  can_export, can_import, can_admin
+) VALUES (
+  'deciofranchini@gmail.com', 'Décio Franchini',
+  'placeholder_will_be_set_on_first_login', 'admin',
+  true, true, true,
+  true, true, true, true, true, true, true
+) ON CONFLICT (email) DO NOTHING;`;
+  const modal = document.getElementById('migrationModal') || createMigrationModal();
+  document.getElementById('migrationTitle').textContent = 'SQL: Migração Multi-Usuário';
+  document.getElementById('migrationCode').textContent = sql;
+  openModal('migrationModal');
+}
+
+function showAutoRegisterMigration() {
+  const sql = AUTO_REGISTER_SQL || `
+-- Add auto-register columns to scheduled_transactions
+ALTER TABLE scheduled_transactions
+  ADD COLUMN IF NOT EXISTS auto_register      BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notify_email       BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notify_email_addr  TEXT,
+  ADD COLUMN IF NOT EXISTS notify_days_before INTEGER DEFAULT 1;
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_auto_register
+  ON scheduled_transactions(status, auto_register)
+  WHERE auto_register = true AND status = 'active';`;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `<div style="background:var(--surface);border-radius:var(--r);padding:24px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-family:var(--font-serif);font-size:1.1rem;font-weight:500">📋 SQL: Migração Auto-Registro</span>
+      <button onclick="this.closest('[style]').remove()" style="border:none;background:none;cursor:pointer;font-size:1.2rem;color:var(--muted)">✕</button>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">Execute este SQL no <strong>Editor SQL do Supabase</strong> para adicionar suporte a registro automático e notificações nas transações programadas.</p>
+    <pre style="font-size:.72rem;background:var(--bg2);padding:16px;border-radius:var(--r-sm);overflow-x:auto;color:var(--text1);border:1px solid var(--border);white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto">${sql.trim()}</pre>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="navigator.clipboard.writeText(document.querySelector('[style*=pre]~pre')?.textContent||'').then(()=>toast('SQL copiado!','success'))">📋 Copiar</button>
+      <button class="btn btn-primary" onclick="this.closest('[style]').remove()">Fechar</button>
+    </div>
+  </div>`;
+  // Fix: use the actual sql variable
+  overlay.querySelector('pre').textContent = sql.trim();
+  overlay.querySelector('button[onclick*=clipboard]').onclick = () => {
+    navigator.clipboard.writeText(sql.trim()).then(()=>toast('SQL copiado!','success'));
+  };
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
 </script>
 </body>
 </html>
