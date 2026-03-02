@@ -4204,6 +4204,17 @@ function openBudgetModal(){document.getElementById('budgetId').value='';document
 async function saveBudget(){const mv=document.getElementById('budgetMonthInput').value;if(!mv)return;const[y,m]=mv.split('-');const data={category_id:document.getElementById('budgetCategory').value,month:`${y}-${m}-01`,amount:parseFloat(document.getElementById('budgetAmount').value)||0};if(!data.category_id||!data.amount){toast('Preencha todos os campos','error');return;}const{error}=await sb.from('budgets').upsert(data,{onConflict:'category_id,month'});if(error){toast(error.message,'error');return;}toast('Orçamento salvo!','success');closeModal('budgetModal');loadBudgets();}
 async function deleteBudget(id){if(!confirm('Excluir orçamento?'))return;await sb.from('budgets').delete().eq('id',id);loadBudgets();}
 
+const _dashGroupCollapsed = {}; // groupId → true/false
+
+function toggleDashGroup(key) {
+  _dashGroupCollapsed[key] = !_dashGroupCollapsed[key];
+  const body  = document.getElementById('dashGroupBody-' + key);
+  const arrow = document.getElementById('dashGroupArrow-' + key);
+  const collapsed = _dashGroupCollapsed[key];
+  if (body)  body.style.maxHeight  = collapsed ? '0' : '2000px';
+  if (arrow) arrow.style.transform = collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
 async function loadDashboard(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
   const{data:monthTxs}=await sb.from('transactions').select('amount,is_transfer').gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);
@@ -4229,37 +4240,35 @@ async function loadDashboard(){
       <span class="${a.balance<0?'text-red':'text-accent'}" style="font-size:.875rem;font-weight:500">${fmt(a.balance,a.currency)}</span>
     </div>`;
     if (!groups.length) {
-      // No groups: flat list
       el.innerHTML = accs.map(rowHtml).join('');
       return;
     }
-    // Build grouped sections
     const grouped = {};
     accs.forEach(a => { const gid = a.group_id || '__none__'; if (!grouped[gid]) grouped[gid] = []; grouped[gid].push(a); });
     let html = '';
-    // Known groups first (in order)
+    const buildGroup = (key, label, gAccs) => {
+      const collapsed = _dashGroupCollapsed[key] === true;
+      const gTotal = gAccs.reduce((s,a) => s + (parseFloat(a.balance)||0), 0);
+      return `<div style="margin-bottom:2px">
+        <div onclick="toggleDashGroup('${key}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px;margin-top:6px;cursor:pointer;user-select:none">
+          <span style="display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">
+            <span style="display:inline-block;transition:transform .2s;transform:rotate(${collapsed?'-90deg':'0deg'})" id="dashGroupArrow-${key}">▾</span>
+            ${label}
+          </span>
+          <span style="font-size:.75rem;font-weight:600;color:var(--muted)">${fmt(gTotal,'BRL')}</span>
+        </div>
+        <div id="dashGroupBody-${key}" style="padding-left:4px;overflow:hidden;transition:max-height .25s ease;max-height:${collapsed?'0':'2000px'}">
+          ${gAccs.map(rowHtml).join('')}
+        </div>
+      </div>`;
+    };
     groups.forEach(g => {
       const gAccs = grouped[g.id];
       if (!gAccs || !gAccs.length) return;
-      const gTotal = gAccs.reduce((s,a) => s + (parseFloat(a.balance)||0), 0);
-      html += `<div style="margin-bottom:2px">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px;margin-top:6px">
-          <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">${g.emoji||'🗂️'} ${esc(g.name)}</span>
-          <span style="font-size:.75rem;font-weight:600;color:var(--muted)">${fmt(gTotal,'BRL')}</span>
-        </div>
-        <div style="padding-left:4px">${gAccs.map(rowHtml).join('')}</div>
-      </div>`;
+      html += buildGroup(g.id, `${g.emoji||'🗂️'} ${esc(g.name)}`, gAccs);
     });
-    // Ungrouped accounts last
     const ungrouped = grouped['__none__'];
-    if (ungrouped && ungrouped.length) {
-      html += `<div style="margin-bottom:2px">
-        <div style="padding:8px 0 4px;margin-top:6px">
-          <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Sem grupo</span>
-        </div>
-        <div style="padding-left:4px">${ungrouped.map(rowHtml).join('')}</div>
-      </div>`;
-    }
+    if (ungrouped && ungrouped.length) html += buildGroup('__none__', 'Sem grupo', ungrouped);
     el.innerHTML = html || accs.map(rowHtml).join('');
   })();
   await Promise.all([renderCashflowChart(),renderCategoryChart()]);
