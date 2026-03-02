@@ -2500,58 +2500,102 @@ canvas { cursor: default; }
 
   <!-- ═══════════ USER ADMIN MODAL ═══════════ -->
   <div class="modal-overlay" id="userAdminModal">
-    <div class="modal" style="max-width:700px"><div class="modal-handle"></div>
+    <div class="modal" style="max-width:760px"><div class="modal-handle"></div>
       <div class="modal-header">
-        <span class="modal-title">👥 Gerenciar Usuários</span>
+        <span class="modal-title">👥 Gerenciar Usuários & Famílias</span>
         <button class="modal-close" onclick="closeModal('userAdminModal')">✕</button>
       </div>
-      <div class="modal-body">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <span style="font-size:.82rem;color:var(--muted)" id="userAdminCount"></span>
-          <button class="btn btn-primary btn-sm" onclick="showNewUserForm()">+ Novo Usuário</button>
+      <div class="modal-body" style="padding:0">
+        <!-- Tabs -->
+        <div style="display:flex;border-bottom:1px solid var(--border);padding:0 20px">
+          <button class="tab active" id="uaTabUsers" onclick="switchUATab('users')" style="padding:12px 16px;font-size:.85rem">👤 Usuários</button>
+          <button class="tab" id="uaTabFamilies" onclick="switchUATab('families')" style="padding:12px 16px;font-size:.85rem">🏠 Famílias</button>
         </div>
-        <!-- New/Edit user form -->
-        <div id="userFormArea" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px">
-          <div style="font-size:.85rem;font-weight:600;margin-bottom:12px" id="userFormTitle">Novo Usuário</div>
-          <input type="hidden" id="editUserId">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div class="form-group">
-              <label>Nome</label>
-              <input type="text" id="uName" placeholder="Nome completo">
+
+        <!-- Users tab -->
+        <div id="uaUsers" style="padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="font-size:.82rem;color:var(--muted)" id="userAdminCount"></span>
+            <button class="btn btn-primary btn-sm" onclick="showNewUserForm()">+ Novo Usuário</button>
+          </div>
+          <!-- New/Edit user form -->
+          <div id="userFormArea" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px">
+            <div style="font-size:.85rem;font-weight:600;margin-bottom:12px" id="userFormTitle">Novo Usuário</div>
+            <input type="hidden" id="editUserId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="uName" placeholder="Nome completo">
+              </div>
+              <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" id="uEmail" placeholder="email@dominio.com">
+              </div>
+              <div class="form-group">
+                <label>Senha <span style="font-size:.72rem;color:var(--muted)" id="pwdHint">(mín. 8 chars)</span></label>
+                <input type="password" id="uPassword" placeholder="Deixe em branco para manter">
+              </div>
+              <div class="form-group">
+                <label>Perfil</label>
+                <select id="uRole">
+                  <option value="viewer">Visualizador</option>
+                  <option value="user" selected>Usuário</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <div class="form-group full" style="grid-column:1/-1">
+                <label>Família <span style="font-size:.72rem;color:var(--muted)">(admins sem família veem todos os dados)</span></label>
+                <select id="uFamilyId">
+                  <option value="">— Nenhuma (admin global) —</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group">
-              <label>E-mail</label>
-              <input type="email" id="uEmail" placeholder="email@dominio.com">
+            <div style="font-size:.8rem;font-weight:600;color:var(--text2);margin:10px 0 6px">Permissões</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pView" checked> Visualizar</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pCreate" checked> Criar</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pEdit" checked> Editar</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pDelete"> Excluir</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pExport" checked> Exportar</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pImport"> Importar</label>
             </div>
-            <div class="form-group">
-              <label>Senha <span style="font-size:.72rem;color:var(--muted)" id="pwdHint">(mín. 8 chars)</span></label>
-              <input type="password" id="uPassword" placeholder="Deixe em branco para manter">
-            </div>
-            <div class="form-group">
-              <label>Perfil</label>
-              <select id="uRole">
-                <option value="viewer">Visualizador</option>
-                <option value="user" selected>Usuário</option>
-                <option value="admin">Administrador</option>
-              </select>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" onclick="saveUser()">💾 Salvar</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('userFormArea').style.display='none'">Cancelar</button>
             </div>
           </div>
-          <div style="font-size:.8rem;font-weight:600;color:var(--text2);margin:10px 0 6px">Permissões</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pView" checked> Visualizar</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pCreate" checked> Criar</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pEdit" checked> Editar</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pDelete"> Excluir</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pExport" checked> Exportar</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;cursor:pointer"><input type="checkbox" id="pImport"> Importar</label>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary btn-sm" onclick="saveUser()">💾 Salvar</button>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('userFormArea').style.display='none'">Cancelar</button>
-          </div>
+          <!-- Users list -->
+          <div id="usersList"></div>
         </div>
-        <!-- Users list -->
-        <div id="usersList"></div>
+
+        <!-- Families tab -->
+        <div id="uaFamilies" style="display:none;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="font-size:.82rem;color:var(--muted)">Gerencie as famílias e seus membros</span>
+            <button class="btn btn-primary btn-sm" onclick="showFamilyForm()">+ Nova Família</button>
+          </div>
+          <!-- Family form -->
+          <div id="familyFormArea" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px">
+            <div style="font-size:.85rem;font-weight:600;margin-bottom:12px" id="familyFormTitle">Nova Família</div>
+            <input type="hidden" id="editFamilyId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group">
+                <label>Nome da Família *</label>
+                <input type="text" id="fName" placeholder="Ex: Família Silva">
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="fDesc" placeholder="Opcional">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn btn-primary btn-sm" onclick="saveFamily()">💾 Salvar</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('familyFormArea').style.display='none'">Cancelar</button>
+            </div>
+          </div>
+          <!-- Families list -->
+          <div id="familiesList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -3446,13 +3490,13 @@ function navigate(page){
 
 async function loadAccounts(){
   const [{data:accs,error}] = await Promise.all([
-    sb.from('accounts').select('*').eq('active',true).order('name')
+    famQ(sb.from('accounts').select('*').eq('active',true)).order('name')
   ]);
   if(error){toast(error.message,'error');return;}
   state.accounts=accs||[];
   // Load account_groups gracefully (table may not exist)
   try {
-    const {data:grps} = await sb.from('account_groups').select('*').order('name');
+    const {data:grps} = await famQ(sb.from('account_groups').select('*')).order('name');
     state.groups=grps||[];
   } catch(e) {
     state.groups=[];
@@ -3544,7 +3588,7 @@ async function saveAccount(){
   const gid=document.getElementById('accountGroupId').value||null;
   const data={name:document.getElementById('accountName').value.trim(),type:document.getElementById('accountType').value,currency:document.getElementById('accountCurrency').value,balance:getAmtField('accountBalance'),icon:document.getElementById('accountIcon').value||'',color:document.getElementById('accountColor').value,is_brazilian:isBR,iof_rate:isBR?parseFloat(document.getElementById('accountIofRate').value)||3.38:null,group_id:gid,updated_at:new Date().toISOString()};
   if(!data.name){toast('Informe o nome da conta','error');return;}
-  let err;if(id){({error:err}=await sb.from('accounts').update(data).eq('id',id));}else{({error:err}=await sb.from('accounts').insert(data));}
+  if(!id) data.family_id=famId(); let err;if(id){({error:err}=await sb.from('accounts').update(data).eq('id',id));}else{({error:err}=await sb.from('accounts').insert(data));}
   if(err){toast(err.message,'error');return;}
   toast(id?'Conta atualizada!':'Conta criada!','success');closeModal('accountModal');await loadAccounts();populateSelects();if(state.currentPage==='accounts')renderAccounts(_accountsViewMode);if(state.currentPage==='dashboard')loadDashboard();
 }
@@ -3592,7 +3636,7 @@ async function saveGroup(){
   const color=document.getElementById('groupColor').value;
   if(!name){toast('Informe o nome do grupo','error');return;}
   const data={name,emoji:emoji||'🗂️',color};
-  let err;
+  if(!id) data.family_id=famId(); let err;
   if(id){({error:err}=await sb.from('account_groups').update(data).eq('id',id));}
   else{({error:err}=await sb.from('account_groups').insert(data));}
   if(err){toast(err.message,'error');return;}
@@ -3614,7 +3658,7 @@ async function deleteGroup(id){
 }
 
 
-async function loadCategories(){const{data,error}=await sb.from('categories').select('*').order('name');if(error){toast(error.message,'error');return;}state.categories=data||[];}
+async function loadCategories(){const{data,error}=await famQ(sb.from('categories').select('*')).order('name');if(error){toast(error.message,'error');return;}state.categories=data||[];}
 function renderCategories(){
   ['expense','income'].forEach(type=>{
     const dbType = type==='expense' ? 'despesa' : 'receita';
@@ -3779,12 +3823,12 @@ async function saveCategory(){
   const id=document.getElementById('categoryId').value;
   const data={name:document.getElementById('categoryName').value.trim(),type:document.getElementById('categoryType').value,parent_id:document.getElementById('categoryParent').value||null,icon:document.getElementById('categoryIcon').value||'📦',color:document.getElementById('categoryColor').value};
   if(!data.name){toast('Informe o nome','error');return;}
-  let err;if(id){({error:err}=await sb.from('categories').update(data).eq('id',id));}else{({error:err}=await sb.from('categories').insert(data));}
+  if(!id) data.family_id=famId(); let err;if(id){({error:err}=await sb.from('categories').update(data).eq('id',id));}else{({error:err}=await sb.from('categories').insert(data));}
   if(err){toast(err.message,'error');return;}toast('Categoria salva!','success');closeModal('categoryModal');await loadCategories();populateSelects();renderCategories();
 }
 async function deleteCategory(id){if(!confirm('Excluir esta categoria?'))return;const{error}=await sb.from('categories').delete().eq('id',id);if(error){toast(error.message,'error');return;}toast('Removida','success');await loadCategories();populateSelects();renderCategories();}
 
-async function loadPayees(){const{data,error}=await sb.from('payees').select('*, categories(name)').order('name');if(error){toast(error.message,'error');return;}state.payees=data||[];}
+async function loadPayees(){const{data,error}=await famQ(sb.from('payees').select('*, categories(name)')).order('name');if(error){toast(error.message,'error');return;}state.payees=data||[];}
 function payeeTypeBadge(t){const m={beneficiario:'badge-blue',fonte_pagadora:'badge-green',ambos:'badge-amber'};const l={beneficiario:'Beneficiário',fonte_pagadora:'Fonte Pagadora',ambos:'Ambos'};return`<span class="badge ${m[t]||'badge-muted'}">${l[t]||t}</span>`;}
 
 function payeeRow(p) {
@@ -3887,7 +3931,7 @@ async function savePayee(){
   const id=document.getElementById('payeeId').value;
   const data={name:document.getElementById('payeeName').value.trim(),type:document.getElementById('payeeType').value,default_category_id:document.getElementById('payeeCategory').value||null,notes:document.getElementById('payeeNotes').value};
   if(!data.name){toast('Informe o nome','error');return;}
-  let err;if(id){({error:err}=await sb.from('payees').update(data).eq('id',id));}else{({error:err}=await sb.from('payees').insert(data));}
+  if(!id) data.family_id=famId(); let err;if(id){({error:err}=await sb.from('payees').update(data).eq('id',id));}else{({error:err}=await sb.from('payees').insert(data));}
   if(err){toast(err.message,'error');return;}toast('Salvo!','success');closeModal('payeeModal');await loadPayees();populateSelects();renderPayees();
 }
 async function deletePayee(id){if(!confirm('Excluir?'))return;const{error}=await sb.from('payees').delete().eq('id',id);if(error){toast(error.message,'error');return;}toast('Removido','success');await loadPayees();renderPayees();}
@@ -4026,7 +4070,7 @@ async function confirmPayeeClipboardImport() {
   const type = document.getElementById('payeeClipboardType').value || 'beneficiario';
 
   try {
-    const batch = toImport.map(i => ({ name: i.name, type }));
+    const batch = toImport.map(i => ({ name: i.name, type, family_id: famId() }));
     // Insert in batches of 100
     let created = 0, errors = 0;
     for (let i = 0; i < batch.length; i += 100) {
@@ -4255,6 +4299,7 @@ async function confirmTxClipImport() {
       payee_id:    row.payee?.id    || null,
       memo:        row.memo         || null,
       is_transfer: false,
+      family_id:   famId(),
     }));
 
     // Insert in batches of 100
@@ -4289,7 +4334,7 @@ async function confirmTxClipImport() {
 async function loadTransactions(){
   const f=state.txFilter;
   const isGroup = state.txView === 'group';
-  let q=sb.from('transactions').select('*, accounts!transactions_account_id_fkey(name,currency), payees(name), categories(name,color)',{count:'exact'}).order(state.txSortField,{ascending:state.txSortAsc});
+  let q=famQ(sb.from('transactions').select('*, accounts!transactions_account_id_fkey(name,currency), payees(name), categories(name,color)',{count:'exact'})).order(state.txSortField,{ascending:state.txSortAsc});
   // Pagination only in flat view; grouped view loads all for the current filter set
   if(!isGroup) q=q.range(state.txPage*state.txPageSize,(state.txPage+1)*state.txPageSize-1);
   if(f.month){
@@ -4512,7 +4557,7 @@ async function saveTransaction(){
   let amount=getAmtField('txAmount');
   if(type==='expense')amount=-Math.abs(amount);else if(type==='income')amount=Math.abs(amount);
   const tags=document.getElementById('txTags').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const data={date:document.getElementById('txDate').value,description:document.getElementById('txDesc').value.trim(),amount,account_id:document.getElementById('txAccountId').value||null,payee_id:document.getElementById('txPayeeId').value||null,category_id:document.getElementById('txCategoryId').value||null,memo:document.getElementById('txMemo').value,tags:tags.length?tags:null,is_transfer:type==='transfer',transfer_to_account_id:type==='transfer'?document.getElementById('txTransferTo').value||null:null,attachment_url:document.getElementById('txAttachUrl').value||null,updated_at:new Date().toISOString()};
+  const data={date:document.getElementById('txDate').value,description:document.getElementById('txDesc').value.trim(),amount,account_id:document.getElementById('txAccountId').value||null,payee_id:document.getElementById('txPayeeId').value||null,category_id:document.getElementById('txCategoryId').value||null,memo:document.getElementById('txMemo').value,tags:tags.length?tags:null,is_transfer:type==='transfer',transfer_to_account_id:type==='transfer'?document.getElementById('txTransferTo').value||null:null,attachment_url:document.getElementById('txAttachUrl').value||null,updated_at:new Date().toISOString(),family_id:famId()};
   if(!data.date||!data.account_id){toast('Preencha data e conta','error');return;}
   let err,txResult;if(id){({error:err}=await sb.from('transactions').update(data).eq('id',id));}else{({data:txResult,error:err}=await sb.from('transactions').insert(data).select().single());}
   if(err){toast(err.message,'error');return;}
@@ -4554,6 +4599,7 @@ async function _doDuplicateTx(orig) {
     is_transfer:            orig.is_transfer || false,
     currency:               orig.currency || 'BRL',
     transfer_to_account_id: orig.transfer_to_account_id || null,
+    family_id:              famId(),
   };
   const {data, error} = await sb.from('transactions').insert(newTx).select().single();
   if (error) { toast('Erro ao duplicar: ' + error.message, 'error'); return; }
@@ -4667,15 +4713,15 @@ function _txDetailAction(action) {
 
   const month=document.getElementById('budgetMonth').value;if(!month)return;
   const[y,m]=month.split('-'),monthStart=`${y}-${m}-01`;
-  const{data:budgets,error:be}=await sb.from('budgets').select('*, categories(name,icon,color)').eq('month',monthStart);if(be){toast(be.message,'error');return;}
-  const{data:txs}=await sb.from('transactions').select('category_id,amount').gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`).lt('amount',0);
+  const{data:budgets,error:be}=await famQ(sb.from('budgets').select('*, categories(name,icon,color)')).eq('month',monthStart);if(be){toast(be.message,'error');return;}
+  const{data:txs}=await famQ(sb.from('transactions').select('category_id,amount')).gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`).lt('amount',0);
   const spending={};(txs||[]).forEach(t=>{if(t.category_id)spending[t.category_id]=(spending[t.category_id]||0)+Math.abs(t.amount);});
   const grid=document.getElementById('budgetGrid');
   if(!budgets?.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🎯</div><p>Nenhum orçamento para este mês</p></div>';return;}
   grid.innerHTML=(budgets||[]).map(b=>{const spent=spending[b.category_id]||0,pct=b.amount>0?Math.min(100,(spent/b.amount)*100):0,over=spent>b.amount;return`<div class="card"><div class="card-header"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">${b.categories?.icon||'📦'}</span><strong style="font-size:.9rem">${esc(b.categories?.name||'—')}</strong></div><div style="display:flex;gap:4px"><button class="btn-icon" onclick="openBudgetModal('${b.id}')">✏️</button><button class="btn-icon" onclick="deleteBudget('${b.id}')">🗑️</button></div></div><div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:.84rem"><span class="${over?'text-red':''}">Gasto: <strong>${fmt(spent)}</strong></span><span class="text-muted">Meta: ${fmt(b.amount)}</span></div><div class="progress"><div class="progress-bar" style="width:${pct}%;background:${over?'var(--red)':b.categories?.color||'var(--accent)'}"></div></div><div style="text-align:right;margin-top:5px;font-size:.72rem;color:var(--muted)">${pct.toFixed(0)}% utilizado</div></div>`;}).join('');
 }
 function openBudgetModal(){document.getElementById('budgetId').value='';setAmtField('budgetAmount', 0);document.getElementById('budgetCategory').innerHTML=state.categories.filter(c=>c.type==='despesa'&&!c.parent_id).map(c=>`<option value="${c.id}">${c.icon||''} ${c.name}</option>`).join('');openModal('budgetModal');}
-async function saveBudget(){const mv=document.getElementById('budgetMonthInput').value;if(!mv)return;const[y,m]=mv.split('-');const data={category_id:document.getElementById('budgetCategory').value,month:`${y}-${m}-01`,amount:getAmtField('budgetAmount')};if(!data.category_id||!data.amount){toast('Preencha todos os campos','error');return;}const{error}=await sb.from('budgets').upsert(data,{onConflict:'category_id,month'});if(error){toast(error.message,'error');return;}toast('Orçamento salvo!','success');closeModal('budgetModal');loadBudgets();}
+async function saveBudget(){const mv=document.getElementById('budgetMonthInput').value;if(!mv)return;const[y,m]=mv.split('-');const data={category_id:document.getElementById('budgetCategory').value,month:`${y}-${m}-01`,amount:getAmtField('budgetAmount'),family_id:famId()};if(!data.category_id||!data.amount){toast('Preencha todos os campos','error');return;}const{error}=await sb.from('budgets').upsert(data,{onConflict:'category_id,month'});if(error){toast(error.message,'error');return;}toast('Orçamento salvo!','success');closeModal('budgetModal');loadBudgets();}
 async function deleteBudget(id){if(!confirm('Excluir orçamento?'))return;await sb.from('budgets').delete().eq('id',id);loadBudgets();}
 
 const _dashGroupCollapsed = {}; // groupId → true/false
@@ -4691,7 +4737,7 @@ function toggleDashGroup(key) {
 
 async function loadDashboard(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
-  const{data:monthTxs}=await sb.from('transactions').select('amount,is_transfer').gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);
+  const{data:monthTxs}=await famQ(sb.from('transactions').select('amount,is_transfer')).gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);
   let income=0,expense=0;(monthTxs||[]).filter(t=>!t.is_transfer).forEach(t=>{if(t.amount>0)income+=t.amount;else expense+=Math.abs(t.amount);});
   // Patrimônio: soma dos saldos de todas as contas ativas (já carregadas em state)
   await loadAccounts(); // garante dados frescos
@@ -4700,7 +4746,7 @@ async function loadDashboard(){
   },0);
   document.getElementById('statTotal').textContent=fmt(total,'BRL');document.getElementById('statIncome').textContent=fmt(income);document.getElementById('statExpenses').textContent=fmt(expense);
   const bal=income-expense,balEl=document.getElementById('statBalance');balEl.textContent=fmt(bal);balEl.className='stat-value '+(bal>=0?'text-green':'text-red');
-  const{data:recent}=await sb.from('transactions').select('*, accounts!transactions_account_id_fkey(name), categories(name,color)').order('date',{ascending:false}).limit(10);
+  const{data:recent}=await famQ(sb.from('transactions').select('*, accounts!transactions_account_id_fkey(name), categories(name,color)')).order('date',{ascending:false}).limit(10);
   const body=document.getElementById('recentTxBody');
   if(!recent?.length){body.innerHTML='<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px;font-size:.83rem">Sem transações</td></tr>';}
   else body.innerHTML=(recent||[]).map(t=>`<tr><td class="text-muted" style="white-space:nowrap">${fmtDate(t.date)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description||'—')}</td><td>${t.categories?`<span class="badge" style="background:${t.categories.color}18;color:${t.categories.color};border:1px solid ${t.categories.color}28">${esc(t.categories.name)}</span>`:'—'}</td><td class="${t.amount>=0?'amount-pos':'amount-neg'}" style="white-space:nowrap">${fmt(t.amount)}</td></tr>`).join('');
@@ -5974,7 +6020,7 @@ async function createPayeeFromInput(ctx) {
   if (!typed) return;
   const txType = c.typeEl?.value || 'expense';
   const payeeType = txType === 'income' ? 'fonte_pagadora' : 'beneficiario';
-  const { data, error } = await sb.from('payees').insert({ name: typed, type: payeeType }).select().single();
+  const { data, error } = await sb.from('payees').insert({ name: typed, type: payeeType, family_id: famId() }).select().single();
   if (error) { toast('Erro ao criar beneficiário: ' + error.message, 'error'); return; }
   state.payees.push(data);
   state.payees.sort((a, b) => a.name.localeCompare(b.name));
@@ -6355,10 +6401,7 @@ function scStatusLabel(sc) {
 // ── Load & Render ──────────────────────────────────────
 async function loadScheduled() {
   try {
-    const { data, error } = await sb
-      .from('scheduled_transactions')
-      .select('*, accounts!scheduled_transactions_account_id_fkey(name,currency), payees(name), categories(name,color), occurrences:scheduled_occurrences(id,scheduled_date,actual_date,amount,memo,transaction_id)')
-      .order('start_date');
+    const { data, error } = await famQ(sb.from('scheduled_transactions').select('*, accounts!scheduled_transactions_account_id_fkey(name,currency), payees(name), categories(name,color), occurrences:scheduled_occurrences(id,scheduled_date,actual_date,amount,memo,transaction_id)')).order('start_date');
     if(error) throw error;
     state.scheduled = data || [];
   } catch(e) {
@@ -6708,6 +6751,7 @@ async function saveScheduled() {
   if(!data.start_date) { toast('Informe a data de início', 'error'); return; }
 
   let err;
+  if(!id) data.family_id = famId();
   if(id) { ({error:err} = await sb.from('scheduled_transactions').update(data).eq('id',id)); }
   else    { ({error:err} = await sb.from('scheduled_transactions').insert(data)); }
   if(err) { toast(err.message,'error'); return; }
@@ -6764,7 +6808,7 @@ async function confirmRegisterOccurrence() {
   const finalAmount = sc.type==='expense' ? -Math.abs(amount) : Math.abs(amount);
 
   // 1. Create real transaction
-  const { data: txData, error: txErr } = await sb.from('transactions').insert({
+  const { data: txData, error: txErr } = await sb.from('transactions').insert({ family_id: famId(),
     date: actualDate,
     description: sc.description,
     amount: finalAmount,
@@ -6971,7 +7015,7 @@ async function createIofMirrorTx(originalData, originalTxId) {
       is_transfer: false,
       updated_at: new Date().toISOString(),
     };
-    const { error } = await sb.from('transactions').insert(iofData);
+    iofData.family_id = famId(); const { error } = await sb.from('transactions').insert(iofData);
     if(error) throw error;
     toast(`IOF de ${fmt(iofAmount)} lançado automaticamente!`, 'success');
   } catch(e) {
@@ -8580,7 +8624,7 @@ async function commitImport() {
     if (sec === 'all' || sec === 'accounts') {
       setImportProgress(10, 'Criando contas...');
       for (const acc of s.accounts.filter(a => a.action === 'insert')) {
-        const { error } = await sb.from('accounts').insert({
+        const { error } = await sb.from('accounts').insert({ family_id: famId(),
           name: acc.name, type: acc.type || 'corrente',
           currency: acc.currency || 'BRL',
           balance: acc.balance || 0,
@@ -8611,7 +8655,7 @@ async function commitImport() {
       // Then: sub-categories
       for (const cat of toC.filter(c => c.parentName)) {
         const pid = pIds[cat.parentName.toLowerCase()];
-        const { error } = await sb.from('categories').insert({
+        const { error } = await sb.from('categories').insert({ family_id: famId(),
           name: cat.name, type: cat.type || 'despesa',
           parent_id: pid || null, icon: '📦', color: '#94a3b8',
         });
@@ -8627,7 +8671,7 @@ async function commitImport() {
       const toC = s.payees.filter(p => p.action === 'insert');
       for (let i = 0; i < toC.length; i += 100) {
         const batch = toC.slice(i, i+100).map(p => ({ name: p.name }));
-        const { error } = await sb.from('payees').insert(batch);
+        const { error } = await sb.from('payees').insert(batch.map(p=>({...p,family_id:famId()})));
         if (error) importLogMsg('err', `Payees batch ${i}: ${error.message}`);
       }
       importLogMsg('ok', `✓ ${toC.length} beneficiários criados`);
@@ -8698,7 +8742,7 @@ async function commitTransactions(txList) {
       .filter(Boolean);
     skipped += (toIns.slice(i, i+100).length - batch.length);
     if (!batch.length) continue;
-    const { error } = await sb.from('transactions').insert(batch);
+    const { error } = await sb.from('transactions').insert(batch.map(t=>({...t,family_id:famId()})));
     if (error) {
       importLogMsg('err', `Batch ${i}: ${error.message}`);
       errors++;
@@ -8708,7 +8752,7 @@ async function commitTransactions(txList) {
         const batchRetry = toIns.slice(i, i+100)
           .map(tx => buildTxRecord(tx, accMap, catMap, payMap, false))
           .filter(Boolean);
-        const { error: err2 } = await sb.from('transactions').insert(batchRetry);
+        const { error: err2 } = await sb.from('transactions').insert(batchRetry.map(t=>({...t,family_id:famId()})));
         if (!err2) { created += batchRetry.length; errors--; }
       }
     } else created += batch.length;
@@ -8826,7 +8870,7 @@ async function exportBackup() {
       sb.from('payees').select('*'),
       sb.from('transactions').select('*'),
       sb.from('budgets').select('*'),
-      sb.from('scheduled_transactions').select('*').then(r=>r, () => ({ data:[] })),
+      famQ(sb.from('scheduled_transactions').select('*')).then(r=>r, () => ({ data:[] })),
     ]);
     const backup = {
       version: '2.0', app: "JF Family FinTrack",
@@ -9009,7 +9053,19 @@ async function executeClearDatabase() {
    - First login for master admin forces password change
 ══════════════════════════════════════════════════════════════════ */
 
-let currentUser = null;  // { id, email, name, role, can_*, must_change_pwd }
+let currentUser = null;  // { id, email, name, role, family_id, can_*, must_change_pwd }
+
+// Returns a Supabase query with family_id filter applied (if user has a family)
+// Admin with no family_id sees ALL data (superadmin mode)
+function famQ(query) {
+  if (currentUser?.family_id) return query.eq('family_id', currentUser.family_id);
+  return query; // admin without family = see everything
+}
+
+// Returns the family_id to inject on inserts (null for admin without family)
+function famId() {
+  return currentUser?.family_id || null;
+}
 
 // ── SHA-256 helper (Web Crypto API) ──
 async function sha256(str) {
@@ -9095,7 +9151,7 @@ async function doLogin() {
     const hash = await sha256(password);
     // First check if user exists at all
     const { data: anyUser, error: anyErr } = await sb.from('app_users')
-      .select('id,email,active,approved,password_hash,role,must_change_pwd,name,can_view,can_create,can_edit,can_delete,can_export,can_import,can_admin,last_login,created_at')
+      .select('id,email,active,approved,password_hash,role,must_change_pwd,name,family_id,can_view,can_create,can_edit,can_delete,can_export,can_import,can_admin,last_login,created_at')
       .eq('email', email).limit(1);
     if (anyErr) throw anyErr;
 
@@ -9205,7 +9261,11 @@ function updateUserUI() {
   const nameEl  = document.getElementById('currentUserName');
   const emailEl = document.getElementById('currentUserEmail');
   if (nameEl)  nameEl.textContent  = currentUser.name || currentUser.email;
-  if (emailEl) emailEl.textContent = currentUser.email + ' · ' + (currentUser.role==='admin'?'Administrador':currentUser.role==='viewer'?'Visualizador':'Usuário');
+  if (emailEl) {
+    const roleLabel = currentUser.role==='admin'?'Administrador':currentUser.role==='viewer'?'Visualizador':'Usuário';
+    const famLabel  = currentUser.family_id ? '' : (currentUser.role==='admin' ? ' · Admin global' : '');
+    emailEl.textContent = currentUser.email + ' · ' + roleLabel + famLabel;
+  }
 
   // Show admin sections
   if (currentUser.role === 'admin') {
@@ -9398,14 +9458,160 @@ async function doRegister() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   USER ADMINISTRATION
+   USER & FAMILY ADMINISTRATION
 ══════════════════════════════════════════════════════════════════ */
+
+let _families = []; // cached families list
 
 async function openUserAdmin() {
   if (currentUser?.role !== 'admin') { toast('Acesso restrito a administradores','error'); return; }
+  await loadFamiliesList();
   await loadUsersList();
   openModal('userAdminModal');
 }
+
+function switchUATab(tab) {
+  document.getElementById('uaUsers').style.display    = tab === 'users'    ? '' : 'none';
+  document.getElementById('uaFamilies').style.display = tab === 'families' ? '' : 'none';
+  document.getElementById('uaTabUsers').classList.toggle('active',    tab === 'users');
+  document.getElementById('uaTabFamilies').classList.toggle('active', tab === 'families');
+}
+
+// ── FAMILIES ──────────────────────────────────────────────────────
+
+async function loadFamiliesList() {
+  const { data: families, error } = await sb.from('families').select('*').order('name');
+  if (error) { toast('Erro ao carregar famílias: '+error.message,'error'); return; }
+  _families = families || [];
+
+  // Populate family select in user form
+  const sel = document.getElementById('uFamilyId');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Nenhuma (admin global) —</option>' +
+      _families.map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('');
+    if (cur) sel.value = cur;
+  }
+
+  const el = document.getElementById('familiesList');
+  if (!el) return;
+
+  if (!_families.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Nenhuma família cadastrada. Clique em "+ Nova Família" para começar.</div>';
+    return;
+  }
+
+  // For each family show its members
+  const { data: allUsers } = await sb.from('app_users').select('id,name,email,role,active,family_id').order('name');
+  const usersByFamily = {};
+  (allUsers || []).forEach(u => {
+    const fid = u.family_id || '__none__';
+    if (!usersByFamily[fid]) usersByFamily[fid] = [];
+    usersByFamily[fid].push(u);
+  });
+
+  el.innerHTML = _families.map(f => {
+    const members = usersByFamily[f.id] || [];
+    const membersHtml = members.length
+      ? members.map(u => `
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:.82rem;flex:1"><strong>${esc(u.name||'—')}</strong> <span style="color:var(--muted);font-size:.75rem">${esc(u.email)}</span></span>
+            <span class="badge ${u.role==='admin'?'badge-amber':'badge-muted'}" style="font-size:.7rem">${u.role}</span>
+            <button class="btn-icon" title="Remover da família" onclick="removeUserFromFamily('${u.id}','${esc(u.name||u.email)}','${esc(f.name)}')">✕</button>
+          </div>`).join('')
+      : '<div style="font-size:.78rem;color:var(--muted);padding:8px 0">Nenhum membro</div>';
+
+    // Users not yet in this family (for adding)
+    const available = (allUsers||[]).filter(u => !u.family_id || u.family_id !== f.id);
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:1.3rem">🏠</span>
+          <div>
+            <div style="font-weight:700">${esc(f.name)}</div>
+            ${f.description ? `<div style="font-size:.75rem;color:var(--muted)">${esc(f.description)}</div>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="editFamily('${f.id}')" style="padding:3px 10px;font-size:.73rem">✏️ Editar</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteFamily('${f.id}','${esc(f.name)}')" style="padding:3px 10px;font-size:.73rem;color:var(--red)">🗑️</button>
+        </div>
+      </div>
+      <div style="padding:4px 0">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
+          Membros (${members.length})
+        </div>
+        ${membersHtml}
+        ${available.length ? `
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+          <select id="addMemberSel-${f.id}" style="font-size:.8rem;flex:1">
+            <option value="">— Selecionar usuário —</option>
+            ${available.map(u => `<option value="${u.id}">${esc(u.name||u.email)}</option>`).join('')}
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="addUserToFamily('${f.id}')" style="font-size:.78rem;white-space:nowrap">+ Adicionar</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showFamilyForm(id='') {
+  document.getElementById('editFamilyId').value = id;
+  document.getElementById('fName').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('familyFormTitle').textContent = id ? 'Editar Família' : 'Nova Família';
+  document.getElementById('familyFormArea').style.display = '';
+  if (id) {
+    const f = _families.find(x => x.id === id);
+    if (f) { document.getElementById('fName').value = f.name; document.getElementById('fDesc').value = f.description||''; }
+  }
+}
+
+function editFamily(id) { showFamilyForm(id); document.getElementById('familyFormArea').scrollIntoView({behavior:'smooth'}); }
+
+async function saveFamily() {
+  const id   = document.getElementById('editFamilyId').value;
+  const name = document.getElementById('fName').value.trim();
+  const desc = document.getElementById('fDesc').value.trim();
+  if (!name) { toast('Informe o nome da família','error'); return; }
+  const data = { name, description: desc||null, updated_at: new Date().toISOString() };
+  let error;
+  if (id) { ({ error } = await sb.from('families').update(data).eq('id', id)); }
+  else    { ({ error } = await sb.from('families').insert(data)); }
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast(id ? '✓ Família atualizada!' : '✓ Família criada!','success');
+  document.getElementById('familyFormArea').style.display = 'none';
+  await loadFamiliesList();
+}
+
+async function deleteFamily(id, name) {
+  if (!confirm(`Excluir a família "${name}"?\n\nOs usuários vinculados ficarão sem família, mas seus dados não serão apagados.`)) return;
+  const { error } = await sb.from('families').delete().eq('id', id);
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast('Família removida','success');
+  await loadFamiliesList();
+}
+
+async function addUserToFamily(familyId) {
+  const sel = document.getElementById(`addMemberSel-${familyId}`);
+  const userId = sel?.value;
+  if (!userId) { toast('Selecione um usuário','error'); return; }
+  const { error } = await sb.from('app_users').update({ family_id: familyId }).eq('id', userId);
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast('✓ Usuário adicionado à família','success');
+  await loadFamiliesList();
+}
+
+async function removeUserFromFamily(userId, userName, familyName) {
+  if (!confirm(`Remover "${userName}" da família "${familyName}"?`)) return;
+  const { error } = await sb.from('app_users').update({ family_id: null }).eq('id', userId);
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  toast('Usuário removido da família','success');
+  await loadFamiliesList();
+}
+
+// ── USERS ─────────────────────────────────────────────────────────
 
 async function loadUsersList() {
   const { data: users, error } = await sb.from('app_users').select('*').order('created_at');
@@ -9414,9 +9620,12 @@ async function loadUsersList() {
   const countEl = document.getElementById('userAdminCount');
   if (countEl) countEl.textContent = `${users?.length||0} usuários cadastrados`;
   if (!users?.length) { el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum usuário.</div>'; return; }
-  // Separate pending from active
   const pendingUsers = users.filter(u => !u.approved);
   const activeUsers  = users.filter(u => u.approved);
+
+  // Build family name lookup
+  const famById = {};
+  _families.forEach(f => famById[f.id] = f.name);
 
   let html = '';
 
@@ -9441,13 +9650,13 @@ async function loadUsersList() {
   if (!activeUsers.length) {
     html += '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum usuário ativo.</div>';
   } else {
-    html += '<div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último login</th><th>Ações</th></tr></thead><tbody>';
+    html += '<div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Família</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
     html += activeUsers.map(u => `<tr>
       <td><strong>${esc(u.name||'—')}</strong></td>
       <td style="font-size:.82rem">${esc(u.email)}</td>
       <td><span class="badge badge-green" style="font-size:.7rem">${u.role==='admin'?'Admin':u.role==='viewer'?'Viewer':'Usuário'}</span></td>
+      <td style="font-size:.78rem;color:var(--text2)">${u.family_id ? (famById[u.family_id]||'—') : '<span style="color:var(--muted)">—</span>'}</td>
       <td><span style="font-size:.75rem;color:${u.active?'var(--green)':'var(--red)'}">● ${u.active?'Ativo':'Inativo'}</span></td>
-      <td style="font-size:.75rem;color:var(--muted)">${u.last_login?new Date(u.last_login).toLocaleDateString('pt-BR'):'Nunca'}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')" style="padding:3px 8px;font-size:.73rem">✏️</button>
         ${u.id !== currentUser?.id ? `<button class="btn btn-ghost btn-sm" onclick="toggleUserActive('${u.id}',${u.active})" style="padding:3px 8px;font-size:.73rem">${u.active?'🚫':'✅'}</button>` : ''}
@@ -9466,6 +9675,7 @@ function showNewUserForm() {
   document.getElementById('uEmail').value = '';
   document.getElementById('uPassword').value = '';
   document.getElementById('uRole').value = 'user';
+  document.getElementById('uFamilyId').value = '';
   document.getElementById('pView').checked = true;
   document.getElementById('pCreate').checked = true;
   document.getElementById('pEdit').checked = true;
@@ -9485,6 +9695,7 @@ async function editUser(userId) {
   document.getElementById('uEmail').value = u.email;
   document.getElementById('uPassword').value = '';
   document.getElementById('uRole').value = u.role;
+  document.getElementById('uFamilyId').value = u.family_id||'';
   document.getElementById('pView').checked = u.can_view;
   document.getElementById('pCreate').checked = u.can_create;
   document.getElementById('pEdit').checked = u.can_edit;
@@ -9501,12 +9712,14 @@ async function saveUser() {
   const email  = document.getElementById('uEmail').value.trim().toLowerCase();
   const pwd    = document.getElementById('uPassword').value;
   const role   = document.getElementById('uRole').value;
+  const famId  = document.getElementById('uFamilyId').value || null;
   if (!name || !email) { toast('Preencha nome e e-mail','error'); return; }
   if (!userId && pwd.length < 8) { toast('Senha deve ter pelo menos 8 caracteres','error'); return; }
   if (userId && pwd && pwd.length < 8) { toast('Senha deve ter pelo menos 8 caracteres','error'); return; }
 
   const record = {
     name, email, role,
+    family_id:  famId,
     can_view:   document.getElementById('pView').checked,
     can_create: document.getElementById('pCreate').checked,
     can_edit:   document.getElementById('pEdit').checked,
@@ -9516,19 +9729,17 @@ async function saveUser() {
     can_admin:  role === 'admin',
   };
   if (pwd) record.password_hash = await sha256(pwd);
-  if (!userId) { record.must_change_pwd = false; record.active = true; record.created_by = currentUser?.id; }
+  if (!userId) { record.must_change_pwd = false; record.active = true; record.approved = true; record.created_by = currentUser?.id; }
 
   try {
     let error;
-    if (userId) {
-      ({ error } = await sb.from('app_users').update(record).eq('id', userId));
-    } else {
-      ({ error } = await sb.from('app_users').insert(record));
-    }
+    if (userId) { ({ error } = await sb.from('app_users').update(record).eq('id', userId)); }
+    else        { ({ error } = await sb.from('app_users').insert(record)); }
     if (error) throw error;
     toast(userId ? '✓ Usuário atualizado!' : '✓ Usuário criado!', 'success');
     document.getElementById('userFormArea').style.display = 'none';
     await loadUsersList();
+    await loadFamiliesList();
   } catch(e) { toast('Erro: '+e.message,'error'); }
 }
 
@@ -9895,7 +10106,7 @@ async function runAutoRegister(manual=false) {
 
         // Create the transaction
         const txAmt = sc.type === 'expense' ? -Math.abs(sc.amount) : Math.abs(sc.amount);
-        const { data: newTx, error: txErr } = await sb.from('transactions').insert({
+        const { data: newTx, error: txErr } = await sb.from('transactions').insert({ family_id: famId(),
           account_id:  sc.account_id,
           description: sc.description,
           amount:      txAmt,
