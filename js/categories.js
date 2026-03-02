@@ -139,13 +139,13 @@ function catDragEnd() {
   catDragId = null;
 }
 function openCategoryModal(id='', preParentId='', preType=''){
-  const form={id:'',name:'',type:preType||'despesa',parent_id:preParentId||'',icon:'📦',color:'#1C6B47'};
+  const form={id:'',name:'',type:preType||'despesa',parent_id:preParentId||'',icon:'📦',color:'#2a6049'};
   if(id){const c=state.categories.find(x=>x.id===id);if(c)Object.assign(form,c);}
   document.getElementById('categoryId').value=form.id;
   document.getElementById('categoryName').value=form.name;
   document.getElementById('categoryType').value=form.type;
   document.getElementById('categoryIcon').value=form.icon||'';
-  document.getElementById('categoryColor').value=form.color||'#1C6B47';
+  document.getElementById('categoryColor').value=form.color||'#2a6049';
   document.getElementById('categoryModalTitle').textContent=id?'Editar Categoria':(preParentId?'Nova Subcategoria':'Nova Categoria');
   const sel=document.getElementById('categoryParent');
   sel.innerHTML='<option value="">— Nenhuma (categoria pai) —</option>'+state.categories.filter(c=>!c.parent_id&&c.id!==id).map(c=>`<option value="${c.id}">${c.icon||''} ${esc(c.name)}</option>`).join('');

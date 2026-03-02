@@ -959,7 +959,7 @@ async function commitImport() {
           name: acc.name, type: acc.type || 'corrente',
           currency: acc.currency || 'BRL',
           balance: acc.balance || 0,
-          color: '#1C6B47', active: true,
+          color: '#2a6049', active: true,
         });
         if (error) importLogMsg('err', `Conta "${acc.name}": ${error.message}`);
         else importLogMsg('ok', `✓ Conta "${acc.name}" criada`);
@@ -976,7 +976,7 @@ async function commitImport() {
       // First: top-level
       for (const cat of toC.filter(c => !c.parentName)) {
         const { data, error } = await sb.from('categories')
-          .insert({ name: cat.name, type: cat.type || 'despesa', icon: '📦', color: '#1C6B47' })
+          .insert({ name: cat.name, type: cat.type || 'despesa', icon: '📦', color: '#2a6049' })
           .select('id,name').single();
         if (data) pIds[cat.name.toLowerCase()] = data.id;
         else if (error) importLogMsg('err', `Cat "${cat.name}": ${error.message}`);

@@ -117,7 +117,7 @@ async function loadReports() {
   document.getElementById('reportDataInfo').textContent =
     `${fmtDate(from)} → ${fmtDate(to)}  ·  ${txs.length} transações`;
 
-  const FB = ['#1C6B47','#007AFF','#FF9500','#FF3B30','#AF52DE','#34C759','#FF2D55','#5AC8FA','#FFCC00','#5856D6'];
+  const FB = ['#2a6049','#1e5ba8','#b45309','#c0392b','#7c3aed','#2a7a4a','#d97706','#6b7280','#3d7a5e','#4e8f73'];
 
   /* Despesas por categoria */
   const expMap = {};
@@ -398,7 +398,7 @@ function printReport() {
   let body='';
   if(rptState.view==='transactions') {
     body=`<table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead><tr style="background:#1C6B47;color:#fff">
+      <thead><tr style="background:#2a6049;color:#fff">
         <th style="padding:8px;text-align:left">Data</th><th style="padding:8px;text-align:left">Descrição</th>
         <th style="padding:8px;text-align:left">Conta</th><th style="padding:8px;text-align:left">Categoria</th>
         <th style="padding:8px;text-align:left">Beneficiário</th><th style="padding:8px;text-align:right">Valor</th>
@@ -423,7 +423,7 @@ function printReport() {
     const allE=Object.values(allMap).sort((a,b)=>b.total-a.total);
     const grand=allE.reduce((s,e)=>s+e.total,0);
     body=`<table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead><tr style="background:#1C6B47;color:#fff">
+      <thead><tr style="background:#2a6049;color:#fff">
         <th style="padding:8px;text-align:left">Categoria</th><th style="padding:8px">Tipo</th>
         <th style="padding:8px;text-align:center">Qtd</th><th style="padding:8px;text-align:right">Total</th>
         <th style="padding:8px;text-align:right">%</th>
@@ -440,7 +440,7 @@ function printReport() {
 
   area.innerHTML=`
     <div style="font-family:Arial,sans-serif;max-width:900px;margin:0 auto">
-      <div style="background:#1C6B47;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;margin-bottom:0">
+      <div style="background:#2a6049;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;margin-bottom:0">
         <div style="font-size:20px;font-weight:700">JF Family FinTrack — Relatório</div>
         <div style="font-size:13px;opacity:.85;margin-top:4px">Período: ${fmtDate(from)} a ${fmtDate(to)}  ·  Gerado: ${new Date().toLocaleString('pt-BR')}</div>
       </div>
@@ -448,7 +448,7 @@ function printReport() {
         <div style="background:#fff;border-radius:6px;padding:12px;border-left:3px solid #2a7a4a"><div style="font-size:10px;color:#888;text-transform:uppercase">Receitas</div><div style="font-size:16px;font-weight:700;color:#2a7a4a">${fmt(totInc)}</div></div>
         <div style="background:#fff;border-radius:6px;padding:12px;border-left:3px solid #c0392b"><div style="font-size:10px;color:#888;text-transform:uppercase">Despesas</div><div style="font-size:16px;font-weight:700;color:#c0392b">${fmt(totExp)}</div></div>
         <div style="background:#fff;border-radius:6px;padding:12px;border-left:3px solid ${bal>=0?'#2a7a4a':'#c0392b'}"><div style="font-size:10px;color:#888;text-transform:uppercase">Saldo</div><div style="font-size:16px;font-weight:700;color:${bal>=0?'#2a7a4a':'#c0392b'}">${fmt(bal)}</div></div>
-        <div style="background:#fff;border-radius:6px;padding:12px;border-left:3px solid #1C6B47"><div style="font-size:10px;color:#888;text-transform:uppercase">Transações</div><div style="font-size:16px;font-weight:700;color:#1C6B47">${txs.length}</div></div>
+        <div style="background:#fff;border-radius:6px;padding:12px;border-left:3px solid #2a6049"><div style="font-size:10px;color:#888;text-transform:uppercase">Transações</div><div style="font-size:16px;font-weight:700;color:#2a6049">${txs.length}</div></div>
       </div>
       <div style="padding:16px">${body}</div>
     </div>`;
@@ -754,7 +754,7 @@ function renderChart(id, type, labels, datasets, extraOptions={}) {
           },
           labels: {
             color: '#3d3830',
-            font: { family: 'Plus Jakarta Sans', size: 11.5, weight: '500' },
+            font: { family: 'Outfit', size: 11.5, weight: '500' },
             padding: 16,
             boxWidth: isDoughnut ? 12 : 14,
             boxHeight: isDoughnut ? 12 : 14,
