@@ -1531,7 +1531,7 @@ canvas { cursor: default; }
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="text" id="txSearch" placeholder="Buscar transações..." oninput="filterTransactions()">
         </div>
-        <input type="month" id="txMonth" onchange="filterTransactions()" style="max-width:155px">
+        <select id="txMonth" onchange="filterTransactions()" style="max-width:175px"></select>
         <select id="txAccount" onchange="filterTransactions()" style="max-width:170px"><option value="">Todas as contas</option></select>
         <select id="txType" onchange="filterTransactions()" style="max-width:140px">
           <option value="">Todos os tipos</option><option value="income">Receitas</option><option value="expense">Despesas</option><option value="transfer">Transferências</option>
@@ -3296,6 +3296,7 @@ async function bootApp(){
   if(_cfg.enabled && _cfg.method === 'browser') applyAutoCheckTimer(_cfg);
   // Datas padrão
   const ym=new Date().toISOString().slice(0,7);
+  populateTxMonthFilter();
   const txMonthEl=document.getElementById('txMonth');if(txMonthEl)txMonthEl.value=ym;
   const repEl=document.getElementById('reportMonth');if(repEl)repEl.value=ym;
   const budEl=document.getElementById('budgetMonth');if(budEl)budEl.value=ym;
@@ -3336,7 +3337,7 @@ function navigate(page){
   document.getElementById('pageTitle').textContent=pageTitles[page]||page;
   state.currentPage=page;closeSidebar();
   if(page==='dashboard')loadDashboard();
-  else if(page==='transactions')loadTransactions();
+  else if(page==='transactions'){populateTxMonthFilter();loadTransactions();}
   else if(page==='accounts')renderAccounts();
   else if(page==='reports'){populateReportFilters();loadCurrentReport();}
   else if(page==='budgets')loadBudgets();
@@ -3965,7 +3966,14 @@ async function loadTransactions(){
   let q=sb.from('transactions').select('*, accounts!transactions_account_id_fkey(name,currency), payees(name), categories(name,color)',{count:'exact'}).order(state.txSortField,{ascending:state.txSortAsc});
   // Pagination only in flat view; grouped view loads all for the current filter set
   if(!isGroup) q=q.range(state.txPage*state.txPageSize,(state.txPage+1)*state.txPageSize-1);
-  if(f.month){const[y,m]=f.month.split('-');q=q.gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);}
+  if(f.month){
+    if(f.month.startsWith('year:')) {
+      const y = f.month.split(':')[1];
+      q=q.gte('date',`${y}-01-01`).lte('date',`${y}-12-31`);
+    } else {
+      const[y,m]=f.month.split('-');q=q.gte('date',`${y}-${m}-01`).lte('date',`${y}-${m}-31`);
+    }
+  }
   if(f.account)q=q.eq('account_id',f.account);if(f.search)q=q.ilike('description','%'+f.search+'%');
   if(f.type==='income')q=q.gt('amount',0);else if(f.type==='expense')q=q.lt('amount',0);else if(f.type==='transfer')q=q.eq('is_transfer',true);
   const{data,count,error}=await q;if(error){toast(error.message,'error');return;}state.transactions=data||[];state.txTotal=count||0;renderTransactions();
@@ -3978,6 +3986,39 @@ function filterTransactions(){
   state.txPage=0;
   if(state.txView==='flat') document.getElementById('txSummaryBar').style.display='none';
   loadTransactions();
+}
+
+function populateTxMonthFilter() {
+  const sel = document.getElementById('txMonth');
+  if (!sel) return;
+  const prev = sel.value;
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  let html = '<option value="">Todos os meses</option>';
+
+  // Year options for current and 2 previous years
+  for (let y = curY; y >= curY - 2; y--) {
+    html += `<option value="year:${y}">${y} — Ano inteiro</option>`;
+  }
+
+  html += '<option disabled>──────────────</option>';
+
+  // Monthly options: current year + 2 previous years
+  for (let y = curY; y >= curY - 2; y--) {
+    const maxM = (y === curY) ? curM : 12;
+    for (let m = maxM; m >= 1; m--) {
+      const val = `${y}-${String(m).padStart(2,'0')}`;
+      html += `<option value="${val}">${MONTHS[m-1]}/${y}</option>`;
+    }
+    if (y > curY - 2) html += '<option disabled>──────────────</option>';
+  }
+
+  sel.innerHTML = html;
+  // Restore previous selection if still valid
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
 }
 function sortTx(field){if(state.txSortField===field)state.txSortAsc=!state.txSortAsc;else{state.txSortField=field;state.txSortAsc=false;}loadTransactions();}
 function txRow(t, showAccount=true) {
