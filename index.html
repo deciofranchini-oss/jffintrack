@@ -2883,6 +2883,25 @@ canvas { cursor: default; }
 <button class="fab" onclick="openTransactionModal()" aria-label="Nova transação">+</button>
 
 <!-- MODALS -->
+<!-- Transaction Detail Modal -->
+<div class="modal-overlay" id="txDetailModal" onclick="if(event.target===this)closeModal('txDetailModal')">
+  <div class="modal" style="max-width:480px"><div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="txDetailTitle">Detalhes da Transação</span>
+      <button class="modal-close" onclick="closeModal('txDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="txDetailBody" style="padding:0">
+      <!-- filled by JS -->
+    </div>
+    <div class="modal-footer" style="gap:8px">
+      <button class="btn btn-ghost" onclick="closeModal('txDetailModal')">Fechar</button>
+      <button class="btn btn-ghost" id="txDetailDupBtn" onclick="_txDetailAction('dup')">📋 Duplicar</button>
+      <button class="btn btn-ghost" style="color:var(--red)" id="txDetailDelBtn" onclick="_txDetailAction('del')">🗑️ Excluir</button>
+      <button class="btn btn-primary" id="txDetailEditBtn" onclick="_txDetailAction('edit')">✏️ Editar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="txModal">
   <div class="modal"><div class="modal-handle"></div>
     <div class="modal-header"><span class="modal-title" id="txModalTitle">Nova Transação</span><button class="modal-close" onclick="closeModal('txModal')">✕</button></div>
@@ -4329,14 +4348,14 @@ function populateTxMonthFilter() {
 }
 function sortTx(field){if(state.txSortField===field)state.txSortAsc=!state.txSortAsc;else{state.txSortField=field;state.txSortAsc=false;}loadTransactions();}
 function txRow(t, showAccount=true) {
-  return `<tr>
+  return `<tr class="tx-row-clickable" onclick="openTxDetail('${t.id}')" style="cursor:pointer" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
     <td class="text-muted" style="white-space:nowrap">${fmtDate(t.date)}</td>
     ${showAccount ? `<td><span class="badge badge-muted">${esc(t.accounts?.name||'—')}</span></td>` : ''}
     <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description||'—')}</td>
     <td class="text-muted">${esc(t.payees?.name||'—')}</td>
     <td>${t.categories?`<span class="badge" style="background:${t.categories.color}18;color:${t.categories.color};border:1px solid ${t.categories.color}30">${esc(t.categories.name)}</span>`:'—'}</td>
     <td class="${t.amount>=0?'amount-pos':'amount-neg'}" style="white-space:nowrap">${fmt(t.amount)}</td>
-    <td><div style="display:flex;gap:4px"><button class="btn-icon" title="Editar" onclick="editTransaction('${t.id}')">✏️</button><button class="btn-icon" title="Duplicar" onclick="duplicateTransaction('${t.id}')">📋</button><button class="btn-icon" title="Excluir" onclick="deleteTransaction('${t.id}')">🗑️</button></div></td>
+    <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px"><button class="btn-icon" title="Editar" onclick="editTransaction('${t.id}')">✏️</button><button class="btn-icon" title="Duplicar" onclick="duplicateTransaction('${t.id}')">📋</button><button class="btn-icon" title="Excluir" onclick="deleteTransaction('${t.id}')">🗑️</button></div></td>
   </tr>`;
 }
 
@@ -4525,16 +4544,16 @@ async function duplicateTransaction(id) {
 async function _doDuplicateTx(orig) {
   const today = new Date().toISOString().slice(0,10);
   const newTx = {
-    account_id:   orig.account_id,
-    description:  orig.description ? orig.description + ' (cópia)' : '(cópia)',
-    amount:       orig.amount,
-    date:         today,
-    category_id:  orig.category_id || null,
-    payee_id:     orig.payee_id || null,
-    memo:         orig.memo || null,
-    is_transfer:  orig.is_transfer || false,
-    currency:     orig.currency || 'BRL',
-    transfer_to:  orig.transfer_to || null,
+    account_id:             orig.account_id,
+    description:            orig.description ? orig.description + ' (cópia)' : '(cópia)',
+    amount:                 orig.amount,
+    date:                   today,
+    category_id:            orig.category_id || null,
+    payee_id:               orig.payee_id || null,
+    memo:                   orig.memo || null,
+    is_transfer:            orig.is_transfer || false,
+    currency:               orig.currency || 'BRL',
+    transfer_to_account_id: orig.transfer_to_account_id || null,
   };
   const {data, error} = await sb.from('transactions').insert(newTx).select().single();
   if (error) { toast('Erro ao duplicar: ' + error.message, 'error'); return; }
@@ -4544,7 +4563,108 @@ async function _doDuplicateTx(orig) {
 }
 async function deleteTransaction(id){if(!confirm('Excluir transação?'))return;const{error}=await sb.from('transactions').delete().eq('id',id);if(error){toast(error.message,'error');return;}toast('Excluída','success');loadTransactions();}
 
-async function loadBudgets(){
+/* ── Transaction Detail Drawer ── */
+let _txDetailId = null;
+
+async function openTxDetail(id) {
+  _txDetailId = id;
+
+  // Try state first, fall back to DB fetch
+  let t = state.transactions?.find(x => x.id === id);
+  if (!t) {
+    const { data, error } = await sb.from('transactions')
+      .select('*, accounts!transactions_account_id_fkey(name,currency,color,icon), payees(name), categories(name,color,icon)')
+      .eq('id', id).single();
+    if (error || !data) { toast('Transação não encontrada', 'error'); return; }
+    t = data;
+  }
+
+  const isIncome   = t.amount >= 0;
+  const amtClass   = isIncome ? 'amount-pos' : 'amount-neg';
+  const typeLabel  = t.is_transfer ? '🔄 Transferência' : isIncome ? '📈 Receita' : '📉 Despesa';
+  const catColor   = t.categories?.color || 'var(--muted)';
+  const accColor   = t.accounts?.color   || 'var(--accent)';
+
+  // Attachment block
+  let attachHtml = '';
+  if (t.attachment_url) {
+    const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(t.attachment_url);
+    const isPdf   = /\.pdf(\?|$)/i.test(t.attachment_url);
+    attachHtml = `
+      <div style="padding:12px 20px;border-top:1px solid var(--border)">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">📎 Anexo</div>
+        ${isImage
+          ? `<a href="${t.attachment_url}" target="_blank" style="display:block;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border)">
+               <img src="${t.attachment_url}" style="width:100%;max-height:220px;object-fit:cover;display:block">
+             </a>`
+          : `<a href="${t.attachment_url}" target="_blank"
+               style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);text-decoration:none;color:var(--text2)">
+               <span style="font-size:1.5rem">${isPdf ? '📄' : '📎'}</span>
+               <div>
+                 <div style="font-size:.85rem;font-weight:600;color:var(--text)">${esc(t.attachment_name || 'Abrir anexo')}</div>
+                 <div style="font-size:.72rem;color:var(--muted)">Clique para abrir</div>
+               </div>
+               <span style="margin-left:auto;color:var(--accent)">↗</span>
+             </a>`
+        }
+      </div>`;
+  }
+
+  // Memo / tags
+  const metaRows = [];
+  if (t.memo)  metaRows.push(['Memo', esc(t.memo)]);
+  if (t.tags?.length) metaRows.push(['Tags', t.tags.map(tag => `<span class="badge badge-muted">${esc(tag)}</span>`).join(' ')]);
+  if (t.currency && t.currency !== 'BRL') metaRows.push(['Moeda', t.currency]);
+
+  const metaHtml = metaRows.map(([label, val]) => `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:.78rem;color:var(--muted);font-weight:600">${label}</span>
+      <span style="font-size:.82rem;color:var(--text2);text-align:right;max-width:65%">${val}</span>
+    </div>`).join('');
+
+  document.getElementById('txDetailTitle').textContent = t.description || 'Transação';
+  document.getElementById('txDetailBody').innerHTML = `
+    <!-- Amount hero -->
+    <div style="text-align:center;padding:22px 20px 16px;border-bottom:1px solid var(--border)">
+      <div class="${amtClass}" style="font-size:2rem;font-weight:700;letter-spacing:-.02em">${fmt(t.amount, t.currency||'BRL')}</div>
+      <div style="margin-top:4px;font-size:.8rem;color:var(--muted)">${typeLabel} &nbsp;·&nbsp; ${fmtDate(t.date)}</div>
+    </div>
+
+    <!-- Fields -->
+    <div style="padding:4px 20px 8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:.78rem;color:var(--muted);font-weight:600">Conta</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:var(--text)">
+          ${renderIconEl(t.accounts?.icon, accColor, 16)}
+          ${esc(t.accounts?.name || '—')}
+        </span>
+      </div>
+      ${t.categories ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:.78rem;color:var(--muted);font-weight:600">Categoria</span>
+        <span class="badge" style="background:${catColor}18;color:${catColor};border:1px solid ${catColor}30;font-size:.78rem">${esc(t.categories.name)}</span>
+      </div>` : ''}
+      ${t.payees ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:.78rem;color:var(--muted);font-weight:600">Beneficiário</span>
+        <span style="font-size:.82rem;color:var(--text2)">${esc(t.payees.name)}</span>
+      </div>` : ''}
+      ${metaHtml}
+    </div>
+    ${attachHtml}`;
+
+  openModal('txDetailModal');
+}
+
+function _txDetailAction(action) {
+  if (!_txDetailId) return;
+  closeModal('txDetailModal');
+  if (action === 'edit') editTransaction(_txDetailId);
+  else if (action === 'dup') duplicateTransaction(_txDetailId);
+  else if (action === 'del') deleteTransaction(_txDetailId);
+}
+
+
   const month=document.getElementById('budgetMonth').value;if(!month)return;
   const[y,m]=month.split('-'),monthStart=`${y}-${m}-01`;
   const{data:budgets,error:be}=await sb.from('budgets').select('*, categories(name,icon,color)').eq('month',monthStart);if(be){toast(be.message,'error');return;}
