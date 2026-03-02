@@ -2596,6 +2596,11 @@ canvas { cursor: default; }
 
       <!-- Help box -->
       <div class="ej-help-box" style="margin-top:14px">
+        <div style="background:var(--amber-lt);border:1px solid var(--amber);border-radius:6px;padding:10px 12px;margin-bottom:12px;font-size:.8rem">
+          ⚠️ <strong>Passo obrigatório no painel do EmailJS:</strong><br>
+          No seu template, o campo <strong>"To Email"</strong> deve ser definido como <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.85em">{{to_email}}</code> — caso contrário o envio falhará com erro "recipients address is empty".<br>
+          <a href="https://dashboard.emailjs.com/admin/templates" target="_blank" style="color:var(--accent);font-weight:600">Abrir Templates no EmailJS ↗</a>
+        </div>
         <strong>📋 Variáveis disponíveis no template EmailJS:</strong><br><br>
         <span style="font-weight:700;color:var(--text2)">Roteamento</span><br>
         <code>{{to_email}}</code> destinatário &nbsp;·&nbsp;
@@ -4820,8 +4825,14 @@ function closeEmailPopup() {
 }
 
 async function sendReportByEmail() {
-  const toAddr = document.getElementById('emailTo').value.trim();
-  if (!toAddr) { toast('Informe o destinatário', 'error'); return; }
+  const emailToEl = document.getElementById('emailTo');
+  // Read value directly from the DOM element — avoid browser email validation blocking .value
+  const toAddr = (emailToEl.value || '').trim();
+  if (!toAddr) { toast('Informe o destinatário', 'error'); emailToEl.focus(); return; }
+  // Basic format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toAddr)) {
+    toast('Endereço de e-mail inválido', 'error'); emailToEl.focus(); return;
+  }
   if (!EMAILJS_CONFIG.serviceId || !EMAILJS_CONFIG.templateId || !EMAILJS_CONFIG.publicKey) {
     toast('Configure o EmailJS primeiro (botão ⚙️)', 'error'); showEmailConfig(); return;
   }
@@ -4953,7 +4964,7 @@ async function sendReportByEmail() {
     btn.textContent = '⏳ Enviando e-mail...';
     emailjs.init(EMAILJS_CONFIG.publicKey);
 
-    const subject     = document.getElementById('emailSubject').value;
+    const subject     = document.getElementById('emailSubject').value.trim() || `Relatório FinTrack — ${fmtDate(from)} a ${fmtDate(to)}`;
     const userMessage = document.getElementById('emailMsg').value.trim() ||
       `Segue o relatório financeiro do período de ${fmtDate(from)} a ${fmtDate(to)}.`;
 
@@ -4961,8 +4972,14 @@ async function sendReportByEmail() {
                     : rptState.view === 'transactions'  ? 'Lista de Transações'
                     : 'Previsão';
 
-    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+    // Pass recipient under every common variable name templates might use
+    const templateParams = {
       to_email:       toAddr,
+      to:             toAddr,
+      email:          toAddr,
+      recipient:      toAddr,
+      dest_email:     toAddr,
+      reply_to:       toAddr,
       from_name:      'J.F. Family FinTrack',
       subject:        subject,
       message:        userMessage,
@@ -4974,7 +4991,25 @@ async function sendReportByEmail() {
       report_count:   String(txs.length),
       pdf_url:        pdfUrl,
       pdf_name:       fileName,
-    });
+    };
+
+    try {
+      await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, templateParams);
+    } catch(ejErr) {
+      const errText = ejErr?.text || ejErr?.message || JSON.stringify(ejErr);
+      if (/recipients|address|to email/i.test(errText)) {
+        throw new Error(
+          `O campo "To Email" do template EmailJS precisa ser configurado como {{to_email}}.
+
+` +
+          `Acesse: emailjs.com → Email Templates → seu template → campo "To Email" → defina: {{to_email}}
+
+` +
+          `Erro: ${errText}`
+        );
+      }
+      throw new Error(errText);
+    }
 
     status.textContent = '✓ Enviado!'; status.style.color = 'var(--green)';
     toast('E-mail enviado com sucesso!', 'success');
@@ -4982,9 +5017,25 @@ async function sendReportByEmail() {
 
   } catch(e) {
     console.error('[Email]', e);
-    status.textContent = '✗ ' + (e.text || e.message || 'Erro desconhecido');
+    const msg = e.message || e.text || 'Erro desconhecido';
+    status.textContent = '✗ Erro';
     status.style.color = 'var(--red)';
-    toast('Erro ao enviar: ' + (e.text || e.message), 'error');
+    // Show full actionable message in a more visible way
+    toast(msg.split('\n')[0], 'error');
+    if (msg.includes('To Email') || msg.includes('{{to_email}}')) {
+      // Show persistent helper message in the status area
+      const emailPopupBox = document.querySelector('.email-popup-box');
+      let helperEl = document.getElementById('emailConfigHelper');
+      if (!helperEl) {
+        helperEl = document.createElement('div');
+        helperEl.id = 'emailConfigHelper';
+        helperEl.style.cssText = 'background:var(--amber-lt);border:1px solid var(--amber);border-radius:6px;padding:10px;font-size:.78rem;color:var(--text2);margin-top:8px;line-height:1.5';
+        emailPopupBox?.appendChild(helperEl);
+      }
+      helperEl.innerHTML = `⚠️ <strong>Configuração necessária no EmailJS:</strong><br>
+        Acesse <a href="https://dashboard.emailjs.com/admin/templates" target="_blank" style="color:var(--accent)">emailjs.com → Email Templates</a>,
+        abra seu template, e no campo <strong>"To Email"</strong> defina: <code style="background:var(--bg3);padding:1px 4px;border-radius:3px">{{to_email}}</code>`;
+    }
   } finally {
     btn.disabled = false; btn.textContent = 'Enviar PDF';
   }
