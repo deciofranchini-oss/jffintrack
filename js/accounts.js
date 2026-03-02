@@ -11,6 +11,36 @@ async function loadAccounts(){
   } catch(e) {
     state.groups=[];
   }
+  // Recalculate balances from initial_balance + all transactions
+  await recalcAccountBalances();
+}
+
+async function recalcAccountBalances() {
+  if (!state.accounts.length) return;
+  // Fetch all transaction amounts per account
+  const { data: sums } = await famQ(
+    sb.from('transactions').select('account_id, amount, is_transfer, transfer_to_account_id')
+  );
+
+  // Build debit map (transactions debiting each account)
+  const txMap = {};
+  (sums || []).forEach(t => {
+    if (t.account_id) {
+      txMap[t.account_id] = (txMap[t.account_id] || 0) + (parseFloat(t.amount) || 0);
+    }
+    // Credit destination account for transfers
+    if (t.is_transfer && t.transfer_to_account_id) {
+      const credit = Math.abs(parseFloat(t.amount) || 0);
+      txMap[t.transfer_to_account_id] = (txMap[t.transfer_to_account_id] || 0) + credit;
+    }
+  });
+
+  // Apply: balance = initial_balance + sum(transactions)
+  state.accounts.forEach(a => {
+    const initialBal = parseFloat(a.initial_balance) || 0;
+    const txSum = txMap[a.id] || 0;
+    a.balance = initialBal + txSum;
+  });
 }
 let _accountsViewMode='';
 function renderAccounts(ft=''){
@@ -70,13 +100,18 @@ function goToAccountTransactions(accountId){
 function filterAccounts(type){document.querySelectorAll('#page-accounts .tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');renderAccounts(type);}
 function accountTypeLabel(t){return{corrente:'Conta Corrente',poupanca:'Poupança',cartao_credito:'Cartão de Crédito',investimento:'Investimentos',dinheiro:'Dinheiro',outros:'Outros'}[t]||t;}
 function openAccountModal(id=''){
-  const form={id:'',name:'',type:'corrente',currency:'BRL',balance:'',icon:'',color:'#2a6049',is_brazilian:false,iof_rate:3.38,group_id:''};
-  if(id){const a=state.accounts.find(x=>x.id===id);if(a)Object.assign(form,a);}
+  const form={id:'',name:'',type:'corrente',currency:'BRL',balance:'',initial_balance:'',icon:'',color:'#2a6049',is_brazilian:false,iof_rate:3.38,group_id:''};
+  if(id){
+    const a=state.accounts.find(x=>x.id===id);
+    if(a){Object.assign(form,a); form.initial_balance = parseFloat(a.initial_balance)||0;}
+  }
   document.getElementById('accountId').value=form.id;
   document.getElementById('accountName').value=form.name;
   document.getElementById('accountType').value=form.type;
   document.getElementById('accountCurrency').value=form.currency;
-  setAmtField('accountBalance', form.balance||0);
+  setAmtField('accountBalance', form.initial_balance||0);
+  const balLabel = document.getElementById('accountBalanceLabel');
+  if(balLabel) balLabel.textContent = id ? 'Saldo Inicial' : 'Saldo Inicial';
   document.getElementById('accountIcon').value=form.icon||'';
   document.getElementById('accountColor').value=form.color||'#2a6049';
   document.getElementById('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
@@ -96,7 +131,7 @@ async function saveAccount(){
   const isCC=document.getElementById('accountType').value==='cartao_credito';
   const isBR=isCC&&document.getElementById('accountIsBrazilian').checked;
   const gid=document.getElementById('accountGroupId').value||null;
-  const data={name:document.getElementById('accountName').value.trim(),type:document.getElementById('accountType').value,currency:document.getElementById('accountCurrency').value,initial_balance:getAmtField('accountBalance'), balance:getAmtField('accountBalance'),icon:document.getElementById('accountIcon').value||'',color:document.getElementById('accountColor').value,is_brazilian:isBR,iof_rate:isBR?parseFloat(document.getElementById('accountIofRate').value)||3.38:null,group_id:gid,updated_at:new Date().toISOString()};
+  const data={name:document.getElementById('accountName').value.trim(),type:document.getElementById('accountType').value,currency:document.getElementById('accountCurrency').value,initial_balance:getAmtField('accountBalance'),icon:document.getElementById('accountIcon').value||'',color:document.getElementById('accountColor').value,is_brazilian:isBR,iof_rate:isBR?parseFloat(document.getElementById('accountIofRate').value)||3.38:null,group_id:gid,updated_at:new Date().toISOString()};
   if(!data.name){toast('Informe o nome da conta','error');return;}
   if(!id) data.family_id=famId(); let err;if(id){({error:err}=await sb.from('accounts').update(data).eq('id',id));}else{({error:err}=await sb.from('accounts').insert(data));}
   if(err){toast(err.message,'error');return;}
@@ -165,66 +200,4 @@ async function deleteGroup(id){
   await loadAccounts();
   renderGroupList();
   if(state.currentPage==='accounts')renderAccounts(_accountsViewMode);
-}
-
-
-// ── Balance sync ─────────────────────────────────────────
-// Computes current balances from initial_balance + transactions (including transfers)
-// Updates state.accounts and (optionally) persists accounts.balance to DB as a cache.
-async function refreshAccountBalances({ persist=true } = {}) {
-  try {
-    // Ensure we have accounts loaded
-    if(!state.accounts || !state.accounts.length) await loadAccounts();
-
-    // Pull only needed fields from transactions for speed
-    const {data:txs, error} = await famQ(
-      sb.from('transactions')
-        .select('account_id, amount, is_transfer, transfer_to_account_id, transfer_kind')
-    );
-    if(error){ console.error(error); toast(error.message,'error'); return; }
-
-    const delta = {}; // account_id -> delta
-    (txs||[]).forEach(t=>{
-      const from = t.account_id;
-      const to   = t.transfer_to_account_id;
-      const isT  = !!t.is_transfer;
-      const val  = Math.abs(parseFloat(t.amount)||0);
-
-      if(!isT){
-        delta[from] = (delta[from]||0) + (parseFloat(t.amount)||0);
-        return;
-      }
-
-      // Transfers always debit origin and credit destination
-      if(from) delta[from] = (delta[from]||0) - val;
-      if(to)   delta[to]   = (delta[to]||0)   + val;
-    });
-
-    // Apply to state.accounts
-    const updates = [];
-    state.accounts = (state.accounts||[]).map(a=>{
-      const init = (a.initial_balance ?? a.balance ?? 0);
-      const cur  = +( (parseFloat(init)||0) + (delta[a.id]||0) ).toFixed(2);
-      const out  = {...a, initial_balance: parseFloat(init)||0, balance: cur};
-      if(persist) updates.push({id:a.id, balance:cur, updated_at:new Date().toISOString()});
-      return out;
-    });
-
-    if(persist && updates.length){
-      // Best-effort persistence; ignore failures (RLS / permissions etc.)
-      try {
-        // Chunk updates to avoid payload limits
-        const chunkSize = 100;
-        for(let i=0;i<updates.length;i+=chunkSize){
-          const chunk = updates.slice(i,i+chunkSize);
-          await famQ(sb.from('accounts').upsert(chunk, { onConflict:'id' }));
-        }
-      } catch(e) {
-        console.warn('Could not persist account balances (ok to ignore):', e.message||e);
-      }
-    }
-  } catch(e) {
-    console.error(e);
-    toast('Falha ao recalcular saldos: '+(e.message||e),'error');
-  }
 }

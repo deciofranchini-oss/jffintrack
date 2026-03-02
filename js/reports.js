@@ -91,7 +91,7 @@ async function fetchRptTransactions() {
 
   const {data, error} = await q;
   if(error) { toast(error.message,'error'); return []; }
-  return (data||[]).filter(t=>!t.is_transfer || t.transfer_kind==='cc_payment');
+  return (data||[]).filter(t=>!t.is_transfer);
 }
 
 /* ═══ VIEW: ANÁLISE ═══ */

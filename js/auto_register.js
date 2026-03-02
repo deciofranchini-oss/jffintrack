@@ -149,10 +149,10 @@ BEGIN
         -- Registrar a transação
         INSERT INTO transactions (
           account_id, description, amount, date,
-          category_id, payee_id, memo, is_transfer, transfer_to_account_id, transfer_kind
+          category_id, payee_id, memo, is_transfer
         ) VALUES (
           v_sc.account_id, v_sc.description, v_sc.amount, v_next_date,
-          v_sc.category_id, v_sc.payee_id, v_sc.memo, (v_sc.type IN ('transfer','cc_payment')), v_sc.transfer_to_account_id, CASE WHEN v_sc.type='cc_payment' THEN 'cc_payment' WHEN v_sc.type='transfer' THEN 'transfer' ELSE NULL END
+          v_sc.category_id, v_sc.payee_id, v_sc.memo, false
         );
 
         -- Marcar ocorrência como registrada
@@ -289,16 +289,19 @@ async function runAutoRegister(manual=false) {
         if(existing) continue; // already done
 
         // Create the transaction
-        const txAmt = sc.type === 'expense' ? -Math.abs(sc.amount) : Math.abs(sc.amount);
+        const isAutoTransfer = sc.type === 'transfer' || sc.type === 'card_payment';
+        const txAmt = (sc.type === 'expense' || isAutoTransfer) ? -Math.abs(sc.amount) : Math.abs(sc.amount);
         const { data: newTx, error: txErr } = await sb.from('transactions').insert({ family_id: famId(),
           account_id:  sc.account_id,
           description: sc.description,
           amount:      txAmt,
           date:        date,
           category_id: sc.category_id || null,
-          payee_id:    sc.payee_id    || null,
+          payee_id:    isAutoTransfer ? null : (sc.payee_id || null),
           memo:        sc.memo ? `[Auto] ${sc.memo}` : '[Registro automático]',
-          is_transfer: false,
+          is_transfer: isAutoTransfer,
+          is_card_payment: sc.type === 'card_payment',
+          transfer_to_account_id: isAutoTransfer ? sc.transfer_to_account_id : null,
         }).select().single();
 
         if(txErr) { console.error('[AutoReg] Tx error:', txErr.message); continue; }

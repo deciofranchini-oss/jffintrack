@@ -163,8 +163,11 @@ function renderScheduled(list) {
     const st = scStatusLabel(sc);
     const next = getNextOccurrence(sc);
     const today = new Date().toISOString().slice(0,10);
-    const isExpense = sc.type === 'expense';
+    const isExpense = sc.type === 'expense' || sc.type === 'transfer' || sc.type === 'card_payment';
+    const isCardPayment = sc.type === 'card_payment';
+    const isTransferSc = sc.type === 'transfer' || sc.type === 'card_payment';
     const acct = state.accounts.find(a => a.id === sc.account_id);
+    const destAcct = isTransferSc ? state.accounts.find(a => a.id === sc.transfer_to_account_id) : null;
     const regCount = (sc.occurrences||[]).length;
     const totalCount = sc.end_count ? `${regCount}/${sc.end_count}` : `${regCount} reg.`;
     const occList = generateOccurrences(sc, 8);
@@ -172,8 +175,8 @@ function renderScheduled(list) {
 
     return `<div class="sc-card" id="scCard-${sc.id}">
       <div class="sc-card-header" onclick="toggleScCard('${sc.id}')">
-        <div class="sc-card-type" style="background:${isExpense?'var(--red-lt)':'var(--green-lt)'}">
-          ${isExpense ? '💸' : '💰'}
+        <div class="sc-card-type" style="background:${isCardPayment?'var(--blue-lt,#eff6ff)':isTransferSc?'var(--muted-lt,#f1f5f9)':isExpense?'var(--red-lt)':'var(--green-lt)'}">
+          ${isCardPayment ? '💳' : isTransferSc ? '🔄' : isExpense ? '💸' : '💰'}
         </div>
         <div class="sc-card-info">
           <div class="sc-card-title">${esc(sc.description)}</div>
@@ -186,7 +189,8 @@ function renderScheduled(list) {
           </div>
         </div>
         <div class="sc-card-amount ${isExpense?'amount-neg':'amount-pos'}">
-          ${isExpense?'-':'+'} ${fmt(Math.abs(sc.amount))}
+          ${isCardPayment?'💳 ':''}${isTransferSc?'🔄 ':''}${isExpense?'-':'+'} ${fmt(Math.abs(sc.amount))}
+          ${isTransferSc&&destAcct?`<span style="font-size:.7rem;color:var(--muted)"> → ${esc(destAcct.name)}</span>`:''}
         </div>
         <div class="sc-card-actions" onclick="event.stopPropagation()">
           ${next ? `<button class="btn btn-primary btn-sm" onclick="openRegisterOcc('${sc.id}','${next}')" title="Registrar próxima ocorrência">✓ Registrar</button>` : ''}
@@ -222,6 +226,7 @@ function renderScheduled(list) {
         </div>
         <div style="padding:8px 16px 12px;display:flex;gap:8px;border-top:1px solid var(--border);flex-wrap:wrap">
           <span style="font-size:.75rem;color:var(--muted)">Conta: <strong>${esc(acct?.name||'—')}</strong></span>
+          ${isTransferSc&&destAcct?`<span style="font-size:.75rem;color:var(--muted)">→ Destino: <strong>${esc(destAcct.name)}</strong></span>`:''}
           ${sc.memo ? `<span style="font-size:.75rem;color:var(--muted)">· ${esc(sc.memo)}</span>` : ''}
           <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toggleScStatus('${sc.id}')">
             ${sc.status==='active'?'⏸ Pausar':'▶ Reativar'}
@@ -292,13 +297,14 @@ function openScheduledModal(id='') {
   // Populate account select
   const aEl = document.getElementById('scAccountId');
   aEl.innerHTML = state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.currency})</option>`).join('');
-  // Populate destination account (for transfers / card payments)
-  const tEl = document.getElementById('scTransferTo');
-  if(tEl){
-    tEl.innerHTML = '<option value="">Selecione</option>' + state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.currency})</option>`).join('');
-    if(sc?.transfer_to_account_id) tEl.value = sc.transfer_to_account_id;
-  }
   if(sc?.account_id) aEl.value = sc.account_id;
+
+  // Populate transfer-to account select
+  const trEl = document.getElementById('scTransferToAccountId');
+  if(trEl) {
+    trEl.innerHTML = '<option value="">— Selecionar conta destino —</option>' + state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.currency})</option>`).join('');
+    if(sc?.transfer_to_account_id) trEl.value = sc.transfer_to_account_id;
+  }
 
   // Populate category select
   const cEl = document.getElementById('scCategoryId');
@@ -360,19 +366,21 @@ function openScheduledModal(id='') {
 
 function setScType(type) {
   document.getElementById('scTypeField').value = type;
-  document.querySelectorAll('#scheduledModal .tab').forEach((t,i)=>t.classList.toggle('active',['expense','income','transfer','cc_payment'][i]===type));
-  const isTransfer = (type==='transfer' || type==='cc_payment');
-  const isCardPay  = (type==='cc_payment');
-  const toGrp = document.getElementById('scTransferToGroup');
-  if(toGrp) toGrp.style.display = isTransfer ? '' : 'none';
-  const payeeGrp = document.getElementById('scPayeeGroup');
-  if(payeeGrp) payeeGrp.style.display = isTransfer ? 'none' : '';
-  const catGrp = document.getElementById('scCategoryGroup');
-  if(catGrp) catGrp.style.display = (type==='transfer') ? 'none' : '';
-  const lbl = document.querySelector('#scTransferToGroup label');
-  if(lbl) lbl.textContent = isCardPay ? 'Conta do Cartão (Destino) *' : 'Conta Destino *';
+  const activeTab = (type==='transfer'||type==='card_payment') ? 'transfer' : type;
+  document.querySelectorAll('#scheduledModal .tab').forEach((t,i)=>t.classList.toggle('active',['expense','income','transfer'][i]===activeTab));
+  const isTransfer = type==='transfer' || type==='card_payment';
+  const isCardPayment = type==='card_payment';
+  const trGroup = document.getElementById('scTransferToGroup');
+  const payGroup = document.getElementById('scPayeeGroup');
+  const catGroup = document.getElementById('scCategoryGroup');
+  if(trGroup) trGroup.style.display = isTransfer ? '' : 'none';
+  if(payGroup) payGroup.style.display = isTransfer ? 'none' : '';
+  if(catGroup) catGroup.style.display = isCardPayment ? '' : (isTransfer ? 'none' : '');
+  const cpBadge = document.getElementById('scCardPaymentBadge');
+  if(cpBadge) cpBadge.style.display = isCardPayment ? '' : 'none';
+  const trLabel = document.querySelector('#scTransferToGroup label');
+  if(trLabel) trLabel.textContent = isCardPayment ? 'Cartão de Crédito (Destino) *' : 'Conta Destino *';
 }
-
 
 function onScFreqChange() {
   const freq = document.querySelector('input[name=scFreq]:checked')?.value || 'once';
@@ -426,14 +434,15 @@ async function saveScheduled() {
 
   const autoReg = document.getElementById('scAutoRegister')?.checked || false;
   const notifyEm = document.getElementById('scNotifyEmail')?.checked || false;
+  const isScTransfer = type==='transfer' || type==='card_payment';
+  const isScCardPayment = type==='card_payment';
   const data = {
     description: document.getElementById('scDesc').value.trim(),
     type,
-    amount: (type==='expense') ? -Math.abs(amount) : (type==='income' ? Math.abs(amount) : Math.abs(amount)),
+    amount: (type==='expense'||isScTransfer) ? -Math.abs(amount) : Math.abs(amount),
     account_id: document.getElementById('scAccountId').value || null,
-    transfer_to_account_id: (type==='transfer' || type==='cc_payment') ? (document.getElementById('scTransferTo')?.value || null) : null,
-    transfer_kind: (type==='cc_payment' ? 'cc_payment' : (type==='transfer' ? 'transfer' : null)),
-    payee_id: document.getElementById('scPayeeId').value || null,
+    transfer_to_account_id: isScTransfer ? (document.getElementById('scTransferToAccountId')?.value || null) : null,
+    payee_id: isScTransfer ? null : (document.getElementById('scPayeeId').value || null),
     category_id: document.getElementById('scCategoryId').value || null,
     memo: document.getElementById('scMemo').value,
     tags: tags.length ? tags : null,
@@ -453,11 +462,8 @@ async function saveScheduled() {
 
   if(!data.description) { toast('Informe a descrição', 'error'); return; }
   if(!data.account_id) { toast('Selecione a conta', 'error'); return; }
-  if(type==='transfer' || type==='cc_payment'){
-    if(!data.transfer_to_account_id){ toast('Selecione a conta destino', 'error'); return; }
-    if(data.transfer_to_account_id===data.account_id){ toast('Conta origem e destino não podem ser a mesma', 'error'); return; }
-    if(type==='cc_payment' && !data.category_id){ toast('Selecione a categoria de Pagamento de Cartão', 'error'); return; }
-  }
+  if(isScTransfer && !data.transfer_to_account_id) { toast('Selecione a conta destino da transferência', 'error'); return; }
+  if(isScTransfer && data.account_id === data.transfer_to_account_id) { toast('Conta origem e destino não podem ser iguais', 'error'); return; }
   if(!data.start_date) { toast('Informe a data de início', 'error'); return; }
 
   let err;
@@ -515,7 +521,8 @@ async function confirmRegisterOccurrence() {
   const actualDate = document.getElementById('occDate').value;
   const amount = getAmtField('occAmount') || Math.abs(sc.amount);
   const memo = document.getElementById('occMemo').value;
-  const finalAmount = sc.type==='expense' ? -Math.abs(amount) : Math.abs(amount);
+  const isScTransfer = sc.type==='transfer' || sc.type==='card_payment';
+  const finalAmount = (sc.type==='expense' || isScTransfer) ? -Math.abs(amount) : Math.abs(amount);
 
   // 1. Create real transaction
   const { data: txData, error: txErr } = await sb.from('transactions').insert({ family_id: famId(),
@@ -523,11 +530,13 @@ async function confirmRegisterOccurrence() {
     description: sc.description,
     amount: finalAmount,
     account_id: sc.account_id,
-    payee_id: sc.payee_id,
-    category_id: sc.category_id,
+    payee_id: sc.payee_id || null,
+    category_id: sc.category_id || null,
     memo: memo || sc.memo,
     tags: sc.tags,
-    is_transfer: false,
+    is_transfer: isScTransfer,
+    is_card_payment: sc.type==='card_payment',
+    transfer_to_account_id: isScTransfer ? sc.transfer_to_account_id : null,
     updated_at: new Date().toISOString(),
   }).select().single();
   if(txErr) { toast(txErr.message,'error'); return; }
@@ -555,9 +564,10 @@ const SCHEDULED_SQL = `-- Run this in your Supabase SQL Editor
 CREATE TABLE IF NOT EXISTS scheduled_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   description TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('expense','income')),
+  type TEXT NOT NULL CHECK (type IN ('expense','income','transfer','card_payment')),
   amount NUMERIC NOT NULL,
   account_id UUID REFERENCES accounts(id),
+  transfer_to_account_id UUID REFERENCES accounts(id),
   payee_id UUID REFERENCES payees(id),
   category_id UUID REFERENCES categories(id),
   memo TEXT,
