@@ -88,8 +88,8 @@ function renderForecastChart(allItems, accounts, fromStr, toStr) {
         const sumUpToDate = txForAccount.filter(t=>t.date<=d).reduce((s,t)=>s+t.amount, 0);
         return { x: d, y: +(bal + sumUpToDate).toFixed(2) };
       }),
-      borderColor: a.color || '#2a6049',
-      backgroundColor: (a.color||'#2a6049')+'22',
+      borderColor: a.color || '#1C6B47',
+      backgroundColor: (a.color||'#1C6B47')+'22',
       fill: false, tension: 0.3, borderWidth: 2, pointRadius: 1,
     };
   });

@@ -115,11 +115,11 @@ async function renderCategoryChart(){
     if(!catMap[n]) catMap[n]={total:0,color:c};
     catMap[n].total+=Math.abs(t.amount);
   });
-  const FALLBACK_COLORS=['#2a6049','#1e5ba8','#b45309','#c0392b','#7c3aed','#2a7a4a','#3d7a5e'];
+  const FALLBACK_COLORS=['#1C6B47','#007AFF','#FF9500','#FF3B30','#AF52DE','#34C759','#5AC8FA'];
   const entries=Object.entries(catMap).sort((a,b)=>b[1].total-a[1].total).slice(0,8);
   if(!entries.length){
     const el=document.getElementById('categoryChart');
-    if(el){const ctx=el.getContext('2d');ctx.clearRect(0,0,el.width,el.height);ctx.fillStyle='#8c8278';ctx.textAlign='center';ctx.font='13px Outfit';ctx.fillText('Sem despesas no mês',el.width/2,el.height/2);}
+    if(el){const ctx=el.getContext('2d');ctx.clearRect(0,0,el.width,el.height);ctx.fillStyle='#8c8278';ctx.textAlign='center';ctx.font='13px Plus Jakarta Sans';ctx.fillText('Sem despesas no mês',el.width/2,el.height/2);}
     return;
   }
   renderChart('categoryChart','doughnut',
