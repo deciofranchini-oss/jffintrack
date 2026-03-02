@@ -524,7 +524,7 @@ async function confirmRegisterOccurrence() {
   const isScTransfer = sc.type==='transfer' || sc.type==='card_payment';
   const finalAmount = (sc.type==='expense' || isScTransfer) ? -Math.abs(amount) : Math.abs(amount);
 
-  // 1. Create real transaction
+  // 1. Create real transaction (debit / origin leg)
   const { data: txData, error: txErr } = await sb.from('transactions').insert({ family_id: famId(),
     date: actualDate,
     description: sc.description,
@@ -540,6 +540,32 @@ async function confirmRegisterOccurrence() {
     updated_at: new Date().toISOString(),
   }).select().single();
   if(txErr) { toast(txErr.message,'error'); return; }
+
+  // 1b. For transfers/card payments, create the paired credit leg
+  if(isScTransfer && sc.transfer_to_account_id && txData?.id) {
+    const pairedTx = {
+      family_id: famId(),
+      date: actualDate,
+      description: sc.description,
+      amount: Math.abs(finalAmount),
+      account_id: sc.transfer_to_account_id,
+      payee_id: null,
+      category_id: sc.category_id || null,
+      memo: memo || sc.memo,
+      tags: sc.tags,
+      is_transfer: true,
+      is_card_payment: sc.type==='card_payment',
+      transfer_to_account_id: sc.account_id,
+      linked_transfer_id: txData.id,
+      updated_at: new Date().toISOString(),
+    };
+    const {data: pairedResult, error: pairedErr} = await sb.from('transactions').insert(pairedTx).select().single();
+    if(pairedErr) {
+      toast('Transação salva, mas erro ao criar lançamento de entrada: ' + pairedErr.message, 'warning');
+    } else if(pairedResult?.id) {
+      await sb.from('transactions').update({linked_transfer_id: pairedResult.id}).eq('id', txData.id);
+    }
+  }
 
   // 2. Register occurrence
   const { error: occErr } = await sb.from('scheduled_occurrences').insert({

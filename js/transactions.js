@@ -499,8 +499,56 @@ async function saveTransaction(){
   };
   if(!data.date||!data.account_id){toast('Preencha data e conta','error');return;}
   let err,txResult;
-  if(id){({error:err}=await sb.from('transactions').update(data).eq('id',id));}
-  else  {({data:txResult,error:err}=await sb.from('transactions').insert(data).select().single());}
+  if(id){
+    ({error:err}=await sb.from('transactions').update(data).eq('id',id));
+    // If editing a transfer, update the paired leg too
+    if(!err && isTransfer) {
+      const {data:orig} = await sb.from('transactions').select('linked_transfer_id').eq('id',id).single();
+      if(orig?.linked_transfer_id) {
+        await sb.from('transactions').update({
+          date: data.date,
+          description: data.description,
+          amount: Math.abs(data.amount),
+          account_id: data.transfer_to_account_id,
+          memo: data.memo,
+          tags: data.tags,
+          is_transfer: true,
+          is_card_payment: data.is_card_payment,
+          transfer_to_account_id: data.account_id,
+          updated_at: new Date().toISOString(),
+        }).eq('id', orig.linked_transfer_id);
+      }
+    }
+  }
+  else {
+    ({data:txResult,error:err}=await sb.from('transactions').insert(data).select().single());
+    // For new transfers, create the paired credit leg on the destination account
+    if(!err && isTransfer && txResult?.id && data.transfer_to_account_id) {
+      const pairedTx = {
+        date: data.date,
+        description: data.description,
+        amount: Math.abs(data.amount),
+        account_id: data.transfer_to_account_id,
+        payee_id: null,
+        category_id: data.category_id || null,
+        memo: data.memo,
+        tags: data.tags,
+        is_transfer: true,
+        is_card_payment: data.is_card_payment,
+        transfer_to_account_id: data.account_id,
+        linked_transfer_id: txResult.id,
+        updated_at: new Date().toISOString(),
+        family_id: famId(),
+      };
+      const {data:pairedResult, error:pairedErr} = await sb.from('transactions').insert(pairedTx).select().single();
+      if(pairedErr) {
+        toast('Transferência salva, mas erro ao criar lançamento de entrada: ' + pairedErr.message, 'warning');
+      } else if(pairedResult?.id) {
+        // Back-link origin row to paired row
+        await sb.from('transactions').update({linked_transfer_id: pairedResult.id}).eq('id', txResult.id);
+      }
+    }
+  }
   if(err){toast(err.message,'error');return;}
 
   // Upload pending attachment BEFORE closing modal — keeps UX in sync
@@ -566,7 +614,24 @@ async function _doDuplicateTx(orig) {
   if (state.currentPage === 'transactions') loadTransactions();
   if (state.currentPage === 'dashboard') loadDashboard();
 }
-async function deleteTransaction(id){if(!confirm('Excluir transação?'))return;const{error}=await sb.from('transactions').delete().eq('id',id);if(error){toast(error.message,'error');return;}toast('Excluída','success');loadTransactions();}
+async function deleteTransaction(id){
+  if(!confirm('Excluir transação?'))return;
+  // 1. Null out any scheduled_occurrence that references this transaction
+  //    (avoids FK / check-constraint violations when the row is deleted)
+  await sb.from('scheduled_occurrences').update({transaction_id:null}).eq('transaction_id',id);
+  // 2. If this is one leg of a transfer, delete the paired leg too
+  const {data:tx} = await sb.from('transactions').select('linked_transfer_id,is_transfer').eq('id',id).single();
+  if(tx?.linked_transfer_id) {
+    await sb.from('scheduled_occurrences').update({transaction_id:null}).eq('transaction_id',tx.linked_transfer_id);
+    await sb.from('transactions').delete().eq('id',tx.linked_transfer_id);
+  }
+  // 3. Delete the transaction itself
+  const{error}=await sb.from('transactions').delete().eq('id',id);
+  if(error){toast(error.message,'error');return;}
+  toast('Excluída','success');
+  loadTransactions();
+  if(state.currentPage==='dashboard')loadDashboard();
+}
 
 /* ── Transaction Detail Drawer ── */
 let _txDetailId = null;
