@@ -1339,3 +1339,62 @@ body.tx-compact .tx-table .badge{
 body.tx-compact #txCompactKnob{ background:var(--accent) !important; }
 body.tx-compact #txCompactKnob::before{ transform:translateX(20px); }
 #compactToggleBtn.is-active{ color:var(--accent) !important; }
+
+
+/* Reports mobile scroll fix: ensure bottom charts are reachable */
+#page-reports{ overflow-y: auto; padding-bottom: 140px; }
+@media (max-width: 720px){
+  #page-reports .grid-2{ display:grid; grid-template-columns: 1fr !important; gap: 12px; }
+  #page-reports canvas{ max-width: 100%; }
+}
+
+
+/* Scheduled mobile layout fix */
+@media (max-width: 720px){
+  .sc-card-header{
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    grid-template-areas:
+      "type info amount"
+      "type info actions";
+    align-items: start;
+    gap: 8px 10px;
+  }
+  .sc-card-type{ grid-area: type; margin-top: 2px; }
+  .sc-card-info{ grid-area: info; min-width:0; }
+  .sc-card-title{ white-space: normal; line-height: 1.15; }
+  .sc-card-sub{ gap: 6px; }
+  .sc-card-amount{
+    grid-area: amount;
+    justify-self: end;
+    font-size: .98rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .sc-card-actions{
+    grid-area: actions;
+    justify-self: end;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .sc-card-actions .btn.btn-primary.btn-sm{
+    padding: 6px 10px;
+    font-size: .78rem;
+  }
+  .sc-card-actions .btn-icon{
+    padding: 6px 8px;
+    font-size: .95rem;
+  }
+
+  /* Occurrences: prevent messy wrapping */
+  .sc-occ-row{
+    display: grid;
+    grid-template-columns: 92px 1fr auto auto;
+    gap: 6px 10px;
+    align-items: center;
+  }
+  .sc-occ-date{ min-width: 0; }
+  .sc-occ-label{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sc-occ-status{ justify-self: end; }
+}
