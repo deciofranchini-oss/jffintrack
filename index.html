@@ -1578,6 +1578,10 @@
               <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Quando a data chegar, cria a transação automaticamente sem necessidade de aprovação manual</div>
             </div>
           </label>
+          <label class="iof-intl-toggle" style="margin-top:8px;display:block" onclick="event.stopPropagation()">
+            <input type="checkbox" id="scAutoConfirm" />
+            ✅ Auto-confirmar ao registrar automaticamente
+          </label>
         </div>
 
         <!-- Email notification -->
@@ -1745,7 +1749,8 @@
         <div class="form-group"><label>Data *</label><input type="date" id="txDate"></div>
         <div class="form-group"><label>Valor *</label><div class="amt-wrap"><button type="button" class="amt-sign-btn" id="txAmountSignBtn" onclick="toggleAmtSign('txAmount')" aria-label="Alternar sinal">+</button><input type="text" id="txAmount" inputmode="numeric" placeholder="0,00" pattern="[0-9.,]*" autocomplete="off" oninput="if(document.getElementById('txIsInternational')?.checked)updateIofMirror()"></div></div>
         <div class="form-group full"><label>Descrição *</label><input type="text" id="txDesc" placeholder="Ex: Almoço no restaurante"></div>
-        <div class="form-group"><label>Conta *</label><select id="txAccountId" onchange="checkAccountIofConfig(this.value)"></select></div>
+                <div class="form-group"><label>Status</label><select id="txStatus"><option value="confirmed">Confirmada</option><option value="pending">Pendente</option></select></div>
+<div class="form-group"><label>Conta *</label><select id="txAccountId" onchange="checkAccountIofConfig(this.value)"></select></div>
         <div class="form-group" id="txTransferToGroup" style="display:none"><label>Conta Destino *</label><select id="txTransferTo"></select></div>
         <div class="form-group" id="txPayeeGroup" style="position:relative">
           <label>Beneficiário / Fonte</label>
