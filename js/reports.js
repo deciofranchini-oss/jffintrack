@@ -72,12 +72,21 @@ function loadCurrentReport() {
 }
 
 /* ── Fetch filtered transactions ── */
-async async function fetchRptTransactions() {
+async function fetchRptTransactions() {
+  // FALLBACK_TO_STATE_TX: if Supabase is not available (offline / not configured), use already-loaded state.transactions
+
   const {from, to} = getRptDateRange();
   const accId  = document.getElementById('rptAccount')?.value   || '';
   const typeV  = document.getElementById('rptType')?.value      || '';
   const catId  = document.getElementById('rptCategory')?.value  || '';
   const payId  = document.getElementById('rptPayee')?.value     || '';
+
+  const fromTo = {from, to};
+  const useLocal = (!window.sb && typeof sb==='undefined') || (typeof sb==='object' && sb===null);
+  if(useLocal || !sb){
+    const local = (state?.transactions||[]).filter(t=>t.date>=fromTo.from && t.date<=fromTo.to);
+    return local.filter(t=>!t.is_transfer);
+  }
 
   let q = sb.from('transactions')
     .select('*, accounts!transactions_account_id_fkey(name,color,currency), categories(name,color,type), payees(name)')
@@ -89,9 +98,20 @@ async async function fetchRptTransactions() {
   if(typeV==='expense') q = q.lt('amount',0);
   if(typeV==='income')  q = q.gt('amount',0);
 
-  const {data, error} = await q;
-  if(error) { toast(error.message,'error'); return []; }
-  return (data||[]).filter(t=>!t.is_transfer);
+  try{
+    const {data, error} = await q;
+    if(error) throw error;
+    return (data||[]).filter(t=>!t.is_transfer);
+  }catch(e){
+    toast((e?.message||'Falha ao carregar dados do Supabase') + ' (usando dados locais)', 'warning');
+    const local = (state?.transactions||[]).filter(t=>t.date>=from && t.date<=to);
+    // enrich minimal relations from state arrays when available
+    const accById = Object.fromEntries((state.accounts||[]).map(a=>[a.id,a]));
+    const catById = Object.fromEntries((state.categories||[]).map(c=>[c.id,c]));
+    const payById = Object.fromEntries((state.payees||[]).map(p=>[p.id,p]));
+    local.forEach(t=>{ t.accounts=t.accounts||accById[t.account_id]; t.categories=t.categories||catById[t.category_id]; t.payees=t.payees||payById[t.payee_id]; });
+    return local.filter(t=>!t.is_transfer);
+  }
 }
 
 /* ═══ VIEW: ANÁLISE ═══ */
@@ -116,7 +136,7 @@ function _rptTopCompositionLines(catMap, total) {
   return lines;
 }
 
-async async function loadReports() {
+async function loadReports() {
   const {from, to} = getRptDateRange();
   const txs  = await fetchRptTransactions();
   rptState.txData = txs;
@@ -412,7 +432,7 @@ function setReportView(view) {
 }
 
 /* ═══ EXPORT: PDF ═══ */
-async async function exportReportPDF() {
+async function exportReportPDF() {
   const btn = event.target;
   const origText = btn.textContent;
   btn.textContent='⏳ Gerando...'; btn.disabled=true;
