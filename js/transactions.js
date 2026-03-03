@@ -288,40 +288,17 @@ function populateTxMonthFilter() {
   if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
 }
 function sortTx(field){if(state.txSortField===field)state.txSortAsc=!state.txSortAsc;else{state.txSortField=field;state.txSortAsc=false;}loadTransactions();}
-
-function txRow(t, flat){
-  const isPending = (t.status||'confirmed')==='pending';
-  const amt = fmt(t.amount);
-  const amtClass = t.amount<0 ? 'neg' : 'pos';
-  const dateStr = fmtDate(t.date);
-  const attach = (t.attachment_url || t.attachment_name)
-    ? `<span class="tx-clip" title="Possui anexo">📎</span>`
-    : '';
-  const payee = t.payees?.name || t.payee_name || '';
-  const category = t.categories?.name || t.category_name || '';
-  const categoryIcon = t.categories?.icon || '';
-
-  return `
-    <tr class="tx-row" onpointerdown="this.classList.add('tx-press')" onpointerup="this.classList.remove('tx-press')" onpointercancel="this.classList.remove('tx-press')"  ${isPending?'tx-pending':''}" data-id="${esc(t.id)}">
-      <td class="tx-col-date">${dateStr}</td>
-      <td class="tx-col-main">
-        <div class="tx-main-line">
-          ${attach}
-          <span class="tx-desc">${esc(t.description||'—')}</span>
-        </div>
-        <div class="tx-payee">${esc(payee||'')}</div>
-        <div class="tx-category">${categoryIcon?`<span class="tx-cat-ico">${categoryIcon}</span>`:''}${esc(category||'')}</div>
-      </td>
-      <td class="tx-col-value amount-cell">
-        <div class="tx-amount ${amtClass}">${amt}</div>
-        <div class="tx-actions">
-          <button class="tx-action-btn" onclick="openTxDetail('${esc(t.id)}')">⋯</button>
-        </div>
-      </td>
-    </tr>
-  `;
+function txRow(t, showAccount=true) {
+  return `<tr class="tx-row-clickable ${(t.status||'confirmed')==='pending' ? 'tx-pending' : ''}" data-tx-id="${t.id}" onclick="openTxDetail('${t.id}')" style="cursor:pointer" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+    <td class="text-muted" style="white-space:nowrap">${fmtDate(t.date)}${(t.status||'confirmed')==='pending' ? ' <span class="badge" style="margin-left:6px;background:var(--yellow-lt,#fef9c3);color:#92400e;border:1px solid #fcd34d">Pendente</span>' : ''}</td>
+    ${showAccount ? `<td><span class="badge badge-muted">${esc(t.accounts?.name||'—')}</span></td>` : ''}
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description||'—')}</td>
+    <td class="text-muted">${esc(t.payees?.name||'—')}</td>
+    <td>${t.categories?`<span class="badge" style="background:${t.categories.color}18;color:${t.categories.color};border:1px solid ${t.categories.color}30">${esc(t.categories.name)}</span>`:'—'}</td>
+    <td class="${t.amount>=0?'amount-pos':'amount-neg'}" style="white-space:nowrap">${fmt(t.amount)}</td>
+    <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px"><button class="btn-icon" title="Editar" onclick="editTransaction('${t.id}')">✏️</button><button class="btn-icon" title="Duplicar" onclick="duplicateTransaction('${t.id}')">📋</button><button class="btn-icon" title="Excluir" onclick="deleteTransaction('${t.id}')">🗑️</button></div></td>
+  </tr>`;
 }
-
 
 function setTxView(v) {
   state.txView = v;

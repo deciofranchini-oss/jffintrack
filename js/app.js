@@ -1,23 +1,3 @@
-function applyEmbeddedLogo(){
-  try{
-    const uri = window.APP_LOGO_DATA_URI;
-    if(!uri) return;
-    const ids = ['topbarLogoImg','sidebarLogoImg','loginLogoImg','splashLogo'];
-    ids.forEach(id=>{
-      const el = document.getElementById(id);
-      if(el && el.tagName==='IMG') el.src = uri;
-    });
-    // Any other logo images marked with data-logo
-    document.querySelectorAll('img[data-app-logo="1"]').forEach(img=>{ img.src = uri; });
-  }catch(e){}
-}
-function hideSplash(){
-  const sp = document.getElementById('splashScreen');
-  if(!sp) return;
-  sp.classList.add('hide');
-  setTimeout(()=>{ try{ sp.remove(); }catch(e){} }, 350);
-}
-
 function openSidebar(){
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('sidebarOverlay').classList.add('open');
@@ -190,8 +170,7 @@ async function bootApp(){
   const budInEl=document.getElementById('budgetMonthInput');if(budInEl)budInEl.value=ym;
   state.txFilter.month=ym;
   // Navegar para dashboard
-  \1
-    document.dispatchEvent(new Event('ff:ready'));
+  navigate('dashboard');
   initEmailJSStatus();
   updateUserUI();
 }
