@@ -893,74 +893,124 @@
     </div>
 
     <!-- SETTINGS PAGE -->
-    <div class="page" id="page-settings">
-      <div class="section-header mb-6"><span class="section-title">Configurações</span></div>
+    
+<div class="page" id="page-settings">
+  <div class="section-header mb-6"><span class="section-title">Configurações</span></div>
 
-      <!-- Current user info -->
-      <div class="settings-section" id="currentUserSection">
-        
-            </div>
+  <!-- Current user info (filled by JS) -->
+  <div class="settings-section" id="currentUserSection"></div>
+
+  <!-- Logout -->
+  <div class="settings-section">
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="settings-row-icon" style="background:var(--red-lt)">🚪</div>
+        <div class="settings-row-info">
+          <div class="settings-row-label">Sair</div>
+          <div class="settings-row-sub" id="settingsCurrentUser">Usuário atual</div>
+        </div>
+        <div class="settings-row-action">
+          <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import / Backup -->
+  <div class="settings-section">
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="settings-row-icon" style="background:var(--accent-lt)">📥</div>
+        <div class="settings-row-info">
+          <div class="settings-row-label">Importar / Backup</div>
+          <div class="settings-row-sub">MoneyWiz, backup JSON, limpar dados</div>
+        </div>
+        <div class="settings-row-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigate('import')">Abrir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart palette -->
+  <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-icon" style="background:var(--cyan-lt)">🎨</div>
+        <div class="settings-row-info" style="min-width:240px;flex:1">
+          <div class="settings-row-label">Cores dos gráficos (Dashboard & Relatórios)</div>
+          <div class="settings-row-sub">Escolha uma paleta e salve. Ela será aplicada automaticamente nos gráficos.</div>
+          <div class="palette-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px">
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal1" value="#2a6049"><span>1</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal2" value="#1e5ba8"><span>2</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal3" value="#b45309"><span>3</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal4" value="#c0392b"><span>4</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal5" value="#7c3aed"><span>5</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal6" value="#2a7a4a"><span>6</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal7" value="#3d7a5e"><span>7</span></label>
+            <label style="display:flex;gap:8px;align-items:center"><input type="color" id="pal8" value="#64748b"><span>8</span></label>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn small" type="button" onclick="resetChartPalette()" title="Restaurar paleta padrão">Restaurar padrão</button>
+            <button class="btn primary small" type="button" onclick="saveChartPalette()" title="Salvar paleta">Salvar paleta</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-<div class="settings-section">
-        <div class="settings-card">
-          
-      </div>
-
-      <!-- Logout -->
-      <div class="settings-section">
-        <div class="settings-card">
-          <div class="settings-row">
-            <div class="settings-row-icon" style="background:var(--red-lt)">🚪</div>
-            <div class="settings-row-info">
-              <div class="settings-row-label">Sair</div>
-              <div class="settings-row-sub" id="settingsCurrentUser">Usuário atual</div>
-            </div>
-            <div class="settings-row-action">
-              <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="doLogout()">Sair</button>
-            </div>
-          </div>
+  <!-- Notifications -->
+  <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-icon" style="background:var(--green-lt)">📧</div>
+        <div class="settings-row-info" style="min-width:240px;flex:1">
+          <div class="settings-row-label">E-mail para notificações</div>
+          <div class="settings-row-sub">Usado para enviar resumo de programados executados (quando habilitado).</div>
+          <input id="notifyEmailInput" type="email" placeholder="ex: decio@empresa.com" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text2);margin-top:10px">
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Import / Backup -->
-      <div class="settings-section">
-        <div class="settings-card">
-          <div class="settings-row">
-            <div class="settings-row-icon" style="background:var(--accent-lt)">📥</div>
-            <div class="settings-row-info">
-              <div class="settings-row-label">Importar / Backup</div>
-              <div class="settings-row-sub">MoneyWiz, backup JSON, limpar dados</div>
-            </div>
-            <div class="settings-row-action">
-              <button class="btn btn-ghost btn-sm" onclick="navigate('import')">Abrir</button>
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- Logo (Admin) -->
+  <div class="settings-section" id="logoAdminSection">
+    <div class="settings-card">
+      <div class="settings-title">Identidade</div>
+      <div class="settings-row">
+        <div class="settings-row-icon" style="background:var(--amber-lt)">🖼️</div>
+        <div class="settings-row-info" style="min-width:240px;flex:1">
+          <div class="settings-row-label">Logotipo da aplicação (Admin)</div>
+          <div class="settings-row-sub">Faça upload (PNG/JPG/SVG). O logo é aplicado em todas as telas.</div>
 
-      <!-- Sobre -->
-      <div class="settings-section">
-        <div class="settings-card">
-          <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:16px 18px">
-            <div style="font-size:.75rem;color:var(--muted);line-height:1.8">
-              Desenvolvido com ❤️ usando <strong>Supabase</strong> + <strong>Claude AI</strong><br>
-              Todos os dados salvos em sua instância Supabase.<br>
-              Masterpin armazenado localmente no dispositivo.
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <input id="appLogoFile" type="file" accept="image/*" style="max-width:320px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="saveAppLogoFromSettings()">💾 Salvar</button>
+            </div>
+            <div style="font-size:.75rem;color:var(--muted)">
+              O logo é enviado para o Storage do Supabase e a URL é salva em <code>app_settings.app_logo_url</code>.
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- AUDIT PAGE (admin) -->
-    
+  <!-- About -->
+  <div class="settings-section">
+    <div class="settings-card">
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:16px 18px">
+        <div style="font-size:.75rem;color:var(--muted);line-height:1.8">
+          Desenvolvido com ❤️ usando <strong>Supabase</strong>.<br>
+          Todos os dados são salvos em sua instância Supabase.<br>
+          Masterpin armazenado localmente no dispositivo.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-<div class="settings-card" id="chartPaletteCard">
-  <div class="settings-title">Gráficos</div>
+<!-- AUDIT PAGE (admin) -->
   <div class="settings-row">
     <div class="settings-row-icon" style="background:var(--cyan-lt)">🎨</div>
     <div class="settings-row-info" style="min-width:240px;flex:1">
@@ -982,9 +1032,6 @@
     </div>
   </div>
 </div>
-
-<div class="settings-card" id="notifyCard">
-  <div class="settings-title">Notificações</div>
   <div class="settings-row">
     <div class="settings-row-icon" style="background:var(--green-lt)">📧</div>
     <div class="settings-row-info" style="min-width:240px;flex:1">
