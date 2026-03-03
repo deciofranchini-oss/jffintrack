@@ -1206,6 +1206,42 @@
       </div>
     </div>
 
+    <!-- AUDIT PAGE (admin) -->
+    <div class="page" id="page-audit">
+      <div class="card">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <h3 style="margin:0">🧾 Auditoria: Auto-registros</h3>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <select id="auditStatusFilter" class="input" style="max-width:180px" onchange="loadAuditLogs()">
+              <option value="">Todos</option>
+              <option value="confirmed">✅ Confirmadas</option>
+              <option value="pending">⏳ Pendentes</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadAuditLogs()">↻ Atualizar</button>
+          </div>
+        </div>
+        <div class="text-muted" style="margin-top:6px;font-size:.82rem">
+          Mostra execuções automáticas de transações programadas (registro diário e timers).
+        </div>
+        <div style="margin-top:12px;overflow:auto">
+          <table class="table tx-table" style="min-width:720px">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Status</th>
+                <th style="text-align:right">Valor</th>
+                <th>Transação</th>
+              </tr>
+            </thead>
+            <tbody id="auditBody">
+              <tr><td colspan="5" class="text-muted" style="text-align:center;padding:18px">Carregando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2206,38 +2242,4 @@
 <script src="js/audit.js"></script>
 </body>
 </html>
-<section class="page" id="page-audit">
-  <div class="card">
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <h3 style="margin:0">🧾 Auditoria: Auto-registros</h3>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <select id="auditStatusFilter" class="input" style="max-width:180px" onchange="loadAuditLogs()">
-          <option value="">Todos</option>
-          <option value="confirmed">✅ Confirmadas</option>
-          <option value="pending">⏳ Pendentes</option>
-        </select>
-        <button class="btn btn-ghost btn-sm" onclick="loadAuditLogs()">↻ Atualizar</button>
-      </div>
-    </div>
-    <div class="text-muted" style="margin-top:6px;font-size:.82rem">
-      Mostra execuções automáticas de transações programadas (registro diário e timers).
-    </div>
-    <div style="margin-top:12px;overflow:auto">
-      <table class="table tx-table" style="min-width:720px">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Descrição</th>
-            <th>Status</th>
-            <th style="text-align:right">Valor</th>
-            <th>Transação</th>
-          </tr>
-        </thead>
-        <tbody id="auditBody">
-          <tr><td colspan="5" class="text-muted" style="text-align:center;padding:18px">Carregando…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
 
