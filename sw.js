@@ -1,40 +1,3 @@
-// Runtime cache for images (including external logo)
-const RUNTIME_IMG_CACHE = 'fintrack-img-runtime-v1';
-
-self.addEventListener('message', (event) => {
-  const data = event.data || {};
-  if(data && data.type === 'INVALIDATE_LOGO'){
-        event.waitUntil((async ()=>{
-          try{
-            const cache = await caches.open(RUNTIME_IMG_CACHE);
-            const prev = data.prevUrl;
-            if(prev){
-              // delete both with and without search to be safe
-              await cache.delete(prev);
-              const u = new URL(prev, self.location.origin);
-              u.searchParams.delete('v');
-              await cache.delete(u.toString());
-            }
-            const nu = data.newUrl;
-            if(nu){
-              const req = new Request(nu, {mode:'no-cors'});
-              const resp = await fetch(req);
-              if(resp) await cache.put(req, resp);
-            }
-          }catch(e){}
-        })());
-      } else if(data && data.type === 'CACHE_URL' && data.url){
-    event.waitUntil((async ()=>{
-      try{
-        const cache = await caches.open(RUNTIME_IMG_CACHE);
-        const req = new Request(data.url, {mode:'no-cors'});
-        const resp = await fetch(req);
-        if(resp) await cache.put(req, resp);
-      }catch(e){}
-    })());
-  }
-});
-
 /* Family FinTrack Service Worker
    Purpose:
    - Enable notification display via reg.showNotification()
@@ -102,23 +65,4 @@ self.addEventListener('notificationclick', (event) => {
       }
     })()
   );
-});
-
-
-// Runtime image caching (cache-first, then revalidate)
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if(req.method !== 'GET') return;
-  const dest = req.destination;
-  const isImg = dest === 'image' || req.url.match(/\.(png|jpg|jpeg|webp|svg)(\?|#|$)/i);
-  if(!isImg) return;
-  event.respondWith((async ()=>{
-    const cache = await caches.open(RUNTIME_IMG_CACHE);
-    const cached = await cache.match(req, {ignoreSearch:false});
-    const fetchPromise = fetch(req).then(resp=>{
-      try{ cache.put(req, resp.clone()); }catch(e){}
-      return resp;
-    }).catch(()=>cached);
-    return cached || fetchPromise;
-  })());
 });
