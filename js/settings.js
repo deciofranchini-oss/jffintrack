@@ -824,7 +824,7 @@ async function uploadAppLogoToStorage(file){
 }
 
 async function saveAppLogoFromSettings(){
-  const input = document.getElementById('logoFileInput');
+  const input = document.getElementById('appLogoFile');
   if(!input || !input.files || !input.files[0]){ toast('Selecione um arquivo.','error'); return; }
   try{
     const url = await uploadAppLogoToStorage(input.files[0]);
