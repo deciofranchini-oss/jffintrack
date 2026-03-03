@@ -1350,6 +1350,3 @@ body.tx-compact #txCompactKnob::before{ transform:translateX(20px); }
 @media (max-width: 520px){
   .topbar-icon-btn{ font-size:22px !important; width:42px; height:42px; }
 }
-
-/* Topbar school link button */
-#topSchoolBtn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit}
