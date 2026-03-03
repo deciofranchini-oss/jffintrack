@@ -219,6 +219,13 @@ function updateUserUI() {
     if (sub) sub.textContent = 'Controle de acesso · Perfil: Admin';
   }
 
+
+  // Admin-only nav items
+  const auditNav = document.getElementById('auditNav');
+  const settingsNav = document.getElementById('settingsNav');
+  if (auditNav) auditNav.style.display = (currentUser.role === 'admin') ? '' : 'none';
+  if (settingsNav) settingsNav.style.display = (currentUser.role === 'admin') ? '' : 'none';
+
   // Apply permission restrictions
   applyPermissions();
 }
