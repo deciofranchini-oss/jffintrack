@@ -77,16 +77,51 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);height:
 .stat-value{font-family:var(--font-serif);font-size:1.6rem;font-weight:500;line-height:1;letter-spacing:-.02em;}
 .stat-sub{font-size:.75rem;color:var(--muted);margin-top:7px;display:flex;align-items:center;gap:4px;}
 
+
+/* DASHBOARD STAT CARDS (compact 2-per-row + larger numbers) */
+#page-dashboard .grid-4{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+#page-dashboard .stat-card{padding:14px;}
+#page-dashboard .stat-label{margin-bottom:6px;}
+#page-dashboard .stat-value{font-size:1.50rem;font-variant-numeric:tabular-nums;}
+#page-dashboard .stat-sub{margin-top:5px;}
+
+/* Dashboard value colors */
+#page-dashboard .stat-value.amount-pos,
+#page-dashboard .stat-value .amount-pos{ color: var(--green); }
+#page-dashboard .stat-value.amount-neg,
+#page-dashboard .stat-value .amount-neg{ color: var(--red); }
+
+
+
+/* Dashboard stat values smaller on mobile */
+@media (max-width:768px){
+  #page-dashboard .stat-value{font-size:1.35rem;}
+}
+/* Keep dashboard cards readable on very small screens */
+@media (max-width:420px){
+  #page-dashboard .grid-4{grid-template-columns:1fr;}
+  #page-dashboard .stat-value{font-size:1.25rem;}
+}
+
 /* ACCOUNT CARDS */
 .account-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;}
 /* Account Groups */
-.account-group-section{margin-bottom:28px;}
-.account-group-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);}
-.account-group-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:1rem;flex-shrink:0;}
-.account-group-title{font-weight:600;font-size:.95rem;color:var(--text);flex:1;}
-.account-group-sum{font-family:var(--font-serif);font-size:.9rem;font-weight:500;color:var(--accent);}
-.account-group-actions{display:none;gap:4px;}
+.account-group-section{margin-bottom:20px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);}
+.account-group-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);cursor:pointer;user-select:none;transition:background .15s;border-left:3px solid var(--grp-color,var(--accent));}
+.account-group-header--clickable:hover{background:var(--bg2);}
+.account-group-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;font-size:1.25rem;flex-shrink:0;}
+.account-group-title{font-weight:700;font-size:.95rem;color:var(--text);}
+.account-group-count{font-size:.72rem;font-weight:500;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1px 7px;}
+.account-group-sum{font-family:var(--font-serif);font-size:1rem;font-weight:600;}
+.account-group-actions{display:none;gap:4px;margin-left:auto;}
 .account-group-header:hover .account-group-actions{display:flex;}
+.account-group-chevron{font-size:.85rem;margin-left:4px;transition:transform .25s cubic-bezier(.4,0,.2,1);display:inline-block;opacity:.5;}
+.account-group-chevron.expanded{transform:rotate(0deg);}
+.account-group-chevron:not(.expanded){transform:rotate(-90deg);}
+.account-group-body{background:var(--bg);padding:14px 14px 6px;}
+.account-group-body.collapsed{display:none;}
+/* Category icon picker (mirrors account icon picker) */
+#categoryIconPicker .icon-grid{max-height:148px;overflow-y:auto;}
 .account-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
 .account-card-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;}
 .account-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-1px);}
@@ -1236,3 +1271,2220 @@ canvas { cursor: default; }
   font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;
 }
 .topbar-user-name { font-size:.78rem;font-weight:600;color:var(--text2); }
+
+/* ══════════════════════════════════════════════════════════════════
+   TRANSACTIONS PAGE — desktop layout
+══════════════════════════════════════════════════════════════════ */
+
+/* Page header: count + totals on left, actions on right */
+.tx-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.tx-page-title-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tx-page-count {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.tx-page-totals {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Filter bar: dense single row */
+.tx-filter-bar {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.tx-search {
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
+}
+.tx-filter-select {
+  font-size: .8rem;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  height: 32px;
+}
+.tx-view-toggle .view-btn {
+  padding: 4px 9px;
+  font-size: .82rem;
+}
+
+/* Table card: no extra card-header, table owns its space */
+.tx-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+.tx-table-card .table-wrap {
+  border-radius: var(--r) var(--r) 0 0;
+}
+
+/* Table column widths — desktop */
+.tx-table { font-size: .84rem; }
+.tx-th-date { width: 90px;  white-space: nowrap; }
+.tx-th-acct { width: 130px; }
+.tx-th-desc { min-width: 160px; }
+.tx-th-pay  { width: 150px; }
+.tx-th-cat  { width: 140px; }
+.tx-th-amt  { width: 110px; text-align: right; }
+.tx-th-act  { width: 90px;  text-align: center; }
+
+/* Amount column right-aligned */
+.tx-table tbody td:nth-child(6) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+/* Actions column center */
+.tx-table tbody td:nth-child(7) {
+  text-align: center;
+}
+
+/* Tighter row padding on desktop */
+@media (min-width: 641px) {
+  .tx-table tbody td { padding: 9px 12px; }
+  .tx-table thead th { padding: 8px 12px; }
+}
+
+/* Pagination */
+.tx-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE: Transações e Programados sem scroll horizontal
+   Altera somente em telas até 640px (não afeta desktop)
+────────────────────────────────────────────────────────────── */
+@media (max-width: 640px){
+
+  /* ========== TRANSAÇÕES (tabela -> card layout) ========== */
+  #page-transactions #txFlatCard .table-wrap{ overflow: visible; }
+  #page-transactions #txFlatCard table thead{ display:none; }
+
+  #page-transactions #txFlatCard table,
+  #page-transactions #txFlatCard tbody,
+  #page-transactions #txFlatCard tr,
+  #page-transactions #txFlatCard td{
+    display:block;
+    width:100%;
+  }
+
+  /* Cada linha vira um card */
+  #page-transactions #txBody tr{
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 12px;
+    margin: 10px 0;
+  }
+  #page-transactions #txBody td{ padding:0; border:0; }
+
+  /* Grid compacto por coluna (ordem real do HTML) */
+  /* 1 Data, 2 Conta, 3 Descrição, 4 Beneficiário, 5 Categoria, 6 Valor, 7 Ações */
+  #page-transactions #txBody tr{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+    align-items:start;
+  }
+
+  /* Descrição (título) */
+  #page-transactions #txBody tr td:nth-child(3){
+    grid-column: 1 / 2;
+    font-weight: 650;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Valor sempre visível */
+  #page-transactions #txBody tr td:nth-child(6){
+    grid-column: 2 / 3;
+    justify-self:end;
+    font-weight: 750;
+    white-space:nowrap;
+  }
+
+  /* Data e Conta */
+  #page-transactions #txBody tr td:nth-child(1){
+    grid-column: 1 / 2;
+    color: var(--muted);
+    font-size:.80rem;
+    white-space:nowrap;
+  }
+  #page-transactions #txBody tr td:nth-child(2){
+    grid-column: 2 / 3;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+  /* Beneficiário e Categoria */
+  #page-transactions #txBody tr td:nth-child(4){
+    grid-column: 1 / 2;
+    color: var(--muted);
+    font-size:.80rem;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #page-transactions #txBody tr td:nth-child(5){
+    grid-column: 2 / 3;
+    justify-self:end;
+    max-width: 55vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Ações embaixo (sem estourar largura) */
+  #page-transactions #txBody tr td:nth-child(7){
+    grid-column: 1 / -1;
+    padding-top: 8px;
+  }
+  #page-transactions #txBody tr td:nth-child(7) > div{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+
+  /* ========== PROGRAMADOS: Próximos 30 dias (tabela -> cards) ========== */
+  #page-scheduled #scheduledUpcomingCard .table-wrap{ overflow: visible; }
+  #page-scheduled #scheduledUpcomingCard table thead{ display:none; }
+
+  #page-scheduled #scheduledUpcomingCard table,
+  #page-scheduled #scheduledUpcomingCard tbody,
+  #page-scheduled #scheduledUpcomingCard tr,
+  #page-scheduled #scheduledUpcomingCard td{
+    display:block;
+    width:100%;
+  }
+
+  #page-scheduled #scheduledUpcomingBody tr{
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 12px;
+    margin: 10px 0;
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+    align-items:start;
+  }
+  #page-scheduled #scheduledUpcomingBody td{ padding:0; border:0; }
+
+  /* 1 Data, 2 Descrição, 3 Conta, 4 Valor, 5 Ação */
+  #page-scheduled #scheduledUpcomingBody tr td:nth-child(2){
+    grid-column: 1 / 2;
+    font-weight:650;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #page-scheduled #scheduledUpcomingBody tr td:nth-child(4){
+    grid-column: 2 / 3;
+    justify-self:end;
+    font-weight:750;
+    white-space:nowrap;
+  }
+  #page-scheduled #scheduledUpcomingBody tr td:nth-child(1){
+    grid-column: 1 / 2;
+    color: var(--muted);
+    font-size:.80rem;
+    white-space:nowrap;
+  }
+  #page-scheduled #scheduledUpcomingBody tr td:nth-child(3){
+    grid-column: 2 / 3;
+    justify-self:end;
+    white-space:nowrap;
+  }
+  #page-scheduled #scheduledUpcomingBody tr td:nth-child(5){
+    grid-column: 1 / -1;
+    padding-top: 8px;
+    display:flex;
+    justify-content:flex-end;
+  }
+
+
+  /* ========== PROGRAMADOS: cards principais (render em #scheduledList) ========== */
+  .sc-card-header{ flex-wrap:wrap; align-items:flex-start; }
+  .sc-card-info{ flex: 1 1 100%; min-width:0; }
+  .sc-card-title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sc-card-sub{ flex-wrap:wrap; gap:6px; }
+  .sc-card-amount{ margin-left:auto; white-space:nowrap; }
+  .sc-card-actions{
+    width:100%;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+}
+
+/* =====================================================
+   FINTRACK MOBILE TRANSACTION UI IMPROVEMENTS
+   Melhor leitura no telefone
+   ===================================================== */
+
+@media (max-width:640px){
+
+  /* estrutura do card */
+  #page-transactions #txBody tr{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:8px 10px;
+    align-items:start;
+  }
+
+  /* DATA */
+  #page-transactions #txBody tr td:nth-child(1){
+    grid-column:1 / 2;
+    font-size:.80rem;
+    color:var(--muted);
+  }
+
+  /* CONTA */
+  #page-transactions #txBody tr td:nth-child(2){
+    grid-column:2 / 3;
+    justify-self:end;
+    font-size:.80rem;
+  }
+
+  /* DESCRIÇÃO */
+  #page-transactions #txBody tr td:nth-child(3){
+    grid-column:1 / 2;
+    font-size:1rem;
+    font-weight:600;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* BENEFICIÁRIO (maior) */
+  #page-transactions #txBody tr td:nth-child(4){
+    grid-column:1 / 2;
+    font-size:1.1rem;
+    font-weight:700;
+  }
+
+  /* CATEGORIA abaixo do beneficiário */
+  #page-transactions #txBody tr td:nth-child(5){
+    grid-column:1 / 2;
+    font-size:.85rem;
+    color:var(--muted);
+  }
+
+  /* VALOR bem maior para facilitar leitura */
+  #page-transactions #txBody tr td:nth-child(6){
+    grid-column:2 / 3;
+    justify-self:end;
+    font-size:1.45rem;
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  /* AÇÕES */
+  #page-transactions #txBody tr td:nth-child(7){
+    grid-column:1 / -1;
+    margin-top:6px;
+  }
+
+  #page-transactions #txBody tr td:nth-child(7) > div{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+}
+
+/* =====================================================
+   MOBILE: aplicar layout de cards também no modo AGRUPADO
+   (Transações agrupadas por conta)
+   ===================================================== */
+@media (max-width: 640px){
+
+  /* Pega QUALQUER tabela dentro da página de transações */
+  #page-transactions .table-wrap{ overflow: visible; }
+  #page-transactions table thead{ display:none; }
+
+  #page-transactions table,
+  #page-transactions tbody,
+  #page-transactions tr,
+  #page-transactions td{
+    display:block;
+    width:100%;
+  }
+
+  /* Linha padrão vira card */
+  #page-transactions tbody tr{
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 12px;
+    margin: 10px 0;
+  }
+  #page-transactions tbody td{ padding:0; border:0; }
+
+  /* EXCEÇÃO: linhas de "título do grupo" (nome da conta)
+     Normalmente são linhas com 1 célula ocupando tudo (colspan)
+     ou com classe/estilo diferenciado. Este seletor cobre o caso
+     mais comum: apenas 1 <td> na linha.
+  */
+  #page-transactions tbody tr:has(> td:only-child){
+    border: 0;
+    background: transparent;
+    padding: 6px 4px;
+    margin: 14px 0 6px;
+  }
+  #page-transactions tbody tr:has(> td:only-child) td{
+    font-weight: 750;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  /* Grid para linhas "normais" (as que têm colunas) */
+  #page-transactions tbody tr:not(:has(> td:only-child)){
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 10px;
+    align-items:start;
+  }
+
+  /* Mapeamento por ordem de colunas (igual ao modo lista):
+     1 Data, 2 Conta, 3 Descrição, 4 Beneficiário, 5 Categoria, 6 Valor, 7 Ações
+     Se no agrupado a coluna "Conta" não existir, não tem problema:
+     o seletor só não encontra e o resto continua funcionando.
+  */
+
+  /* Descrição */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(3){
+    grid-column: 1 / 2;
+    font-size: 1rem;
+    font-weight: 600;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Beneficiário maior */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(4){
+    grid-column: 1 / 2;
+    font-size: 1.1rem;
+    font-weight: 750;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Categoria abaixo do beneficiário (sempre à esquerda) */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(5){
+    grid-column: 1 / 2;
+    font-size: .85rem;
+    color: var(--muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Valor bem maior */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(6){
+    grid-column: 2 / 3;
+    justify-self: end;
+    font-size: 1.55rem;
+    font-weight: 850;
+    white-space:nowrap;
+  }
+
+  /* Data */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(1){
+    grid-column: 1 / 2;
+    font-size: .80rem;
+    color: var(--muted);
+    white-space:nowrap;
+  }
+
+  /* Conta (quando existir no modo lista) */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(2){
+    grid-column: 2 / 3;
+    justify-self: end;
+    font-size: .80rem;
+    white-space:nowrap;
+  }
+
+  /* Ações embaixo */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(7){
+    grid-column: 1 / -1;
+    margin-top: 6px;
+  }
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(7) > div{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+}
+
+/* =====================================================
+   MOBILE: valores maiores e sempre alinhados à direita
+   (lista normal + agrupado por conta)
+   ===================================================== */
+
+@media (max-width:640px){
+
+  /* valor da transação */
+  #page-transactions td:nth-child(6){
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+  /* reforço para qualquer classe usada para valores */
+  #page-transactions .amount,
+  #page-transactions .tx-amount,
+  #page-transactions .value{
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+}
+
+/* =====================================================
+   MOBILE: valores maiores e sempre alinhados à direita
+   (lista normal + agrupado por conta)
+   ===================================================== */
+
+@media (max-width:640px){
+
+  /* valor da transação */
+  #page-transactions td:nth-child(6){
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+  /* reforço para qualquer classe usada para valores */
+  #page-transactions .amount,
+  #page-transactions .tx-amount,
+  #page-transactions .value{
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+}
+
+/* =====================================================
+   MOBILE: aplicar layout de cards também no modo AGRUPADO
+   (Transações agrupadas por conta)
+   ===================================================== */
+@media (max-width: 640px){
+
+  /* Pega QUALQUER tabela dentro da página de transações */
+  #page-transactions .table-wrap{ overflow: visible; }
+  #page-transactions table thead{ display:none; }
+
+  #page-transactions table,
+  #page-transactions tbody,
+  #page-transactions tr,
+  #page-transactions td{
+    display:block;
+    width:100%;
+  }
+
+  /* Linha padrão vira card */
+  #page-transactions tbody tr{
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 12px;
+    margin: 10px 0;
+  }
+  #page-transactions tbody td{ padding:0; border:0; }
+
+  /* EXCEÇÃO: linhas de "título do grupo" (nome da conta)
+     Normalmente são linhas com 1 célula ocupando tudo (colspan)
+     ou com classe/estilo diferenciado. Este seletor cobre o caso
+     mais comum: apenas 1 <td> na linha.
+  */
+  #page-transactions tbody tr:has(> td:only-child){
+    border: 0;
+    background: transparent;
+    padding: 6px 4px;
+    margin: 14px 0 6px;
+  }
+  #page-transactions tbody tr:has(> td:only-child) td{
+    font-weight: 750;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  /* Grid para linhas "normais" (as que têm colunas) */
+  #page-transactions tbody tr:not(:has(> td:only-child)){
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 10px;
+    align-items:start;
+  }
+
+  /* Mapeamento por ordem de colunas (igual ao modo lista):
+     1 Data, 2 Conta, 3 Descrição, 4 Beneficiário, 5 Categoria, 6 Valor, 7 Ações
+     Se no agrupado a coluna "Conta" não existir, não tem problema:
+     o seletor só não encontra e o resto continua funcionando.
+  */
+
+  /* Descrição */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(3){
+    grid-column: 1 / 2;
+    font-size: 1rem;
+    font-weight: 600;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Beneficiário maior */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(4){
+    grid-column: 1 / 2;
+    font-size: 1.1rem;
+    font-weight: 750;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Categoria abaixo do beneficiário (sempre à esquerda) */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(5){
+    grid-column: 1 / 2;
+    font-size: .85rem;
+    color: var(--muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Valor bem maior */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(6){
+    grid-column: 2 / 3;
+    justify-self: end;
+    font-size: 1.55rem;
+    font-weight: 850;
+    white-space:nowrap;
+  }
+
+  /* Data */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(1){
+    grid-column: 1 / 2;
+    font-size: .80rem;
+    color: var(--muted);
+    white-space:nowrap;
+  }
+
+  /* Conta (quando existir no modo lista) */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(2){
+    grid-column: 2 / 3;
+    justify-self: end;
+    font-size: .80rem;
+    white-space:nowrap;
+  }
+
+  /* Ações embaixo */
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(7){
+    grid-column: 1 / -1;
+    margin-top: 6px;
+  }
+  #page-transactions tbody tr:not(:has(> td:only-child)) td:nth-child(7) > div{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+}
+
+/* =====================================================
+   MOBILE: valores maiores e sempre alinhados à direita
+   (lista normal + agrupado por conta)
+   ===================================================== */
+
+@media (max-width:640px){
+
+  /* valor da transação */
+  #page-transactions td:nth-child(6){
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+  /* reforço para qualquer classe usada para valores */
+  #page-transactions .amount,
+  #page-transactions .tx-amount,
+  #page-transactions .value{
+    font-size:1.65rem;
+    font-weight:900;
+    text-align:right;
+    justify-self:end;
+    white-space:nowrap;
+  }
+
+}
+
+/* =====================================================
+   MOBILE / INPUT / SCROLL IMPROVEMENTS
+   ===================================================== */
+
+/* impedir zoom automático do iOS em inputs */
+input,
+select,
+textarea{
+  font-size:16px;
+}
+
+/* melhorar comportamento de scroll no mobile */
+html, body{
+  overscroll-behavior: none;
+}
+
+/* =====================================================
+   BUDGETS v2
+   ===================================================== */
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.budget-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 16px 14px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .18s, border-color .18s;
+}
+
+.budget-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  border-color: var(--border2);
+}
+
+.budget-card.budget-over,
+.budget-card.budget-card--over {
+  border-color: var(--red);
+  background: var(--red-lt);
+}
+
+.budget-card.budget-near,
+.budget-card.budget-card--near {
+  border-color: var(--amber);
+  background: var(--amber-lt, #fef3e2);
+}
+
+.budget-card-stripe {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--r) 0 0 var(--r);
+}
+
+.budget-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.budget-amounts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 0 10px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.budget-lbl {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.budget-val {
+  font-size: .9rem;
+  font-weight: 700;
+  font-family: var(--font-serif);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* History table */
+#budgetHistContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+#budgetHistContainer th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg2);
+}
+
+#budgetHistContainer td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+#budgetHistContainer tr:last-child td {
+  border-bottom: none;
+}
+
+#budgetHistContainer tr:hover td {
+  background: var(--bg2);
+}
+
+@media (max-width: 600px) {
+  .budget-grid {
+    grid-template-columns: 1fr;
+  }
+  .budget-amounts {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* ── Budgets v2 ──────────────────────────────────────────────────────────── */
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.budget-loading {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Card */
+.budget-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 16px 14px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  transition: box-shadow .15s;
+}
+.budget-card:hover { box-shadow: var(--shadow); }
+
+.budget-card--over {
+  border-color: rgba(220,38,38,.3);
+  background: linear-gradient(135deg, var(--surface) 85%, rgba(220,38,38,.04));
+}
+.budget-card--near {
+  border-color: rgba(245,158,11,.3);
+  background: linear-gradient(135deg, var(--surface) 85%, rgba(245,158,11,.04));
+}
+
+/* Colored left stripe */
+.budget-card-stripe {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--r) 0 0 var(--r);
+}
+
+/* Header: icon + name + actions */
+.budget-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.budget-cat-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+.budget-cat-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Amounts row */
+.budget-amounts {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.budget-amt-lbl {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.budget-amt-val {
+  font-size: .95rem;
+  font-weight: 700;
+  font-family: var(--font-serif);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Badge pills */
+.budget-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Children subcategory tags */
+.budget-child-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.budget-child-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 500;
+}
+
+/* History table tweaks */
+#budgetHistContainer .table-wrap { border-radius: var(--r-sm); overflow: hidden; }
+#budgetHistContainer table { width: 100%; border-collapse: collapse; }
+#budgetHistContainer th { background: var(--bg2); font-size: .75rem; padding: 8px 10px; text-align: left; color: var(--muted); font-weight: 600; }
+#budgetHistContainer td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: .82rem; vertical-align: middle; }
+#budgetHistContainer tfoot td { background: var(--bg2); }
+
+@media (max-width: 600px) {
+  .budget-grid { grid-template-columns: 1fr; }
+}
+
+.budget-child-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+}
+
+.budget-child-tag {
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.budget-badge {
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.budget-cat-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.budget-cat-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg2);
+  border-radius: 10px;
+}
+
+.budget-amt-lbl {
+  font-size: .67rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.budget-amt-val {
+  font-size: .9rem;
+  font-weight: 700;
+  font-family: var(--font-serif);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ── Category tx-count badge ─────────────────────────────────────── */
+.cat-tx-count {
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--blue-lt, #e8f0fb);
+  color: var(--blue, #1e5ba8);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE UX v2 — Programados, Categorias, geral
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Scheduled: summary bar ────────────────────────────────────────────── */
+.sc-summary-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  margin-bottom: 14px;
+}
+.sc-summary-bar::-webkit-scrollbar { display: none; }
+.sc-summary-bar .badge {
+  font-size: .8rem;
+  padding: 5px 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Scheduled: filter bar ─────────────────────────────────────────────── */
+.sc-filter-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sc-filter-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.sc-filter-chips::-webkit-scrollbar { display: none; }
+.sc-chip {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-chip:hover  { border-color: var(--accent); color: var(--accent); }
+.sc-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.sc-type-select {
+  font-size: .82rem;
+  padding: 7px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ── Scheduled: upcoming items ─────────────────────────────────────────── */
+.sc-upcoming-list {
+  padding: 8px 0;
+}
+.sc-upcoming-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+.sc-upcoming-item:last-child { border-bottom: none; }
+.sc-upcoming-item:hover { background: var(--surface2); }
+.sc-upcoming-overdue { background: var(--red-lt) !important; }
+.sc-upcoming-today   { background: var(--amber-lt) !important; }
+.sc-upcoming-left  { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sc-upcoming-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.sc-upcoming-date  { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.sc-upcoming-desc  { font-size: .88rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-upcoming-acct  { font-size: .75rem; color: var(--muted2); }
+.sc-upcoming-amt   { font-family: var(--font-serif); font-weight: 700; font-size: 1rem; }
+.sc-upcoming-btn   { font-size: .75rem; padding: 5px 10px; white-space: nowrap; }
+
+/* ── Scheduled: card redesign ──────────────────────────────────────────── */
+.sc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow .15s, transform .1s;
+}
+.sc-card:active { transform: scale(.995); }
+.sc-card-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.sc-card-transfer-tag {
+  font-size: .68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Card footer — action bar */
+.sc-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.sc-footer-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.sc-action-btn {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: none;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-action-register {
+  background: var(--accent);
+  color: #fff;
+}
+.sc-action-register:hover { filter: brightness(1.08); }
+.sc-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-action-icon:hover   { background: var(--bg2); border-color: var(--accent); }
+.sc-action-delete:hover { background: var(--red-lt); border-color: var(--red); }
+
+/* Card body info row */
+.sc-body-info {
+  padding: 10px 16px 12px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  font-size: .75rem;
+  color: var(--muted);
+}
+
+/* ── Category items: bigger touch targets on mobile ────────────────────── */
+.cat-item-row {
+  min-height: 48px;
+}
+
+/* ── DB Backup rows in settings ─────────────────────────────────────────── */
+.db-backup-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.db-backup-row:last-child { border-bottom: none; }
+.db-backup-row:hover { background: var(--surface2); }
+.db-backup-row-info { flex: 1; min-width: 0; }
+.db-backup-row-label {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-backup-row-meta {
+  font-size: .73rem;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+.db-backup-row-counts {
+  font-size: .72rem;
+  color: var(--muted2);
+  margin-top: 3px;
+}
+.db-backup-row-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ── Global mobile tweaks ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Scheduled: stack filter bar */
+  .sc-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .sc-filter-chips {
+    overflow-x: auto;
+  }
+  .sc-type-select {
+    width: 100%;
+    border-radius: var(--r-sm);
+  }
+
+  /* Scheduled: upcoming items tighter */
+  .sc-upcoming-item { padding: 10px 14px; }
+
+  /* Scheduled card: footer full width register btn */
+  .sc-card-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sc-action-btn {
+    flex: 1;
+    text-align: center;
+  }
+  .sc-footer-actions { margin-left: auto; }
+
+  /* Category rows: larger touch targets */
+  .cat-item-row { min-height: 52px; padding: 11px 14px; }
+  .cat-inline-actions {
+    opacity: 1 !important;
+  }
+
+  /* DB Backup rows: stack on mobile */
+  .db-backup-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .db-backup-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Settings rows: better spacing */
+  .settings-row { min-height: 56px; padding: 12px 16px; }
+  .settings-row-action { flex-shrink: 0; }
+
+  /* Modals: full-screen on small phones */
+  .modal { border-radius: var(--r) var(--r) 0 0; }
+
+  /* Tables: hide more columns on narrow screens */
+  .sc-upcoming-item .sc-upcoming-acct { display: none; }
+}
+
+@media (max-width: 480px) {
+  /* Scheduled summary bar: tiny chips */
+  .sc-summary-bar .badge { font-size: .72rem; padding: 4px 10px; }
+
+  /* Upcoming: further simplify */
+  .sc-upcoming-right { flex-direction: row; align-items: center; gap: 8px; }
+  .sc-upcoming-btn   { font-size: .72rem; padding: 5px 8px; }
+
+  /* Cards: tighter */
+  .sc-card-header { padding: 12px 14px; gap: 10px; }
+  .sc-card-type   { width: 32px; height: 32px; font-size: .9rem; }
+  .sc-card-amount { font-size: .95rem; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RECEIPT AI — Botão, painel de resultado, spinner, modal
+══════════════════════════════════════════════════════════════════ */
+
+/* Botão "Ler com IA" */
+#receiptAiReadBtn {
+  background: linear-gradient(135deg, #6d28d9, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm, 8px);
+  padding: 10px 16px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-serif);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  transition: opacity .15s, transform .1s;
+}
+#receiptAiReadBtn:hover  { opacity: .9; }
+#receiptAiReadBtn:active { transform: scale(.99); }
+#receiptAiReadBtn:disabled { opacity: .6; cursor: wait; }
+
+/* Spinner animado */
+.ai-spin { display: inline-block; animation: ai-rotate .8s linear infinite; }
+@keyframes ai-rotate { to { transform: rotate(360deg); } }
+
+/* Painel de resultado IA */
+#receiptAiResultPanel {
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
+  border-radius: var(--r-sm, 8px);
+  overflow: hidden;
+  font-size: .82rem;
+}
+.ai-res-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #ede9fe;
+  font-weight: 600;
+  font-size: .8rem;
+  color: #4c1d95;
+}
+.ai-res-conf { font-size: .78rem; font-weight: 700; }
+.ai-res-body { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+.ai-res-row  { display: flex; align-items: baseline; gap: 6px; }
+.ai-res-lbl  { color: var(--muted); font-size: .75rem; min-width: 110px; flex-shrink: 0; }
+.ai-res-val  { color: var(--fg, #111); font-weight: 500; word-break: break-word; }
+.ai-res-hint {
+  margin: 0;
+  padding: 6px 12px 8px;
+  font-size: .73rem;
+  color: #7c3aed;
+  border-top: 1px solid #ddd6fe;
+}
+
+/* Input da chave API no modal */
+#anthropicApiKeyInput {
+  font-family: monospace;
+  font-size: .82rem;
+  letter-spacing: .02em;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   AUDIT PAGE — counters, badges, search
+════════════════════════════════════════════════════════════════════════ */
+.audit-counters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.audit-counter {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  border-top: 3px solid var(--border);
+  transition: box-shadow .15s;
+}
+.audit-counter:hover { box-shadow: var(--shadow); }
+.audit-counter-total  { border-top-color: var(--accent); }
+.audit-counter-ok     { border-top-color: var(--green); }
+.audit-counter-pending{ border-top-color: var(--amber); }
+.audit-counter-error  { border-top-color: var(--red); }
+.audit-counter-value  { font-family: var(--font-serif); font-size: 1.7rem; font-weight: 600; line-height: 1; letter-spacing: -.02em; color: var(--text); }
+.audit-counter-total  .audit-counter-value { color: var(--accent); }
+.audit-counter-ok     .audit-counter-value { color: var(--green); }
+.audit-counter-pending .audit-counter-value { color: var(--amber); }
+.audit-counter-error  .audit-counter-value { color: var(--red); }
+.audit-counter-label  { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; margin-top: 6px; }
+
+.audit-status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 100px;
+  font-size: .72rem; font-weight: 600; white-space: nowrap;
+}
+.audit-ok      { background: var(--green-lt); color: var(--green); border: 1px solid rgba(42,122,74,.2); }
+.audit-pending { background: var(--amber-lt); color: var(--amber); border: 1px solid rgba(180,83,9,.2); }
+.audit-error   { background: var(--red-lt);   color: var(--red);   border: 1px solid rgba(192,57,43,.2); }
+
+@media (max-width: 640px) {
+  .audit-counters { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CATEGORIES PAGE — summary bar, col headers, add button
+════════════════════════════════════════════════════════════════════════ */
+/* ── Category summary: compact inline chips ────────────────────── */
+.cat-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.cat-summary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: .78rem;
+  font-weight: 500;
+  color: var(--text2);
+  line-height: 1;
+}
+.cat-summary-sep { display: none; }
+.cat-summary-icon { font-size: .9rem; line-height: 1; }
+.cat-summary-label {
+  font-size: .78rem; font-weight: 500;
+  color: var(--text2); letter-spacing: 0;
+  text-transform: none;
+}
+.cat-summary-count {
+  font-size: .78rem; font-weight: 700;
+  margin-left: 2px;
+}
+.cat-summary-expense {
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+.cat-summary-expense .cat-summary-count { color: var(--red); }
+.cat-summary-income {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.cat-summary-income .cat-summary-count { color: var(--green); }
+
+/* ── Category column headers ───────────────────────────────────── */
+.cat-col-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.cat-col-expense { background: #fff5f5; border-bottom-color: #fecaca; }
+.cat-col-income  { background: #f0fdf4; border-bottom-color: #bbf7d0; }
+.cat-col-icon    { font-size: 1rem; }
+.cat-col-title   { font-weight: 700; font-size: .85rem; color: var(--text); }
+
+.cat-add-root {
+  text-align: center;
+  padding: 10px;
+  font-size: .78rem;
+  color: var(--muted);
+  border-top: 1px dashed var(--border);
+  cursor: pointer;
+  transition: all .15s;
+}
+.cat-add-root:hover { color: var(--accent); background: var(--accent-lt); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PAYEES — row avatar
+════════════════════════════════════════════════════════════════════════ */
+.payee-row-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SETTINGS — group labels
+════════════════════════════════════════════════════════════════════════ */
+.settings-group-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-left: 6px;
+}
+
+/* ══ User list rows (clickable) ══════════════════════════════════════════ */
+.user-list-row { transition: background .12s; }
+.user-list-row:hover { background: var(--bg2); }
+
+/* ══ Topbar avatar circle (before logout) ═══════════════════════════════ */
+#topbarAvatarCircle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: opacity .15s;
+}
+#topbarAvatarCircle:hover { opacity: .8; }
+
+/* ══ Settings user avatar ════════════════════════════════════════════════ */
+#settingsUserAvatarWrap {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  overflow: hidden;
+  padding: 0 !important;
+}
+#settingsUserAvatarWrap img,
+#settingsUserAvatarWrap div {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   USER MENU DROPDOWN & PROFILE AVATAR
+══════════════════════════════════════════════════════════════════ */
+
+/* Topbar user avatar button */
+.topbar-user {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.topbar-user:hover { opacity: .8; border-color: var(--accent); }
+
+/* Dropdown menu item */
+.user-menu-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 12px;
+  background: none; border: none; cursor: pointer;
+  font-size: .85rem; font-weight: 500; color: var(--text);
+  border-radius: 8px; text-align: left; transition: background .12s;
+}
+.user-menu-item:hover { background: var(--bg2); }
+.user-menu-item span:first-child { font-size: 1rem; flex-shrink: 0; }
+
+/* Settings avatar wrap */
+#settingsUserAvatarWrap img,
+#settingsUserAvatarWrap > div {
+  width: 100%; height: 100%;
+  border-radius: 50%; object-fit: cover;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DELETE ACCOUNT MODAL — option cards
+══════════════════════════════════════════════════════════════════ */
+.del-acc-option {
+  display: block;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: var(--surface);
+}
+.del-acc-option:hover { border-color: var(--accent); background: var(--accent-lt); }
+.del-acc-option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-lt);
+  box-shadow: 0 0 0 2px rgba(42,96,73,.12);
+}
+.del-acc-option-danger:has(input:checked) {
+  border-color: var(--red);
+  background: #fef2f2;
+  box-shadow: 0 0 0 2px rgba(192,57,43,.10);
+}
+.del-acc-option input[type="radio"] { display: none; }
+.del-acc-option-body {
+  display: flex; align-items: center; gap: 12px; pointer-events: none;
+}
+.del-acc-option-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; flex-shrink: 0;
+}
+.del-acc-option-title { font-size: .86rem; font-weight: 700; color: var(--text); }
+.del-acc-option-sub   { font-size: .75rem; color: var(--muted); margin-top: 1px; }
+.btn-danger {
+  background: var(--red); color: #fff; border: none;
+  opacity: 1; transition: opacity .15s;
+}
+.btn-danger:disabled { opacity: .4; cursor: not-allowed; }
+.btn-danger:not(:disabled):hover { opacity: .88; }
+
+/* ══════════════════════════════════════════════════════════════════
+   MULTI-FAMILY — family members panel
+══════════════════════════════════════════════════════════════════ */
+.fm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.fm-row:last-child { border-bottom: none; }
+.fm-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FAMILY SWITCHER PICKER
+══════════════════════════════════════════════════════════════════ */
+.fam-switcher-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  max-width: 200px;
+  min-width: 0;
+  color: var(--text);
+}
+.fam-switcher-btn:hover,
+.fam-switcher-btn.open {
+  border-color: var(--accent);
+  background: var(--accent-lt);
+  box-shadow: 0 0 0 3px rgba(42,96,73,.10);
+}
+.fam-switcher-icon {
+  font-size: .95rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.fam-switcher-name {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 110px;
+}
+.fam-switcher-role {
+  font-size: .66rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+.fam-switcher-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform .2s;
+}
+.fam-switcher-btn.open .fam-switcher-chevron { transform: rotate(180deg); }
+
+/* Dropdown */
+.fam-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 260px;
+  max-width: 320px;
+  background: var(--surface);
+  border: 1.5px solid var(--border2,var(--border));
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.20), 0 2px 8px rgba(0,0,0,.10);
+  z-index: 9998;
+  overflow: hidden;
+  animation: famPickerIn .15s ease;
+}
+@keyframes famPickerIn {
+  from { opacity:0; transform:translateY(-6px) scale(.97); }
+  to   { opacity:1; transform:translateY(0)    scale(1); }
+}
+.fam-picker-header {
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.fam-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background .12s;
+  border-bottom: 1px solid var(--border);
+}
+.fam-picker-item:last-child { border-bottom: none; }
+.fam-picker-item:hover { background: var(--bg2); }
+.fam-picker-item.active {
+  background: var(--accent-lt);
+}
+.fam-picker-item.active .fam-picker-item-name {
+  color: var(--accent);
+}
+.fam-picker-item-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  transition: background .12s;
+}
+.fam-picker-item.active .fam-picker-item-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.fam-picker-item-body { flex: 1; min-width: 0; }
+.fam-picker-item-name {
+  font-size: .84rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fam-picker-item-meta {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.fam-picker-item-check {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: 1rem;
+  opacity: 0;
+}
+.fam-picker-item.active .fam-picker-item-check { opacity: 1; }
+
+/* Role badge colors */
+.role-badge-owner  { background:#fef3c7; color:#92400e; }
+.role-badge-admin  { background:#fef3c7; color:#b45309; }
+.role-badge-user   { background:var(--accent-lt); color:var(--accent); }
+.role-badge-viewer { background:var(--bg2); color:var(--muted); }
+
+/* Responsive: collapse name on small screens */
+@media(max-width:600px){
+  .fam-switcher-name { max-width:70px; }
+  .fam-picker-dropdown { min-width:220px; left:auto; right:0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   USER MENU — family switcher items
+══════════════════════════════════════════════════════════════════ */
+.um-family-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background .12s;
+  margin-bottom: 2px;
+}
+.um-family-item:hover { background: var(--bg2); }
+.um-family-item--active { background: var(--accent-lt); }
+.um-family-item--active:hover { background: var(--accent-lt); }
+
+.um-family-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.um-family-item--active .um-family-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(42,96,73,.18);
+}
+.um-family-body { flex: 1; min-width: 0; }
+.um-family-name {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.um-family-item--active .um-family-name { color: var(--accent); }
+.um-family-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .66rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   IMPORT AI — badge de resultado de análise inteligente
+══════════════════════════════════════════════════════════════════ */
+.import-ai-badge {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: .82rem;
+  border: 1.5px solid var(--border);
+}
+.import-ai-badge--ok {
+  background: linear-gradient(135deg, var(--accent-lt), #f0faf5);
+  border-color: var(--accent);
+}
+.import-ai-badge--warn {
+  background: linear-gradient(135deg, #fff8e1, #fffde7);
+  border-color: var(--amber, #f59e0b);
+}
+.import-ai-badge--loading {
+  background: var(--bg2);
+  border-color: var(--border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.import-ai-badge-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.import-ai-badge-body { flex: 1; min-width: 0; }
+.import-ai-badge-title {
+  font-weight: 700;
+  font-size: .85rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.import-ai-conf {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0,0,0,.06);
+}
+.import-ai-badge-sub {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.import-ai-badge-status {
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 4px;
+}
+.import-ai-warns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.import-ai-warns span {
+  font-size: .7rem;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.import-ai-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: .8rem;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: .6;
+}
+.import-ai-dismiss:hover { opacity: 1; }
+
+/* Source chips — scroll quando muitos */
+.source-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   NORMALIZAR NOMES — modal de preview Title Case
+══════════════════════════════════════════════════════════════════ */
+.norm-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-lt);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: .83rem;
+  margin-bottom: 14px;
+}
+.norm-table-head {
+  display: grid;
+  grid-template-columns: 1fr 28px 1fr;
+  gap: 4px;
+  padding: 0 12px 5px;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+}
+.norm-list {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 4px;
+}
+.norm-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: .84rem;
+  color: var(--muted);
+}
+.norm-row {
+  display: grid;
+  grid-template-columns: 1fr 28px 1fr;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: .81rem;
+}
+.norm-row:last-child { border-bottom: none; }
+.norm-row:nth-child(even) { background: var(--bg2); }
+.norm-row-old {
+  color: var(--red, #dc2626);
+  text-decoration: line-through;
+  opacity: .65;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.norm-row-arrow {
+  color: var(--muted);
+  text-align: center;
+  font-size: .85rem;
+  flex-shrink: 0;
+}
+.norm-row-new {
+  color: var(--green, #16a34a);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FAMILY MANAGEMENT — invite row + wipe button
+══════════════════════════════════════════════════════════════════ */
+.fm-invite-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 0 4px;
+  border-top: 1px dashed var(--border);
+  margin-top: 8px;
+}
+.fm-invite-row input[type="email"] {
+  min-width: 0;
+}
+
+/* ── myFamilyMgmtModal member list scrollbar ── */
+#mfmMembersList::-webkit-scrollbar { width: 4px; }
+#mfmMembersList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ══ myProfileModal — mobile optimisation ════════════════════════════════════
+   Em mobile o modal é um bottom-sheet. Garantir que o conteúdo caiba
+   sem rolar excessivamente em telas com menos de 480px de altura.
+══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  #myProfileModal .modal {
+    max-height: 88vh;
+    max-height: 88dvh;
+  }
+  #myProfileModal .modal-body {
+    padding: 12px 14px 18px;
+  }
+  /* Side-by-side password grid → single column on very small screens */
+  @media (max-width: 360px) {
+    #myProfileModal .modal-body > div > div[style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+/* Landscape mobile: limit height more aggressively */
+@media (max-height: 500px) and (max-width: 768px) {
+  #myProfileModal .modal {
+    max-height: 95vh;
+    max-height: 95dvh;
+  }
+  #myProfileModal .modal-body {
+    padding: 8px 14px 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PRICES MODULE
+═══════════════════════════════════════════ */
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.price-card:hover { background: var(--bg2); }
+.price-card-main  { flex: 1; min-width: 0; }
+.price-card-name  { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.price-card-cat   { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+.price-card-stats { display: flex; gap: 14px; flex-shrink: 0; }
+.price-stat       { text-align: right; }
+.price-stat-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.price-stat-value { font-size: .88rem; font-weight: 700; color: var(--accent); }
+.price-card-arrow { font-size: .8rem; color: var(--muted); flex-shrink: 0; }
+.prices-empty     { text-align: center; padding: 48px 24px; color: var(--muted); font-size: .88rem; }
+/* ── Prices page: card classes used by JS render ────────────────────────── */
+.price-list       { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--surface); }
+.price-card       { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border2); cursor: pointer; transition: background .12s; }
+.price-card:last-child { border-bottom: none; }
+.price-card:hover { background: var(--bg2); }
+.price-card-body  { flex: 1; min-width: 0; }
+.price-card-name  { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.price-card-tag   { display: inline-block; font-size: .7rem; font-weight: 600; color: var(--accent); background: var(--accent-lt); border-radius: 4px; padding: 1px 6px; margin-top: 3px; }
+.price-card-desc  { font-size: .75rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.price-card-stats { display: flex; gap: 14px; flex-shrink: 0; }
+.price-card-chevron { font-size: 1.1rem; color: var(--muted); flex-shrink: 0; }
+.price-stat-col   { text-align: right; }
+.price-stat-lbl   { display: block; font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.price-stat-val   { display: block; font-size: .88rem; font-weight: 700; color: var(--text); }
+.price-stat-val.accent { color: var(--accent); }
+
+/* ── Register prices modal: rpm-item rows ────────────────────────────────── */
+.rpm-item         { padding: 12px 14px; border-bottom: 1px solid var(--border2); }
+.rpm-item:last-child { border-bottom: none; }
+.rpm-item-header  { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.rpm-item-num     { font-size: .75rem; color: var(--muted); min-width: 18px; text-align: center; flex-shrink: 0; }
+.rpm-item-desc    { font-size: .85rem; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); color: var(--text); width: 100%; }
+.rpm-item-desc:focus { outline: none; border-color: var(--accent); }
+.rpm-ai-btn       { padding: 5px 8px; font-size: .8rem; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface2); cursor: pointer; flex-shrink: 0; line-height: 1; }
+.rpm-ai-btn:hover { background: var(--accent-lt); border-color: var(--accent); }
+.rpm-del-btn      { padding: 5px 7px; font-size: .78rem; border: none; background: transparent; cursor: pointer; color: var(--muted); flex-shrink: 0; border-radius: var(--r-sm); }
+.rpm-del-btn:hover { color: var(--red); background: #fef2f2; }
+.rpm-item-fields  { display: grid; grid-template-columns: 80px 1fr 1fr; gap: 8px; }
+
+/* ── History rows in detail modal ────────────────────────────────────────── */
+.pid-row-date     { font-size: .75rem; color: var(--muted); }
+.pid-row-store    { min-width: 0; }
+.pid-row-store-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pid-row-store-addr { font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pid-row-qty      { font-size: .8rem; color: var(--muted); text-align: center; }
+.pid-row-price    { font-size: .88rem; font-weight: 700; color: var(--accent); text-align: right; }
+.pid-row-del      { background: transparent; border: none; cursor: pointer; font-size: .82rem; padding: 2px 4px; color: var(--muted); border-radius: 4px; }
+.pid-row-del:hover { color: var(--red); background: #fef2f2; }
+
+@media (max-width: 480px) {
+  .price-card-stats { gap: 8px; }
+  .price-stat-val   { font-size: .8rem; }
+  .rpm-item-fields  { grid-template-columns: 72px 1fr; }
+  .rpm-item-fields > *:nth-child(3) { grid-column: 1 / -1; }
+}
+
+/* Prices detail modal */
+.pid-stat-card   { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; text-align: center; }
+.pid-stat-label  { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
+.pid-stat-val    { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
+.pid-row         { display: grid; grid-template-columns: 72px 1fr 52px 80px 28px; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border2); font-size: .8rem; }
+.pid-row:last-child { border-bottom: none; }
+
+/* Register prices modal rows */
+.rpm-row         { padding: 10px 12px; border-bottom: 1px solid var(--border2); }
+.rpm-row:last-child { border-bottom: none; }
+.rpm-row-header  { display: grid; grid-template-columns: 24px 1fr 80px 80px 80px 100px 28px; gap: 6px; align-items: center; }
+.rpm-row-num     { font-size: .72rem; color: var(--muted); text-align: center; }
+
+@media (max-width: 480px) {
+  .price-card-stats { gap: 8px; }
+  .price-stat-value { font-size: .8rem; }
+  .pid-row          { grid-template-columns: 60px 1fr 44px 68px 24px; }
+  .rpm-row-header   { grid-template-columns: 1fr 70px 70px; gap: 4px; }
+  .rpm-row-header > *:nth-child(1),
+  .rpm-row-header > *:nth-child(6),
+  .rpm-row-header > *:nth-child(7) { display: none; }
+}
+
+/* ═══════════════════════════════════════════
+   PAYEE CATEGORY PICKER
+═══════════════════════════════════════════ */
+#payeeCatPickerDropdown > div:hover { background: var(--bg2) !important; }
+
+/* ═══════════════════════════════════════════
+   CURRENCY BADGE & CONVERSION PANEL
+═══════════════════════════════════════════ */
+#txCurrencyBadge, #scCurrencyBadge {
+  transition: background .15s, color .15s;
+  min-width: 44px;
+  text-align: center;
+}
+#txCurrencyPanel, #scCurrencyPanel {
+  transition: background .15s;
+}
+
+/* ── Foreign currency amount display in transaction list ─────────────────── */
+.tx-col-amt .fx-hint {
+  display: block;
+  font-size: .68rem;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.2;
+}
